@@ -13,6 +13,18 @@ type Config struct {
 	Port string
 }
 
+func read_config(filename string) *Config {
+	var conf Config
+	if _, err := toml.DecodeFile(filename, &conf); err != nil {
+		conf.Host = DEFAULT_HOST
+		conf.Port = DEFAULT_PORT
+		fmt.Println("Error processing", filename)
+		fmt.Println("Default Host =", conf.Host)
+		fmt.Println("Default Port =", conf.Port)
+	}
+	return &conf
+}
+
 func (c *Config) endpoint() string {
 	return c.Host + ":" + c.Port
 }
@@ -43,18 +55,6 @@ func run_test(conn net.Conn) {
 	// send byte sequence to close connection
 	bytes = []byte{0x00, 0xFF}
 	conn.Write(bytes)
-}
-
-func read_config(filename string) *Config {
-	var conf Config
-	if _, err := toml.DecodeFile(filename, &conf); err != nil {
-		conf.Host = DEFAULT_HOST
-		conf.Port = DEFAULT_PORT
-		fmt.Println("Error processing", filename)
-		fmt.Println("Default Host =", conf.Host)
-		fmt.Println("Default Port =", conf.Port)
-	}
-	return &conf
 }
 
 func main() {

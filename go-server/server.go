@@ -7,7 +7,7 @@ import "time"
 
 import "github.com/BurntSushi/toml"
 
-// https://systembash.com/a-simple-go-tcp-server-and-tcp-clients
+// starting point: https://systembash.com/a-simple-go-tcp-server-and-tcp-clients
 
 const DEFAULT_HOST string = "127.0.0.1"
 const DEFAULT_PORT string = "8082"
@@ -29,6 +29,7 @@ func read_config(filename string) *Config {
 	return &conf
 }
 
+// represents a single complete message
 type Payload struct {
 	id     int
 	length int
@@ -57,17 +58,9 @@ func (p *Payload) add_bytes(bytes []byte) bool {
 	}
 }
 
-func init_payload(bytes []byte) *Payload {
-	// create new Payload objec
+func payload_factory(bytes []byte) *Payload {
+	// create new Payload object with correct defaults
 	return &Payload{length: int(bytes[0]), data: []byte{}}
-}
-
-func open_socket(port string) (net.Conn, net.Listener) {
-	// listen on all interfaces
-	listen, _ := net.Listen("tcp", ":"+port)
-	// accept connection on port
-	conn, _ := listen.Accept()
-	return conn, listen
 }
 
 func payload_recieved_message(payload *Payload, total int) {
@@ -105,7 +98,7 @@ func read_data(conn net.Conn) {
 			// if last bytes recieved finished the message
 			// intialize a new payload object
 			if complete {
-				payload = init_payload(bytes)
+				payload = payload_factory(bytes)
 			}
 			// copy bytes and update if we are finished
 			// for this object
@@ -123,8 +116,10 @@ func read_data(conn net.Conn) {
 func main() {
 	conf := read_config("test-config.toml")
 
+	// allow server to listen for client connections
 	listener, _ := net.Listen("tcp", ":"+conf.Port)
 	for {
+		// accept client connection
 		conn, _ := listener.Accept()
 		if conn != nil {
 			read_data(conn)
