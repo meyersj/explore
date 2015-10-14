@@ -3,8 +3,31 @@ package main
 import "net"
 import "fmt"
 import "bufio"
+import "time"
+
+import "github.com/BurntSushi/toml"
 
 // https://systembash.com/a-simple-go-tcp-server-and-tcp-clients
+
+const DEFAULT_HOST string = "127.0.0.1"
+const DEFAULT_PORT string = "8082"
+
+type Config struct {
+	Host string
+	Port string
+}
+
+func read_config(filename string) *Config {
+	var conf Config
+	if _, err := toml.DecodeFile(filename, &conf); err != nil {
+		conf.Host = DEFAULT_HOST
+		conf.Port = DEFAULT_PORT
+		fmt.Println("Error processing", filename)
+		fmt.Println("Default Host =", conf.Host)
+		fmt.Println("Default Port =", conf.Port)
+	}
+	return &conf
+}
 
 type Payload struct {
 	id     int
@@ -41,8 +64,7 @@ func init_payload(bytes []byte) *Payload {
 
 func open_socket(port string) (net.Conn, net.Listener) {
 	// listen on all interfaces
-	listen, error := net.Listen("tcp", ":"+port)
-	fmt.Println(error)
+	listen, _ := net.Listen("tcp", ":"+port)
 	// accept connection on port
 	conn, _ := listen.Accept()
 	return conn, listen
@@ -56,10 +78,7 @@ func payload_recieved_message(payload *Payload, total int) {
 	fmt.Println("count", total, "\n")
 }
 
-func read_data(port string) {
-	fmt.Println("Opening socket...")
-	// open socket connection
-	conn, listener := open_socket(port)
+func read_data(conn net.Conn) {
 
 	var payload *Payload
 	payloads := []*Payload{}
@@ -77,6 +96,7 @@ func read_data(port string) {
 			fmt.Println(bytes)
 			if new_stream == true && len(bytes) == 2 {
 				if bytes[0] == 0x00 && bytes[1] == 0xFF {
+					fmt.Println("\nclose connection", time.Now(), "\n")
 					break
 				}
 			}
@@ -98,18 +118,18 @@ func read_data(port string) {
 			}
 		}
 	}
-	conn.Close()
-	listener.Close()
 }
 
 func main() {
+	conf := read_config("test-config.toml")
+
+	listener, _ := net.Listen("tcp", ":"+conf.Port)
 	for {
-		read_data("8082")
-		fmt.Println("CLOSE")
-		fmt.Println("CLOSE")
-		fmt.Println("CLOSE")
-		fmt.Println("CLOSE")
-		fmt.Println("CLOSE")
-		fmt.Println("CLOSE")
+		conn, _ := listener.Accept()
+		if conn != nil {
+			read_data(conn)
+			conn.Close()
+		}
 	}
+	listener.Close()
 }
