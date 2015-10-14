@@ -40,7 +40,7 @@ public class BluetoothFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
         ButterKnife.bind(this, rootView);
 
-        scanner = new BluetoothScanner();
+        scanner = new BluetoothScanner(getContext());
 
         // add START and STOP scan button listeners
         setViewListeners();
