@@ -117,14 +117,19 @@ func main() {
 	conf := read_config("test-config.toml")
 
 	// allow server to listen for client connections
-	listener, _ := net.Listen("tcp", ":"+conf.Port)
-	for {
-		// accept client connection
-		conn, _ := listener.Accept()
-		if conn != nil {
-			read_data(conn)
-			conn.Close()
+	listener, listener_error := net.Listen("tcp", ":"+conf.Port)
+	if listener != nil {
+		fmt.Println("Accepting connections...\n")
+		for {
+			// accept client connection
+			conn, _ := listener.Accept()
+			if conn != nil {
+				read_data(conn)
+				conn.Close()
+			}
 		}
+		listener.Close()
+	} else {
+		fmt.Println("Error:", listener_error)
 	}
-	listener.Close()
 }
