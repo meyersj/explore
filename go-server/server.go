@@ -17,6 +17,7 @@ type Config struct {
 	Port string
 }
 
+// create and return Config data
 func read_config(filename string) *Config {
 	var conf Config
 	if _, err := toml.DecodeFile(filename, &conf); err != nil {
@@ -87,10 +88,16 @@ func read_data(conn net.Conn) {
 		bytes, error := buffer.ReadBytes(0xFF)
 		if error == nil {
 			fmt.Println(bytes)
+
+			// if bytes is of length two with contents {0x00, 0xFF}
+			// then that is the closing connection flag
+			// from client that it is finished so
+			// return from function to start
+			// listening for another client
 			if new_stream == true && len(bytes) == 2 {
 				if bytes[0] == 0x00 && bytes[1] == 0xFF {
 					fmt.Println("\nclose connection", time.Now(), "\n")
-					break
+					return
 				}
 			}
 			new_stream = false
@@ -100,13 +107,19 @@ func read_data(conn net.Conn) {
 			if complete {
 				payload = payload_factory(bytes)
 			}
+
 			// copy bytes and update if we are finished
-			// for this object
+			// for this object and wait for a new
+			// payload, or for the exit signal to close connection
 			complete = payload.add_bytes(bytes)
+
 			if complete {
 				// add completed packets to be parsed
 				payloads = append(payloads, payload)
 				payload_recieved_message(payload, len(payloads))
+
+				// wait for another data packet
+				// or for exit signal from client
 				new_stream = true
 			}
 		}
@@ -116,14 +129,15 @@ func read_data(conn net.Conn) {
 func main() {
 	conf := read_config("test-config.toml")
 
-	// allow server to listen for client connections
+	// start listening for client connections
 	listener, listener_error := net.Listen("tcp", ":"+conf.Port)
 	if listener != nil {
 		fmt.Println("Accepting connections...\n")
 		for {
-			// accept client connection
+			// accept connection from client
 			conn, _ := listener.Accept()
 			if conn != nil {
+				// start receiving data
 				read_data(conn)
 				conn.Close()
 			}
