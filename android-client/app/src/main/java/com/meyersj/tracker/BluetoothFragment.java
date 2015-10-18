@@ -7,6 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ListView;
 import android.widget.Toast;
 
 import butterknife.Bind;
@@ -18,7 +19,7 @@ public class BluetoothFragment extends Fragment {
     private static final String ARG_SECTION_NUMBER = "section_number";
     private final String TAG = getClass().getCanonicalName();
 
-    //@Bind(R.id.active_list) ListView activeListView;
+    @Bind(R.id.active_list) ListView nearbyBeaconsListView;
     @Bind(R.id.start_button) Button startButton;
     @Bind(R.id.stop_button) Button stopButton;
 

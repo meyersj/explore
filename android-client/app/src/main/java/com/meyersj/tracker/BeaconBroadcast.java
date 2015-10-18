@@ -3,9 +3,7 @@ package com.meyersj.tracker;
 import android.bluetooth.le.ScanResult;
 import android.util.Log;
 
-/**
- * Created by jeff on 10/14/15.
- */
+
 public class BeaconBroadcast {
 
     private final String TAG = getClass().getCanonicalName();
@@ -38,18 +36,6 @@ public class BeaconBroadcast {
             payload[0] = (byte) 0;
             payload[1] = (byte) 255;
         }
-            /*
-            // for testing
-            List<byte[]> payload = new ArrayList<>();
-            byte[] bytes1 = {(byte) 1, (byte)1, (byte)255};
-            byte[] bytes2 = {(byte) 2, (byte)1, (byte)255};
-            byte[] bytes3 = {(byte) 3, (byte)1, (byte)255};
-
-            payload.add(bytes1);
-            payload.add(bytes2);
-            payload.add(bytes3);
-            */
-
         return payload;
     }
 
@@ -64,9 +50,6 @@ public class BeaconBroadcast {
 
 
     private byte[] buildPacket (byte[] payload, int rssi, byte delimiter) {
-        //List<byte[]> packets = new ArrayList<>();
-        //List<Byte> current = new ArrayList<>();
-        //int size = 0;
 
         // placeholder for length byte as first byte in payload
         // payload can be split into separate packets
@@ -77,44 +60,13 @@ public class BeaconBroadcast {
         int length = payload.length + 3;
         byte[] packet = new byte[length];
         packet[0] = (byte) length;
-
-
         packet[1] = (byte) rssi;
         Log.d(TAG, "RSSI: " + rssi);
-        Log.d(TAG, "int bit count: " + Integer.bitCount(rssi));
         for(int i = 2; i < payload.length; i++) {
             packet[i] = payload[i-2];
         }
         packet[length - 1] = delimiter;
 
         return packet;
-
-        // check if payload contains delimiter character
-        // if so split into separate packets
-        /*
-        for(int i = 0; i < payload.length; i++) {
-            // delimiter was found in payload, so create new packet for remaining bytes
-            if (payload[i] == delimiter) {
-                current.add(delimiter);
-                size += current.size();
-                packets.add(copyBytes(current));
-                size += 1;
-                current = new ArrayList<>();
-            }
-            // regular byte sequence so copy as normal
-            else {
-                current.add(payload[i]);
-            }
-        }
-        */
-
-        // add delimiter to end of last packet
-        //current.add(delimiter);
-        //size += current.size();
-        //packets.add(copyBytes(current));
-
-        // set length byte
-        //packets.get(0)[0] = (byte) size;
-        //return packets;
     }
 }

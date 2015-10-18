@@ -47,10 +47,12 @@ public class BluetoothScanner {
     }
 
     public void stop() {
-        bleScanner.stopScan(scanCallback);
-        queue.add(new BeaconBroadcast(counter, null));
-        scanner.interrupt();
-        scanner = null;
+        if (scanner != null) {
+            bleScanner.stopScan(scanCallback);
+            queue.add(new BeaconBroadcast(counter, null));
+            scanner.interrupt();
+            scanner = null;
+        }
 
     }
 
