@@ -7,6 +7,8 @@ import android.bluetooth.le.ScanResult;
 import android.content.Context;
 import android.util.Log;
 
+import com.google.common.util.concurrent.RateLimiter;
+
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
@@ -28,6 +30,7 @@ public class BluetoothScanner {
     private Integer counter = 0;
     private String host;
     private int port;
+    private RateLimiter rateLimiter;
 
     public BluetoothScanner(Context context) {
         BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -38,6 +41,7 @@ public class BluetoothScanner {
         Properties properties = Utils.getProperties(context, "config.properties");
         host = properties.getProperty("Host");
         port = Integer.valueOf(properties.getProperty("Port"));
+        rateLimiter = RateLimiter.create(2);
     }
 
     public void start() {
@@ -60,8 +64,10 @@ public class BluetoothScanner {
 
         @Override
         public void onScanResult(int callbackType, ScanResult result) {
-            counter += 1;
-            queue.add(new BeaconBroadcast(counter, result));
+            if (rateLimiter.tryAcquire()) {
+                counter += 1;
+                queue.add(new BeaconBroadcast(counter, result));
+            }
         }
     };
 
