@@ -3,7 +3,7 @@ package main
 import (
 	"./payload"
 	"bufio"
-	"bytes"
+	//"bytes"
 	"encoding/hex"
 	"fmt"
 	"github.com/BurntSushi/toml"
@@ -80,9 +80,9 @@ func communicate(conn net.Conn, payload_channel chan *payload.Payload) {
 			// copy bytes and update if we are finished
 			// for this object and wait for a new
 			// payload, or for the exit signal to close connection
-			complete = p.Add_bytes(bytes)
+			complete = p.AddBytes(bytes)
 			if complete {
-				p.Parse()
+				//p.Parse()
 				// send completed payload across channel to consumer
 				payload_channel <- p
 			}
@@ -93,9 +93,14 @@ func communicate(conn net.Conn, payload_channel chan *payload.Payload) {
 func payload_consumer(channel chan *payload.Payload, uid []byte) {
 	for {
 		p := <-channel
-		if p.Adv.Eddystone && bytes.Equal(uid, p.Adv.Uid) {
-			fmt.Println("Signal", p.Rssi, ", Instance", p.Adv.Instance)
-		}
+		//p.Print()
+		adv := payload.InitAdvertisement(p.Data)
+		adv.Print()
+		//fmt.Println("Signal", p.Rssi)
+
+		//if p.Adv.Eddystone && bytes.Equal(uid, p.Adv.Uid) {
+		//	fmt.Println("Signal", p.Rssi, ", Instance", p.Adv.Instance)
+		//}
 	}
 }
 

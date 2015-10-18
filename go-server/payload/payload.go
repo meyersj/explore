@@ -9,20 +9,9 @@ type Payload struct {
 	id     int
 	Length int
 	Data   []byte
-	Rssi   int8
-	Adv    *Advertisement
 }
 
-func (p *Payload) Parse() {
-	if len(p.Data) > 1 {
-		p.Rssi = int8(p.Data[0])
-		p.Data = p.Data[1:len(p.Data)]
-		p.Adv = &Advertisement{raw: p.Data}
-		p.Adv.parse()
-	}
-}
-
-func (p *Payload) Add_bytes(bytes []byte) bool {
+func (p *Payload) AddBytes(bytes []byte) bool {
 	if p.Length == len(p.Data)+len(bytes) {
 		// after input bytes are appended payload
 		// will be complete
@@ -36,8 +25,8 @@ func (p *Payload) Add_bytes(bytes []byte) bool {
 	}
 }
 
-func (p *Payload) PPrint() {
-	fmt.Println("rssi", p.Rssi)
+func (p *Payload) Print() {
+	//fmt.Println("rssi", p.Rssi)
 	fmt.Println("size", p.Length)
 	fmt.Println("data", p.Data, "\n")
 }
