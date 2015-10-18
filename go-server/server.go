@@ -37,7 +37,6 @@ func read_config(filename string) *Config {
 		fmt.Println("Default Host =", conf.Host)
 		fmt.Println("Default Port =", conf.Port)
 		fmt.Println("Default UID =", conf.Uid)
-
 	}
 	return &conf
 }
