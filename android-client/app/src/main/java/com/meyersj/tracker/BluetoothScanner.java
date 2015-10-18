@@ -45,6 +45,7 @@ public class BluetoothScanner {
     }
 
     public void start() {
+        stop();
         bleScanner.startScan(scanCallback);
         scanner = new Thread(new ScannerThread());
         scanner.start();
