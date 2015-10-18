@@ -12,19 +12,19 @@ type EddyStone interface {
 }
 
 type EddyStoneUID struct {
-	uid      []byte
-	instance []byte
+	Uid      []byte
+	Instance []byte
 }
 
 func InitEddyStoneUID(serviceUUID []byte) *EddyStoneUID {
 	uid := serviceUUID[4 : 4+10]
 	instance := serviceUUID[4+10 : 4+10+6]
-	return &EddyStoneUID{uid: uid, instance: instance}
+	return &EddyStoneUID{Uid: uid, Instance: instance}
 }
 
 func (e *EddyStoneUID) String() string {
-	return "uid: " + fmt.Sprintf("%0 x", e.uid) +
-		", instance: " + fmt.Sprintf("%0 x", e.instance)
+	return "uid: " + fmt.Sprintf("%0 x", e.Uid) +
+		", instance: " + fmt.Sprintf("%0 x", e.Instance)
 }
 
 type EddyStoneURL struct {
