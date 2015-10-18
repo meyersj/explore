@@ -9,6 +9,7 @@ public class BeaconBroadcast {
     private final String TAG = getClass().getCanonicalName();
     private int id;
     private ScanResult scanResult;
+    private boolean disconnect = false;
 
     public BeaconBroadcast(int id, ScanResult scanResult) {
         this.id = id;
@@ -18,23 +19,29 @@ public class BeaconBroadcast {
         }
     }
 
+    public BeaconBroadcast(int id, boolean disconnect) {
+        this.id = id;
+        this.disconnect = disconnect;
+    }
+
     public int getId() {
         return id;
     }
 
+
     public byte[] getPayload() {
         byte[] payload;
-        if(scanResult != null) {
-            byte[] rawBytes = scanResult.getScanRecord().getBytes();
-            int rssi = scanResult.getRssi();
-            byte delimiter = (byte) 255;
-            payload = buildPacket(rawBytes, rssi, delimiter);
-        }
-        else {
+        if(disconnect || scanResult == null) {
             // payload to message to kill connection
             payload = new byte[2];
             payload[0] = (byte) 0;
             payload[1] = (byte) 255;
+        }
+        else {
+            byte[] rawBytes = scanResult.getScanRecord().getBytes();
+            int rssi = scanResult.getRssi();
+            byte delimiter = (byte) 255;
+            payload = buildPacket(rawBytes, rssi, delimiter);
         }
         return payload;
     }
@@ -45,6 +52,10 @@ public class BeaconBroadcast {
             return id + " " + scanResult.getRssi();
         }
         return id + " CLOSE CONNECTION SIGNAL";
+    }
+
+    public boolean isDisconnectSignal() {
+        return disconnect;
     }
 
 

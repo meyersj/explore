@@ -54,8 +54,7 @@ public class BluetoothScanner {
     public void stop() {
         if (scanner != null) {
             bleScanner.stopScan(scanCallback);
-            queue.add(new BeaconBroadcast(counter, null));
-            scanner.interrupt();
+            queue.add(new BeaconBroadcast(counter, true));
             scanner = null;
         }
 
@@ -82,23 +81,29 @@ public class BluetoothScanner {
             try {
                 socket = new Socket(host, port);
                 Log.d(TAG, "OPENED SOCKET");
+                if(socket != null) {
+                    // `active` gets set to false when BluetoothScanner.stop() method gets called
+                    boolean disconnect = false;
+                    while (!disconnect) {
+                        BeaconBroadcast broadcast = queue.poll();
+                        if(broadcast != null) {
+                            sendDataOverSocket(socket, broadcast);
+                            Log.d(TAG, "SENT: " + broadcast.toString());
+                            disconnect = broadcast.isDisconnectSignal();
+                        }
+                    }
+                    socket.close();
+                    Log.d(TAG, "CLOSED SOCKET");
+                }
             } catch (UnknownHostException e) {
                 Log.d(TAG, e.toString());
             } catch (IOException e) {
                 Log.d(TAG, e.toString());
             }
 
-            if(socket != null) {
-                while (true) {
-                    BeaconBroadcast broadcast = queue.poll();
-                    if(broadcast != null) {
-                        Log.d(TAG, "FETCH: " + broadcast.toString());
-                        sendDataOverSocket(socket, broadcast);
-                    }
-                }
-            }
 
         }
+
     }
 
     private void sendDataOverSocket(Socket socket, BeaconBroadcast broadcast) {
