@@ -3,7 +3,6 @@ package main
 import (
 	"./payload"
 	"bufio"
-	//"bytes"
 	"encoding/hex"
 	"fmt"
 	"github.com/BurntSushi/toml"
@@ -93,14 +92,15 @@ func communicate(conn net.Conn, payload_channel chan *payload.Payload) {
 func payload_consumer(channel chan *payload.Payload, uid []byte) {
 	for {
 		p := <-channel
-		//p.Print()
 		adv := payload.InitAdvertisement(p.Data)
+		valid, frame := payload.ParseEddyStone(adv)
+		if valid {
+			// TODO do something real with parsed advertisement frames
+			fmt.Println("EddyStone:", frame)
+		} else {
+			fmt.Println("Unknown", frame)
+		}
 		adv.Print()
-		//fmt.Println("Signal", p.Rssi)
-
-		//if p.Adv.Eddystone && bytes.Equal(uid, p.Adv.Uid) {
-		//	fmt.Println("Signal", p.Rssi, ", Instance", p.Adv.Instance)
-		//}
 	}
 }
 
