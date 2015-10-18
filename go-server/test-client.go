@@ -31,26 +31,29 @@ func (c *Config) endpoint() string {
 
 func run_test(conn net.Conn) {
 	// payload = {1, 1, 1, 1, 1, 0xFF, 1, 1, 1, 1, 1} (contains delimiter)
-	bytes := []byte{13, 1, 1, 1, 1, 1, 0xFF}
+	bytes := []byte{16, 99, 3, 1, 6, 0xFF} // 7
 	conn.Write(bytes)
 
-	bytes = []byte{1, 1, 1, 1, 1, 0xFF}
+	bytes = []byte{4, 2, 2, 2, 0xFF} // 6
+	conn.Write(bytes)
+
+	bytes = []byte{3, 3, 3, 3, 0xFF} // 6
 	conn.Write(bytes)
 
 	// payload = {1, 1, 1, 1}
-	bytes = []byte{6, 1, 1, 1, 1, 0xFF}
+	bytes = []byte{6, 99, 2, 1, 1, 0xFF}
 	conn.Write(bytes)
 
 	// payload #1 = {1, 1, 1, 1, 1}
 	// payload #2 = {3, 20}
-	bytes = []byte{7, 1, 1, 1, 1, 1, 0xFF, 3, 20, 0xFF}
-	conn.Write(bytes)
+	//bytes = []byte{7, 99, 1, 1, 1, 1, 0xFF, 4, 1, 20, 0xFF}
+	//conn.Write(bytes)
 
 	// payload = {30, 0xFF, 35, 40} (contains delimiter)
-	bytes = []byte{6, 30, 0xFF}
-	conn.Write(bytes)
-	bytes = []byte{35, 40, 0xFF}
-	conn.Write(bytes)
+	//bytes = []byte{6, 99, 3}
+	//conn.Write(bytes)
+	//bytes = []byte{1, 1, 0xFF}
+	//conn.Write(bytes)
 
 	// send byte sequence to close connection
 	bytes = []byte{0x00, 0xFF}
