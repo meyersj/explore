@@ -192,12 +192,10 @@ func payload_consumer(channel chan *Payload, uid []byte) {
 	for {
 		payload := <-channel
 		if payload.adv.eddystone && bytes.Equal(uid, payload.adv.uid) {
-			fmt.Println("EddyStoneUID")
-			fmt.Println(payload.adv.uid)
-			fmt.Println(payload.adv.instance, "\n")
-		} else {
-			fmt.Println("Non Eddy", payload.adv.structures, "\n")
-		}
+			fmt.Println("Signal", payload.rssi, ", Instance", payload.adv.instance)
+		} //else {
+		//	fmt.Println("Non Eddy", payload.adv.structures, "\n")
+		//}
 	}
 }
 
