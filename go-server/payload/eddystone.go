@@ -54,14 +54,14 @@ func (e *EddyStoneTLM) String() string {
 func ParseEddyStone(a *Advertisement) (bool, EddyStone) {
 	if len(a.Structures) >= 3 &&
 		a.Structures[1].Type == 0x03 &&
-		bytes.Equal(a.Structures[1].Data[0:2], EDDYSTONE_UID) {
+		bytes.Equal(a.Structures[1].Data[0:2], EDDYSTONE_SERVICE) {
 
 		if a.Structures[2].Type == 0x16 {
-			if a.Structures[2].Data[2] == 0x00 {
+			if a.Structures[2].Data[2] == EDDYSTONE_UID_FRAME {
 				return true, InitEddyStoneUID(a.Structures[2].Data)
-			} else if a.Structures[2].Data[2] == 0x10 {
+			} else if a.Structures[2].Data[2] == EDDYSTONE_URL_FRAME {
 				return true, InitEddyStoneURL(a.Structures[2].Data)
-			} else if a.Structures[2].Data[2] == 0x20 {
+			} else if a.Structures[2].Data[2] == EDDYSTONE_TLM_FRAME {
 				return true, InitEddyStoneTLM(a.Structures[2].Data)
 			}
 		}
