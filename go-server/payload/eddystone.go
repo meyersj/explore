@@ -7,19 +7,20 @@ import (
 	"fmt"
 )
 
-type EddyStone interface {
+type EddyStoneInterface interface {
 	String() string
 }
 
 type EddyStoneUID struct {
 	Uid      []byte
 	Instance []byte
+	*Advertisement
 }
 
-func InitEddyStoneUID(serviceUUID []byte) *EddyStoneUID {
-	uid := serviceUUID[4 : 4+10]
-	instance := serviceUUID[4+10 : 4+10+6]
-	return &EddyStoneUID{Uid: uid, Instance: instance}
+func InitEddyStoneUID(serviceUUID []byte, a *Advertisement) *EddyStoneUID {
+	uid := serviceUUID[4 : 4+10]           // 10 bytes from offset 4
+	instance := serviceUUID[4+10 : 4+10+6] // 6 bytes from offset 14
+	return &EddyStoneUID{Uid: uid, Instance: instance, Advertisement: a}
 }
 
 func (e *EddyStoneUID) String() string {
@@ -51,14 +52,14 @@ func (e *EddyStoneTLM) String() string {
 	return "tlm: " + fmt.Sprintf("%0 x", e.raw)
 }
 
-func ParseEddyStone(a *Advertisement) (bool, EddyStone) {
+func ParseEddyStone(a *Advertisement) (bool, EddyStoneInterface) {
 	if len(a.Structures) >= 3 &&
 		a.Structures[1].Type == 0x03 &&
 		bytes.Equal(a.Structures[1].Data[0:2], EDDYSTONE_SERVICE) {
 
 		if a.Structures[2].Type == 0x16 {
 			if a.Structures[2].Data[2] == EDDYSTONE_UID_FRAME {
-				return true, InitEddyStoneUID(a.Structures[2].Data)
+				return true, InitEddyStoneUID(a.Structures[2].Data, a)
 			} else if a.Structures[2].Data[2] == EDDYSTONE_URL_FRAME {
 				return true, InitEddyStoneURL(a.Structures[2].Data)
 			} else if a.Structures[2].Data[2] == EDDYSTONE_TLM_FRAME {
