@@ -2,7 +2,6 @@ package payload
 
 import (
 	"bytes"
-	//"fmt"
 	"testing"
 )
 
@@ -84,37 +83,35 @@ func Test_AddBytes_delimiter2(t *testing.T) {
 	}
 }
 
-/*
-// represents a single complete message
-type Payload struct {
-	id     int
-	Length int
-	Data   []byte
-}
+func Test_AddBytes_delimiter3(t *testing.T) {
+	payload1 := []byte{0x0F, 0x01, 0xFF}
+	payload2 := []byte{0x01, 0x01, 0xFF}
+	payload3 := []byte{0x01, 0x01, 0xFF}
+	payload4 := []byte{0x01, 0x01, 0xFF}
+	payload5 := []byte{0x01, 0x01, 0xFF}
 
-
-func (p *Payload) AddBytes(bytes []byte) bool {
-	if p.Length == len(p.Data)+len(bytes) {
-		// after input bytes are appended payload
-		// will be complete
-		p.Data = append(p.Data, bytes...)
-		p.Data = p.Data[1 : len(p.Data)-1]
-		return true
-	} else {
-		// more data will be recieved
-		p.Data = append(p.Data, bytes...)
-		return false
+	p := InitPayload(payload1)
+	complete := p.AddBytes(payload1)
+	if p.Length != 15 {
+		t.Fatalf("Length is payload is incorrect")
+	}
+	complete = p.AddBytes(payload2)
+	complete = p.AddBytes(payload3)
+	complete = p.AddBytes(payload4)
+	if complete {
+		t.Fatalf("payload should not be finished")
+	}
+	complete = p.AddBytes(payload5)
+	if !complete {
+		t.Fatalf("payload should be finished")
+	}
+	if !bytes.Equal(p.Data,
+		[]byte{
+			0x01, 0xFF,
+			0x01, 0x01, 0xFF,
+			0x01, 0x01, 0xFF,
+			0x01, 0x01, 0xFF,
+			0x01, 0x01}) {
+		t.Fatalf("payload.Data does not match test data")
 	}
 }
-
-func (p *Payload) Print() {
-	//fmt.Println("rssi", p.Rssi)
-	fmt.Println("size", p.Length)
-	fmt.Println("data", p.Data, "\n")
-}
-
-func InitPayload(bytes []byte) *Payload {
-	// create new Payload object with correct defaults
-	return &Payload{Length: int(bytes[0]), Data: []byte{}}
-}
-*/
