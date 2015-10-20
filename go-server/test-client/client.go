@@ -61,7 +61,7 @@ func run_test(conn net.Conn) {
 }
 
 func main() {
-	conf := read_config("test-config.toml")
+	conf := read_config("../test-config.toml")
 
 	// connect to this socket
 	conn, _ := net.Dial("tcp", conf.endpoint())
