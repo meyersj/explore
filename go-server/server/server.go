@@ -1,11 +1,14 @@
 package server
 
 import (
+	"../data"
 	"../payload"
 	"bufio"
 	"encoding/binary"
 	"fmt"
 	"net"
+	"strconv"
+	"strings"
 	"time"
 )
 
@@ -57,7 +60,7 @@ func Communicate(conn net.Conn, payload_channel chan *payload.Payload) {
 		// so all bytes will be read into correct payload object
 		bytes, error := buffer.ReadBytes(0xFF)
 		if error == nil && len(bytes) > 0 {
-			fmt.Println(bytes)
+			//fmt.Println(bytes)
 			if is_client_finished(bytes, complete) {
 				fmt.Println("\nclose connection", time.Now(), "\n")
 				return
@@ -71,12 +74,24 @@ func Communicate(conn net.Conn, payload_channel chan *payload.Payload) {
 	}
 }
 
-func Triangulator(channel chan *payload.EddyStoneUID) {
+func generate_value(signals []int) string {
+	values := make([]string, 3)
+	for i := 0; i < len(signals); i++ {
+		values[i] = strconv.Itoa(signals[i])
+	}
+	return strings.Join(values, " ")
+}
 
+func Triangulator(channel chan *payload.EddyStoneUID) {
+	client := data.InitClient()
+	signals := []int{0, 0, 0}
 	for {
 		e := <-channel
 		instance := binary.BigEndian.Uint32(e.Instance[2:len(e.Instance)])
-		fmt.Print(e.Rssi, instance, "\n")
+		signals[int(instance)-1] = int(e.Rssi)
+		uid := fmt.Sprintf("%0x", e.Uid)
+		client.Set(uid, generate_value(signals))
+		fmt.Println(uid, instance, e.Rssi)
 	}
 }
 
