@@ -31,7 +31,7 @@ public class BluetoothScanner {
     private String host;
     private int port;
     private RateLimiter rateLimiter;
-
+    private boolean active = false;
     public BluetoothScanner(Context context) {
         BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if(bluetoothAdapter != null)
@@ -46,16 +46,16 @@ public class BluetoothScanner {
 
     public void start() {
         stop();
+        active = true;
         bleScanner.startScan(scanCallback);
         scanner = new Thread(new ScannerThread());
         scanner.start();
     }
 
     public void stop() {
-        if (scanner != null) {
+        if (active) {
             bleScanner.stopScan(scanCallback);
             queue.add(new BeaconBroadcast(counter, true));
-            scanner = null;
         }
 
     }
@@ -93,6 +93,7 @@ public class BluetoothScanner {
                         }
                     }
                     socket.close();
+                    active = false;
                     Log.d(TAG, "CLOSED SOCKET");
                 }
             } catch (UnknownHostException e) {
