@@ -24,6 +24,10 @@ func (a *Advertisement) recursive_parse(offset int, count int, bytes []byte) {
 	}
 	length := int(bytes[offset])
 	offset = offset + 1
+	if len(bytes) < offset+length {
+		a.Structures = append(a.Structures, InitStructure(bytes[offset:len(bytes)]))
+		return
+	}
 	a.Structures = append(a.Structures, InitStructure(bytes[offset:offset+length]))
 	a.recursive_parse(offset+length, count+1, bytes)
 }
