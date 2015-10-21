@@ -2,7 +2,7 @@ package main
 
 import (
 	"encoding/json"
-	"ftm"
+	"fmt"
 	"net/http"
 	"time"
 )
@@ -45,5 +45,5 @@ func start_server() {
 }
 
 func main() {
-	go start_server()
+	start_server()
 }
