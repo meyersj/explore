@@ -92,8 +92,11 @@ func PayloadReciever(
 	uid []byte,
 ) {
 	for {
+		// recieve finished Payload from Communicate thread
 		p := <-input_chan
+		// parse Payload data into Advertisement structures
 		adv := payload.InitAdvertisement(p.Data)
+		// parse Advertisement using EddyStone protocol
 		valid, frame := payload.ParseEddyStone(adv)
 		if valid {
 			switch frame.(type) {
