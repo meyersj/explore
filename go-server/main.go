@@ -11,7 +11,7 @@ import (
 func main() {
 	conf := server.Read_config("test-config.toml")
 	payload_channel := make(chan *payload.Payload)
-	eddystone_channel := make(chan *payload.EddyStoneUID)
+	redis_channel := make(chan *payload.EddyStoneUID)
 
 	// start listening for client connections
 	listener, listener_error := net.Listen("tcp", ":"+conf.Port)
@@ -19,8 +19,8 @@ func main() {
 	if listener != nil {
 		// start consumer thread and triangulator threads
 		uid, _ := hex.DecodeString(conf.Uid)
-		go server.Triangulator(eddystone_channel)
-		go server.Payload_consumer(payload_channel, eddystone_channel, uid)
+		go server.RedisWriter(redis_channel)
+		go server.PayloadReciever(payload_channel, redis_channel, uid)
 		fmt.Println("Accepting connections...")
 
 		// infinite loop to accept connections from clients and

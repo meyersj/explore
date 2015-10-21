@@ -3,6 +3,7 @@ package data
 import (
 	"fmt"
 	"gopkg.in/redis.v3"
+	"time"
 )
 
 type Client struct {
@@ -18,8 +19,8 @@ func InitClient() *Client {
 	return &Client{client: client}
 }
 
-func (c *Client) Set(key string, value string) {
-	err := c.client.Set(key, value, 0).Err()
+func (c *Client) Set(key string, value string, timeout time.Duration) {
+	err := c.client.Set(key, value, timeout).Err()
 	if err != nil {
 		fmt.Println("Error:", err)
 	}

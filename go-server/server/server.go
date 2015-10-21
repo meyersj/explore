@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"net"
 	"strconv"
-	"strings"
+	//"strings"
 	"time"
 )
 
@@ -74,40 +74,31 @@ func Communicate(conn net.Conn, payload_channel chan *payload.Payload) {
 	}
 }
 
-func generate_value(signals []int) string {
-	values := make([]string, 3)
-	for i := 0; i < len(signals); i++ {
-		values[i] = strconv.Itoa(signals[i])
-	}
-	return strings.Join(values, " ")
-}
-
-func Triangulator(channel chan *payload.EddyStoneUID) {
+func RedisWriter(input_chan chan *payload.EddyStoneUID) {
 	client := data.InitClient()
-	signals := []int{0, 0, 0}
 	for {
-		e := <-channel
-		instance := binary.BigEndian.Uint32(e.Instance[2:len(e.Instance)])
-		signals[int(instance)-1] = int(e.Rssi)
+		e := <-input_chan
+		instance := int(binary.BigEndian.Uint32(e.Instance[2:len(e.Instance)]))
 		uid := fmt.Sprintf("%0x", e.Uid)
-		client.Set(uid, generate_value(signals))
-		fmt.Println(uid, instance, e.Rssi)
+		key := uid + "-" + strconv.Itoa(instance)
+		client.Set(key, strconv.Itoa(int(e.Rssi)), time.Second*30)
+		fmt.Println(key, e.Rssi)
 	}
 }
 
-func Payload_consumer(
-	input_channel chan *payload.Payload,
-	output_channel chan *payload.EddyStoneUID,
+func PayloadReciever(
+	input_chan chan *payload.Payload,
+	redis_chan chan *payload.EddyStoneUID,
 	uid []byte,
 ) {
 	for {
-		p := <-input_channel
+		p := <-input_chan
 		adv := payload.InitAdvertisement(p.Data)
 		valid, frame := payload.ParseEddyStone(adv)
 		if valid {
 			switch frame.(type) {
 			case *payload.EddyStoneUID:
-				output_channel <- frame.(*payload.EddyStoneUID)
+				redis_chan <- frame.(*payload.EddyStoneUID)
 			default:
 			}
 		}
