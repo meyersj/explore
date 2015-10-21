@@ -57,7 +57,7 @@ func Communicate(conn net.Conn, payload_channel chan *payload.Payload) {
 		// so all bytes will be read into correct payload object
 		bytes, error := buffer.ReadBytes(0xFF)
 		if error == nil && len(bytes) > 0 {
-			//fmt.Println(bytes)
+			fmt.Println(bytes)
 			if is_client_finished(bytes, complete) {
 				fmt.Println("\nclose connection", time.Now(), "\n")
 				return
