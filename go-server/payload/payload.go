@@ -8,6 +8,7 @@ import (
 type Payload struct {
 	id     int
 	Length int
+	Flag   byte
 	Data   []byte
 }
 
@@ -16,7 +17,12 @@ func (p *Payload) AddBytes(bytes []byte) bool {
 		// after input bytes are appended payload
 		// will be complete
 		p.Data = append(p.Data, bytes...)
-		p.Data = p.Data[1 : len(p.Data)-1]
+		// Flag is second byte after Length
+		p.Flag = p.Data[1]
+		if len(p.Data) > 1 {
+			// skip Length+Flag and Delimiter bytes
+			p.Data = p.Data[2 : len(p.Data)-1]
+		}
 		return true
 	} else {
 		// more data will be recieved
@@ -26,7 +32,6 @@ func (p *Payload) AddBytes(bytes []byte) bool {
 }
 
 func (p *Payload) Print() {
-	//fmt.Println("rssi", p.Rssi)
 	fmt.Println("size", p.Length)
 	fmt.Println("data", p.Data, "\n")
 }
