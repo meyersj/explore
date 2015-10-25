@@ -1,9 +1,9 @@
 <resources>
     <string name="app_name">Bluetooth Tester</string>
 
-    <string name="title_section1">Scanner</string>
-    <string name="title_section2">Placeholder 2</string>
-    <string name="title_section3">Placeholder 3</string>
+    <string name="title_calibrate">Calibrate</string>
+    <string name="title_register">Register</string>
+    <string name="title_explore">Explore</string>
 
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
