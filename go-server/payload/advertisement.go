@@ -33,7 +33,7 @@ func (a *Advertisement) recursive_parse(offset int, count int, bytes []byte) {
 }
 
 func (a *Advertisement) Print() {
-	fmt.Println("Rssi:", a.Rssi)
+	//fmt.Println("Rssi:", a.Rssi)
 	fmt.Println("Raw Structures:")
 	for i := 0; i < len(a.Structures); i++ {
 		a.Structures[i].Print()
