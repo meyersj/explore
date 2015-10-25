@@ -76,6 +76,7 @@ public class RegisterClientFragment extends Fragment {
         super.onSaveInstanceState(state);
         Log.d(TAG, "save state");
         state.putString("client_name", clientNameEditText.getText().toString());
+        state.putString("status_text", statusText.getText().toString());
     }
 
     @Override
@@ -84,6 +85,7 @@ public class RegisterClientFragment extends Fragment {
         super.onActivityCreated(savedInstanceState);
         if (savedInstanceState != null) {
             clientNameEditText.setText(savedInstanceState.getString("client_name"));
+            statusText.setText(savedInstanceState.getString("status_text"));
         }
     }
 
@@ -91,74 +93,60 @@ public class RegisterClientFragment extends Fragment {
         registerClientButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                Utils.hideKeyboard(getActivity());
                 deviceID = Utils.getDeviceID(getContext());
                 clientName = clientNameEditText.getText().toString();
                 if(clientName.isEmpty()) {
-                    Toast.makeText(getActivity(), "Client name is required", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getActivity(), "Error", Toast.LENGTH_SHORT).show();
+                    statusText.setText("Error: Client name is required");
                 }
                 else {
                     byte[] payload = Protocol.registerClient(deviceID.getBytes(), clientName.getBytes());
-                    new Thread(new SendMessage(getContext(), payload)).start();
-                    //statusText.post(new RegisterMessage(getContext(), payload));
-
-                    //RegisterAsync a = new RegisterAsync();
-                    //byte[] payloads = {payload};
-                    //a.execute(payloads);
+                    RegisterClientAsync registerAsync = new RegisterClientAsync();
+                    byte[][] payloads = {payload};
+                    registerAsync.execute(payloads);
                 }
             }
         });
     }
 
-    /*
-    public class RegisterAsync extends AsyncTask<Byte, Void, Void> {
+
+    public class RegisterClientAsync extends AsyncTask<byte[], Void, String> {
 
         @Override
-        protected Void doInBackground(Byte... payloads) {
+        protected String doInBackground(byte[]... payloads) {
+            String response;
             Socket socket;
             try {
-                socket = new Socket("192.168.1.101", 8082);
+                socket = Utils.openSocket(getContext());
                 if (socket != null) {
                     DataOutputStream outStream = new DataOutputStream(socket.getOutputStream());
-                    //Log.d(TAG, "write " + Utils.getHexString(payloads[0]));
+                    Log.d(TAG, "write " + Utils.getHexString(payloads[0]));
                     outStream.write(payloads[0]);
-                    outStream.write(Protocol.closeConnection());
-
                     DataInputStream inStream = new DataInputStream(socket.getInputStream());
-                    Byte b = inStream.readByte();
-                }
-            } catch (IOException e) {
-                Log.d(TAG, e.toString());
-            }
-
-
-            return null;
-        }
-    }
-
-    public class RegisterMessage extends SendMessage {
-
-        public RegisterMessage(Context context, byte[] payload) {
-            super(context, payload);
-        }
-
-        @Override
-        public void run() {
-            Log.d(TAG, "send message");
-
-            if (openSocket()) {
-                send(payload);
-                Byte response = receive();
-                if (response != null && response.equals(Protocol.SUCCESS)) {
-                    statusText.setText("Updated client\n");
+                    Byte respByte = inStream.readByte();
+                    if (respByte != null && respByte.equals(Protocol.SUCCESS)) {
+                        response = "Registered client <" + clientName + "> successfully";
+                    }
+                    else {
+                        response = "Error: Server failed to save name";
+                    }
+                    outStream.write(Protocol.closeConnection());
+                    socket.close();
                 }
                 else {
-                    statusText.setText("Failed to updated client\n");
-                }
-                closeSocket();
-            }
-        }
+                    response = "Error: Failed to open socket";
 
+                }
+            } catch (IOException e) {
+                response = "Error: IOException: " + e.toString();
+            }
+            return response;
+        }
+        protected void onPostExecute(String response) {
+            Log.d(TAG, response);
+            statusText.setText(response);
+        }
     }
-    */
 
 }

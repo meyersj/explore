@@ -1,6 +1,7 @@
 package com.meyersj.tracker.register;
 
 import android.content.Context;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -11,6 +12,7 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.meyersj.tracker.ui.MainActivity;
@@ -19,6 +21,10 @@ import com.meyersj.tracker.R;
 import com.meyersj.tracker.socket.SendMessage;
 import com.meyersj.tracker.Utils;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.net.Socket;
 import java.util.ArrayList;
 
 import butterknife.Bind;
@@ -35,10 +41,12 @@ public class RegisterBeaconFragment extends Fragment {
     @Bind(R.id.stop_scan_beacon) Button stopScanButton;
     @Bind(R.id.nearby_list) ListView nearbyList;
     @Bind(R.id.register_beacon) Button registerBeaconButton;
+    @Bind(R.id.status_text) TextView statusText;
 
     private RegisterScanner scanner;
     private NearbyAdapter nearbyAdapter;
     private NearbyBeacon selectedBeacon;
+    private String beaconName;
 
     public static RegisterBeaconFragment newInstance(int sectionNumber) {
         RegisterBeaconFragment fragment = new RegisterBeaconFragment();
@@ -92,19 +100,22 @@ public class RegisterBeaconFragment extends Fragment {
         registerBeaconButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                Utils.hideKeyboard(getActivity());
                 if(selectedBeacon == null) {
-                    Toast.makeText(getActivity(), "No beacon selected", Toast.LENGTH_SHORT).show();
+                    statusText.setText("Error: No beacon selected");
                 }
                 else {
-                    String beaconName = beaconNameEditText.getText().toString();
+                    beaconName = beaconNameEditText.getText().toString();
                     if(beaconName.isEmpty()) {
-                        Toast.makeText(getActivity(), "Beacon name is required", Toast.LENGTH_SHORT).show();
+                        statusText.setText("Error: Beacon name is required");
                     }
                     else {
                         byte[] rawBytes = selectedBeacon.result.getScanRecord().getBytes();
                         Log.d(TAG, Utils.getHexString(rawBytes));
                         byte[] payload = Protocol.registerBeacon(beaconName.getBytes(), rawBytes);
-                        new Thread(new SendMessage(getContext(), payload)).start();
+                        RegisterBeaconAsync registerAsync = new RegisterBeaconAsync();
+                        byte[][] payloads = {payload};
+                        registerAsync.execute(payloads);
                     }
                 }
 
@@ -122,7 +133,7 @@ public class RegisterBeaconFragment extends Fragment {
         startScanButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Toast.makeText(getActivity(), "Start Calibration", Toast.LENGTH_SHORT).show();
+                statusText.setText("Starting beacon scan");
                 scanner.start();
             }
         });
@@ -130,11 +141,49 @@ public class RegisterBeaconFragment extends Fragment {
         stopScanButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Toast.makeText(getActivity(), "Stop Calibration", Toast.LENGTH_SHORT).show();
+                statusText.setText("Stopping beacon scan");
                 scanner.stop();
             }
         });
 
+    }
+
+    public class RegisterBeaconAsync extends AsyncTask<byte[], Void, String> {
+
+        @Override
+        protected String doInBackground(byte[]... payloads) {
+            String response;
+            Socket socket;
+            try {
+                socket = Utils.openSocket(getContext());
+                if (socket != null) {
+                    DataOutputStream outStream = new DataOutputStream(socket.getOutputStream());
+                    Log.d(TAG, "write " + Utils.getHexString(payloads[0]));
+                    outStream.write(payloads[0]);
+                    DataInputStream inStream = new DataInputStream(socket.getInputStream());
+                    Byte respByte = inStream.readByte();
+                    if (respByte != null && respByte.equals(Protocol.SUCCESS)) {
+                        response = "Registered beacon <" + beaconName + "> successfully";
+                    }
+                    else {
+                        response = "Error: Server failed to register beacon";
+                    }
+                    outStream.write(Protocol.closeConnection());
+                    socket.close();
+                }
+                else {
+                    response = "Error: Failed to open socket";
+
+                }
+            } catch (IOException e) {
+                response = "Error: IOException: " + e.toString();
+            }
+            return response;
+        }
+        protected void onPostExecute(String response) {
+            Log.d(TAG, response);
+            statusText.setText(response);
+        }
     }
 
 }

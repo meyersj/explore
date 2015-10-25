@@ -95,6 +95,7 @@ public class MainActivity extends AppCompatActivity
                 mTitle = getString(R.string.title_calibrate);
                 break;
         }
+        restoreActionBar();
     }
 
     public void restoreActionBar() {

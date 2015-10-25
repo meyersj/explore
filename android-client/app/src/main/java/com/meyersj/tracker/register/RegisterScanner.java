@@ -37,7 +37,6 @@ public class RegisterScanner {
 
     public void stop() {
         bleScanner.stopScan(scanCallback);
-        nearbyAdapter.clear();
     }
 
     private ScanCallback scanCallback = new ScanCallback() {
