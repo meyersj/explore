@@ -22,20 +22,21 @@
             android:orientation="horizontal">
 
             <TextView
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="Name"/>
             <EditText
                 android:id="@+id/client_name"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="3"
+                android:layout_weight="4"
                 android:hint="Enter public name or alias" />
         </LinearLayout>
 
         <Button
             android:id="@+id/register_client"
+            android:paddingTop="@dimen/activity_vertical_margin"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="right"
@@ -44,6 +45,7 @@
     </LinearLayout>
 
     <LinearLayout
+        android:paddingTop="@dimen/activity_vertical_margin"
         android:id="@+id/status_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -56,15 +58,15 @@
             android:orientation="horizontal">
 
             <TextView
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="Status"/>
             <TextView
                 android:id="@+id/status_text"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="3" />
+                android:layout_weight="4" />
         </LinearLayout>
 
     </LinearLayout>

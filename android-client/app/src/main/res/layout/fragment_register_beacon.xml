@@ -17,25 +17,50 @@
 
         <Button
             android:id="@+id/start_scan_beacon"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="Start Scan" />
 
         <Button
             android:id="@+id/stop_scan_beacon"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="Stop Scan" />
     </LinearLayout>
 
-    <ListView
-        android:id="@+id/nearby_list"
+
+    <LinearLayout
+        android:id="@+id/status_layout"
+        android:paddingTop="@dimen/activity_vertical_margin"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/control_layout"
+        android:layout_below="@id/control_layout"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Status"/>
+        <TextView
+            android:id="@+id/status_text"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="4" />
+    </LinearLayout>
+
+
+    <ListView
+        android:id="@+id/nearby_list"
+        android:paddingTop="@dimen/activity_vertical_margin"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/status_layout"
         android:layout_above="@+id/beacon_form"/>
+
+
 
     <LinearLayout
         android:id="@id/beacon_form"
@@ -45,16 +70,16 @@
         android:orientation="horizontal">
 
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="Beacon"/>
 
         <EditText
             android:id="@+id/beacon_name"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="3"
+            android:layout_weight="4"
             android:hint="Enter beacon name" />
 
     </LinearLayout>
