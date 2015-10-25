@@ -10,6 +10,12 @@ type Client struct {
 	client *redis.Client
 }
 
+type Message struct {
+	Key     string
+	Value   string
+	Timeout time.Duration
+}
+
 func InitClient() *Client {
 	client := redis.NewClient(&redis.Options{
 		Addr:     "localhost:6379",
