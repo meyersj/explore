@@ -42,7 +42,7 @@ func handle_bytes(p *payload.Payload, bytes []byte, done bool) (
 // main worker thread that handles communication with the client
 // bytes are parsed into separate payloads and passed
 // to a consumer thread
-func Communicate(conn net.Conn, redis_chan chan *data.Message) {
+func Communicate(conn net.Conn, redis_chan chan *data.ClientUpdate) {
 	fmt.Println("\nopen connection", time.Now(), "\n")
 	defer conn.Close()
 
@@ -83,12 +83,11 @@ func get_eddystone_ident(e *payload.EddyStoneUID) (string, int) {
 	return uid, instance
 }
 
-func RedisWriter(redis_chan chan *data.Message) {
+func RedisWriter(redis_chan chan *data.ClientUpdate) {
 	client := data.InitClient()
 	for {
-		message := <-redis_chan
-		client.Set(message.Key, message.Value, message.Timeout)
-		fmt.Println(message.Key, message.Value, message.Timeout)
+		update := <-redis_chan
+		client.ClientUpdate(update)
 	}
 }
 
@@ -98,86 +97,55 @@ func handle_register_beacon(p *payload.Payload) byte {
 
 	if len(message.Structures) == 2 {
 		name := string(message.Structures[0])
+		key := fmt.Sprintf("%0x", message.Structures[1])
+		// parse as eddystone
 		adv := payload.InitMessage(message.Structures[1])
 		valid, frame := payload.ParseEddyStone(0, adv)
-		key := "beacon:" + fmt.Sprintf("%0x", message.Structures[1])
 		if valid {
 			switch frame.(type) {
 			case *payload.EddyStoneUID:
 				uid, instance := get_eddystone_ident(frame.(*payload.EddyStoneUID))
-				key = "beacon:" + uid + "-" + strconv.Itoa(instance)
+				key = uid + "-" + strconv.Itoa(instance)
 			}
 		}
 		client := data.InitClient()
-		if client != nil {
-			client.Set(key, name, 0)
-			fmt.Println("SET", key, name, 0)
-			return 0x00
-		} else {
-			return 0x01
-		}
-	}
-	return 0x02
-}
-
-func handle_register_client(p *payload.Payload) byte {
-	message := payload.InitMessage(p.Data)
-	if len(message.Structures) == 2 {
-		device := string(message.Structures[0])
-		name := string(message.Structures[1])
-		key := "client:" + device
-		fmt.Println("REGISTER CLIENT:", device+"="+name)
-		client := data.InitClient()
-		client.Set(key, name, 0)
+		client.RegisterBeacon(key, name)
 		return 0x00
 	}
 	return 0x01
 }
 
-func handle_client_update(p *payload.Payload, redis_chan chan *data.Message) byte {
+func handle_register_client(p *payload.Payload) byte {
+	fmt.Println("REGISTER CLIENT")
+	message := payload.InitMessage(p.Data)
+	if len(message.Structures) == 2 {
+		device := string(message.Structures[0])
+		name := string(message.Structures[1])
+		client := data.InitClient()
+		client.RegisterClient(device, name)
+		return 0x00
+	}
+	return 0x01
+}
+
+func handle_client_update(p *payload.Payload, redis_chan chan *data.ClientUpdate) byte {
 	fmt.Println("CLIENT UPDATE")
 	message := payload.InitMessage(p.Data)
 	if len(message.Structures) == 3 {
 		rssi := int8(message.Structures[0][0])
 		device := string(message.Structures[1])
-		key := "update:" + device + ":" + fmt.Sprintf("%0x", message.Structures[2])
+		key := fmt.Sprintf("%0x", message.Structures[2])
 		adv := payload.InitMessage(message.Structures[2])
 		valid, frame := payload.ParseEddyStone(rssi, adv)
 		if valid {
 			switch frame.(type) {
 			case *payload.EddyStoneUID:
 				uid, instance := get_eddystone_ident(frame.(*payload.EddyStoneUID))
-				key = "update:" + device + ":"
-				key = key + uid + "-" + strconv.Itoa(instance)
+				key = uid + "-" + strconv.Itoa(instance)
 			}
 		}
-		value := strconv.Itoa(int(rssi))
-		redis_chan <- &data.Message{Key: key, Value: value, Timeout: time.Second * 60}
+		redis_chan <- &data.ClientUpdate{Device: device, Beacon: key, Rssi: int(rssi)}
 		return 0x00
 	}
 	return 0x01
 }
-
-/*
-func PayloadReciever(
-	input_chan chan *payload.Payload,
-	redis_chan chan *payload.EddyStoneUID,
-	uid []byte,
-) {
-	for {
-		// recieve finished Payload from Communicate thread
-		p := <-input_chan
-		// parse Payload data into Advertisement structures
-		adv := payload.InitAdvertisement(p.Data)
-		// parse Advertisement using EddyStone protocol
-		valid, frame := payload.ParseEddyStone(adv)
-		if valid {
-			switch frame.(type) {
-			case *payload.EddyStoneUID:
-				redis_chan <- frame.(*payload.EddyStoneUID)
-			default:
-			}
-		}
-	}
-}
-*/
