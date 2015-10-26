@@ -11,7 +11,7 @@ import (
 
 func main() {
 	conf := server.Read_config("test-config.toml")
-	redis_chan := make(chan *data.Message)
+	redis_chan := make(chan *data.ClientUpdate)
 
 	// start listening for client connections
 	listener, listener_error := net.Listen("tcp", ":"+conf.Port)
