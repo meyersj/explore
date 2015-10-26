@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	conf := server.Read_config("test-config.toml")
+	conf := server.Read_config("config.toml")
 	redis_chan := make(chan *data.ClientUpdate)
 
 	// start listening for client connections
