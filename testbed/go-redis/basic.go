@@ -31,8 +31,5 @@ func get(client *redis.Client, key string) string {
 }
 
 func main() {
-	client := NewClient()
-	client.Set("foo", "bar", 0)
-	r := client.Get("hello")
-	fmt.Println(r)
+	//client := NewClient()
 }

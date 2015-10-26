@@ -69,7 +69,7 @@ func Communicate(conn net.Conn, redis_chan chan *data.ClientUpdate) {
 				case protocol.REGISTER_BEACON:
 					conn.Write([]byte{handle_register_beacon(p)})
 				case protocol.CLIENT_UPDATE:
-					conn.Write([]byte{handle_client_update(p, redis_chan)})
+					conn.Write(handle_client_update(p, redis_chan))
 				case protocol.GET_STATUS:
 				}
 			}
@@ -128,7 +128,7 @@ func handle_register_client(p *payload.Payload) byte {
 	return 0x01
 }
 
-func handle_client_update(p *payload.Payload, redis_chan chan *data.ClientUpdate) byte {
+func handle_client_update(p *payload.Payload, redis_chan chan *data.ClientUpdate) []byte {
 	fmt.Println("CLIENT UPDATE")
 	message := payload.InitMessage(p.Data)
 	if len(message.Structures) == 3 {
@@ -144,8 +144,10 @@ func handle_client_update(p *payload.Payload, redis_chan chan *data.ClientUpdate
 				key = uid + "-" + strconv.Itoa(instance)
 			}
 		}
-		redis_chan <- &data.ClientUpdate{Device: device, Beacon: key, Rssi: int(rssi)}
-		return 0x00
+		client := data.InitClient()
+		update := &data.ClientUpdate{Device: device, Beacon: key, Rssi: int(rssi)}
+		return client.ClientUpdate(update)
+		//redis_chan <- &data.ClientUpdate{Device: device, Beacon: key, Rssi: int(rssi)}
 	}
-	return 0x01
+	return []byte{0x02}
 }

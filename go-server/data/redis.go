@@ -58,7 +58,7 @@ func (c *Client) RegisterBeacon(key string, name string) {
 	c.client.HSet(BEACONS, "beacon:"+key, name)
 }
 
-func (c *Client) ClientUpdate(update *ClientUpdate) {
+func (c *Client) ClientUpdate(update *ClientUpdate) []byte {
 	// update last_active entry for client
 	client_key := "client:" + update.Device
 	beacon_key := "beacon:" + update.Beacon
@@ -67,7 +67,13 @@ func (c *Client) ClientUpdate(update *ClientUpdate) {
 	data := strconv.Itoa(update.Rssi) + " " + secs
 	c.client.HSet(client_key, LAST_ACTIVE, secs)
 	c.client.HSet(client_key, beacon_key, data)
-	// put data somewhere
+
+	data, e := c.client.HGet(BEACONS, beacon_key).Result()
+	if e == nil {
+		bytes := []byte(data)
+		return append([]byte{0x00, byte(len(bytes))}, bytes...)
+	}
+	return []byte{0x01}
 }
 
 func (c *Client) Get(key string) string {
