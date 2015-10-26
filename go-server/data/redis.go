@@ -3,17 +3,25 @@ package data
 import (
 	"fmt"
 	"gopkg.in/redis.v3"
+	"strconv"
 	"time"
+)
+
+const (
+	ACTIVE_CLIENTS = "active_clients"
+	CLIENT_NAME    = "name"
+	LAST_ACTIVE    = "last_active"
+	BEACONS        = "registered_beacons"
 )
 
 type Client struct {
 	client *redis.Client
 }
 
-type Message struct {
-	Key     string
-	Value   string
-	Timeout time.Duration
+type ClientUpdate struct {
+	Device string
+	Beacon string
+	Rssi   int
 }
 
 func InitClient() *Client {
@@ -32,8 +40,54 @@ func (c *Client) Set(key string, value string, timeout time.Duration) {
 	}
 }
 
+func (c *Client) RegisterClient(device string, name string) {
+	now := time.Now()
+	secs := now.Unix()
+	client_key := "client:" + device
+	err := c.client.SAdd(ACTIVE_CLIENTS, client_key).Err()
+	if err != nil {
+		fmt.Println("Error:", err)
+	} else {
+		c.client.HSet(client_key, CLIENT_NAME, name)
+		c.client.HSet(client_key, LAST_ACTIVE, strconv.FormatInt(secs, 10))
+	}
+	c.GetStatus()
+}
+
+func (c *Client) RegisterBeacon(key string, name string) {
+	c.client.HSet(BEACONS, "beacon:"+key, name)
+}
+
+func (c *Client) ClientUpdate(update *ClientUpdate) {
+	// update last_active entry for client
+	client_key := "client:" + update.Device
+	beacon_key := "beacon:" + update.Beacon
+	now := time.Now()
+	secs := strconv.FormatInt(now.Unix(), 10)
+	data := strconv.Itoa(update.Rssi) + " " + secs
+	c.client.HSet(client_key, LAST_ACTIVE, secs)
+	c.client.HSet(client_key, beacon_key, data)
+	// put data somewhere
+}
+
 func (c *Client) Get(key string) string {
 	result := c.client.Get(key).String()
 	fmt.Println(result)
 	return result
+}
+
+func (c *Client) GetStatus() {
+	members, _ := c.client.SMembers(ACTIVE_CLIENTS).Result()
+	beacons, _ := c.client.HGetAll(BEACONS).Result()
+	if members != nil && beacons != nil {
+		for i := 0; i < len(beacons); i += 2 {
+			for j := 0; j < len(members); j++ {
+				data, e := c.client.HGet(members[j], beacons[i]).Result()
+				if e == nil {
+					fmt.Println(members[j], beacons[i], data)
+				}
+			}
+		}
+		//fmt.Println(beacons)
+	}
 }
