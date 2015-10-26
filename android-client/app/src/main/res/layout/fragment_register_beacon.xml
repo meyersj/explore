@@ -33,24 +33,52 @@
 
     <LinearLayout
         android:id="@+id/status_layout"
-        android:paddingTop="@dimen/activity_vertical_margin"
+        android:layout_below="@id/control_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/control_layout"
-        android:orientation="horizontal">
+        android:orientation="vertical">
 
-        <TextView
-            android:layout_width="0dp"
+        <LinearLayout
+
+            android:paddingTop="@dimen/activity_vertical_margin"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Status"/>
-        <TextView
-            android:id="@+id/status_text"
-            android:layout_width="0dp"
+
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Coordinates"/>
+            <TextView
+                android:id="@+id/coordinates_text"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="3" />
+        </LinearLayout>
+
+        <LinearLayout
+
+            android:paddingTop="@dimen/activity_vertical_margin"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="4" />
+            android:layout_below="@id/control_layout"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Status"/>
+            <TextView
+                android:id="@+id/status_text"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="3" />
+        </LinearLayout>
+
     </LinearLayout>
-
 
     <ListView
         android:id="@+id/nearby_list"
@@ -59,8 +87,6 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/status_layout"
         android:layout_above="@+id/beacon_form"/>
-
-
 
     <LinearLayout
         android:id="@id/beacon_form"
@@ -81,7 +107,6 @@
             android:layout_height="wrap_content"
             android:layout_weight="4"
             android:hint="Enter beacon name" />
-
     </LinearLayout>
 
     <Button
