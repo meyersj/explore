@@ -32,8 +32,6 @@ func get(client *redis.Client, key string) string {
 
 func main() {
 	client := NewClient()
-	fmt.Println(client)
-	set(client, "foo", "bar")
-	get(client, "foo")
-
+	r := client.HGet("client:00000000-52b6-7b59-a10f-2aae09d71f21", "last_active")
+	fmt.Println(r)
 }
