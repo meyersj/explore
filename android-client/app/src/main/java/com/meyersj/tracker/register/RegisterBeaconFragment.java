@@ -1,6 +1,7 @@
 package com.meyersj.tracker.register;
 
 import android.content.Context;
+import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -15,6 +16,15 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+
+import com.google.android.gms.common.api.GoogleApiClient.ConnectionCallbacks;
+import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener;
+import com.google.android.gms.location.LocationListener;
+
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
 import com.meyersj.tracker.ui.MainActivity;
 import com.meyersj.tracker.socket.Protocol;
 import com.meyersj.tracker.R;
@@ -31,7 +41,7 @@ import butterknife.Bind;
 import butterknife.ButterKnife;
 
 
-public class RegisterBeaconFragment extends Fragment {
+public class RegisterBeaconFragment extends Fragment implements ConnectionCallbacks, OnConnectionFailedListener, LocationListener {
 
     private static final String ARG_SECTION_NUMBER = "section_number";
     private final String TAG = getClass().getCanonicalName();
@@ -42,11 +52,16 @@ public class RegisterBeaconFragment extends Fragment {
     @Bind(R.id.nearby_list) ListView nearbyList;
     @Bind(R.id.register_beacon) Button registerBeaconButton;
     @Bind(R.id.status_text) TextView statusText;
+    @Bind(R.id.coordinates_text) TextView coordinatesText;
 
     private RegisterScanner scanner;
     private NearbyAdapter nearbyAdapter;
     private NearbyBeacon selectedBeacon;
     private String beaconName;
+    private GoogleApiClient googleApiClient;
+    private LocationRequest locationRequest;
+    private boolean requestingLocationUpdates = true;
+    private Location currentLocation;
 
     public static RegisterBeaconFragment newInstance(int sectionNumber) {
         RegisterBeaconFragment fragment = new RegisterBeaconFragment();
@@ -69,6 +84,8 @@ public class RegisterBeaconFragment extends Fragment {
         nearbyAdapter = new NearbyAdapter(getContext(), resultsList);
         nearbyList.setAdapter(nearbyAdapter);
         scanner = new RegisterScanner(nearbyAdapter);
+        buildGoogleApiClient();
+        createLocationRequest();
         setListeners();
         return rootView;
     }
@@ -95,6 +112,14 @@ public class RegisterBeaconFragment extends Fragment {
         }
     }
 
+    protected synchronized void buildGoogleApiClient() {
+        googleApiClient = new GoogleApiClient.Builder(getContext())
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .addApi(LocationServices.API)
+                .build();
+    }
+
     private void setListeners() {
 
         registerBeaconButton.setOnClickListener(new View.OnClickListener() {
@@ -118,13 +143,13 @@ public class RegisterBeaconFragment extends Fragment {
                         registerAsync.execute(payloads);
                     }
                 }
-
             }
         });
 
         nearbyList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                Utils.hideKeyboard(getActivity());
                 selectedBeacon = nearbyAdapter.getItem(i);
                 nearbyAdapter.setActiveBeacon(selectedBeacon);
             }
@@ -133,6 +158,9 @@ public class RegisterBeaconFragment extends Fragment {
         startScanButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                requestingLocationUpdates = true;
+                googleApiClient.connect();
+                Utils.hideKeyboard(getActivity());
                 statusText.setText("Starting beacon scan");
                 scanner.start();
             }
@@ -141,6 +169,8 @@ public class RegisterBeaconFragment extends Fragment {
         stopScanButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                stopLocationUpdates();
+                Utils.hideKeyboard(getActivity());
                 statusText.setText("Stopping beacon scan");
                 scanner.stop();
             }
@@ -148,7 +178,53 @@ public class RegisterBeaconFragment extends Fragment {
 
     }
 
+    @Override
+    public void onConnected(Bundle bundle) {
+        Log.d(TAG, "on connected");
+        if (requestingLocationUpdates) {
+            startLocationUpdates();
+        }
+
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {}
+
+    @Override
+    public void onConnectionFailed(ConnectionResult connectionResult) {}
+
+    @Override
+    public void onLocationChanged(Location location) {
+        currentLocation = location;
+        String lat = Double.toString(location.getLatitude());
+        String lon = Double.toString(location.getLongitude());
+        String accuracy = Double.toString(location.getAccuracy());
+        String coordinates = lat + " " + lon + " (" + accuracy + " accuracy)";
+        coordinatesText.setText(coordinates);
+    }
+
+    protected void createLocationRequest() {
+        locationRequest = new LocationRequest();
+        locationRequest.setInterval(10000);
+        locationRequest.setFastestInterval(5000);
+        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+    }
+
+    protected void startLocationUpdates() {
+        LocationServices.FusedLocationApi.requestLocationUpdates(googleApiClient, locationRequest, this);
+    }
+
+    protected void stopLocationUpdates() {
+        if (requestingLocationUpdates) {
+            LocationServices.FusedLocationApi.removeLocationUpdates(googleApiClient, this);
+             googleApiClient.disconnect();
+            requestingLocationUpdates = false;
+        }
+    }
+
     public class RegisterBeaconAsync extends AsyncTask<byte[], Void, String> {
+
+        private boolean success = false;
 
         @Override
         protected String doInBackground(byte[]... payloads) {
@@ -164,6 +240,7 @@ public class RegisterBeaconFragment extends Fragment {
                     Byte respByte = inStream.readByte();
                     if (respByte != null && respByte.equals(Protocol.SUCCESS)) {
                         response = "Registered beacon <" + beaconName + "> successfully";
+                        success = true;
                     }
                     else {
                         response = "Error: Server failed to register beacon";
@@ -183,7 +260,17 @@ public class RegisterBeaconFragment extends Fragment {
         protected void onPostExecute(String response) {
             Log.d(TAG, response);
             statusText.setText(response);
+            if (success) {
+                stopLocationUpdates();
+                scanner.stop();
+                selectedBeacon = null;
+                nearbyAdapter.setActiveBeacon(null);
+                nearbyAdapter.clear();
+                coordinatesText.setText("");
+            }
         }
     }
+
+
 
 }

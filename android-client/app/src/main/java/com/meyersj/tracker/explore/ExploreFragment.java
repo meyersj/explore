@@ -1,14 +1,21 @@
 package com.meyersj.tracker.explore;
 
+import android.bluetooth.le.ScanResult;
 import android.content.Context;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.meyersj.tracker.socket.SendMessage;
 import com.meyersj.tracker.ui.MainActivity;
 import com.meyersj.tracker.R;
 
@@ -23,10 +30,11 @@ public class ExploreFragment extends Fragment {
 
     @Bind(R.id.start_button) Button startButton;
     @Bind(R.id.stop_button) Button stopButton;
+    @Bind(R.id.status_text) TextView statusText;
 
     private ExploreScanner scanner;
 
-    public static ExploreFragment newInstance(int sectionNumber) {
+        public static ExploreFragment newInstance(int sectionNumber) {
         ExploreFragment fragment = new ExploreFragment();
         Bundle args = new Bundle();
         args.putInt(ARG_SECTION_NUMBER, sectionNumber);
@@ -41,7 +49,7 @@ public class ExploreFragment extends Fragment {
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_explore, container, false);
         ButterKnife.bind(this, rootView);
-        scanner = new ExploreScanner(getContext());
+        scanner = new ExploreScanner(getContext(), statusText);
         // add START and STOP scan button listeners
         setViewListeners();
         return rootView;
@@ -70,5 +78,6 @@ public class ExploreFragment extends Fragment {
             }
         });
     }
+
 
 }

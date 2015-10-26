@@ -5,9 +5,14 @@ import android.bluetooth.le.BluetoothLeScanner;
 import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanResult;
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.util.Log;
+import android.widget.TextView;
 
 import com.google.common.util.concurrent.RateLimiter;
+import com.meyersj.tracker.R;
 import com.meyersj.tracker.Utils;
 
 import java.io.DataOutputStream;
@@ -34,19 +39,32 @@ public class ExploreScanner {
     private int port;
     private RateLimiter rateLimiter;
     private boolean active = false;
+    private ExploreTask exploreTask;
+    private static Handler handler;
+    private TextView statusTest;
 
-
-    public ExploreScanner(Context context) {
+    public ExploreScanner(Context context, final TextView statusText) {
         this.context = context;
         BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if(bluetoothAdapter != null)
             bleScanner = bluetoothAdapter.getBluetoothLeScanner();
-
+        this.statusTest = statusText;
         queue = new ConcurrentLinkedQueue<>();
         Properties properties = Utils.getProperties(context, "config.properties");
         host = properties.getProperty("Host");
         port = Integer.valueOf(properties.getProperty("Port"));
         rateLimiter = RateLimiter.create(2);
+        exploreTask = new ExploreTask(this);
+        handler = new Handler(Looper.getMainLooper()) {
+
+            @Override
+            public void handleMessage(Message inputMessage) {
+                ExploreTask task = (ExploreTask) inputMessage.obj;
+                Log.d(TAG + "TASK", task.code);
+                statusText.setText(task.code);
+            }
+
+        };
     }
 
     public void start() {
@@ -91,6 +109,7 @@ public class ExploreScanner {
                     boolean disconnect = false;
                     while (!disconnect) {
                         BeaconBroadcast broadcast = queue.poll();
+                        exploreTask.updateBroadcast(broadcast);
                         if(broadcast != null) {
                             sendDataOverSocket(socket, broadcast);
                             Log.d(TAG, "SENT: " + broadcast.toString());
@@ -121,6 +140,12 @@ public class ExploreScanner {
                 Log.d(TAG, "IOException sendDataOverSocket: " + e.toString());
             }
         }
+    }
+
+    // Handle status messages from tasks
+    public void handleBroadcast(ExploreTask task) {
+        Message completeMessage = handler.obtainMessage(0, task);
+                completeMessage.sendToTarget();
     }
 
 }

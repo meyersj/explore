@@ -11,6 +11,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationServices;
 import com.meyersj.tracker.R;
 import com.meyersj.tracker.calibrate.CalibrateFragment;
 import com.meyersj.tracker.explore.ExploreFragment;
@@ -23,6 +25,7 @@ public class MainActivity extends AppCompatActivity
     private final String TAG = getClass().getCanonicalName();
     private NavigationDrawerFragment mNavigationDrawerFragment;
     private CharSequence mTitle;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,7 +40,11 @@ public class MainActivity extends AppCompatActivity
         mNavigationDrawerFragment.setUp(
                 R.id.navigation_drawer,
                 (DrawerLayout) findViewById(R.id.drawer_layout));
+
+
+
     }
+
 
     @Override
     public void onNavigationDrawerItemSelected(int position) {
