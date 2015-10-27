@@ -3,31 +3,25 @@ package com.meyersj.tracker.register;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.meyersj.tracker.R;
 import com.meyersj.tracker.Utils;
-import com.meyersj.tracker.socket.Protocol;
-import com.meyersj.tracker.socket.SendMessage;
+import com.meyersj.tracker.protocol.Protocol;
 import com.meyersj.tracker.ui.MainActivity;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.concurrent.Executor;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -114,6 +108,7 @@ public class RegisterClientFragment extends Fragment {
 
     public class RegisterClientAsync extends AsyncTask<byte[], Void, String> {
 
+        private boolean error = true;
         @Override
         protected String doInBackground(byte[]... payloads) {
             String response;
@@ -128,9 +123,11 @@ public class RegisterClientFragment extends Fragment {
                     Byte respByte = inStream.readByte();
                     if (respByte != null && respByte.equals(Protocol.SUCCESS)) {
                         response = "Registered client <" + clientName + "> successfully";
+                        error = false;
                     }
                     else {
                         response = "Error: Server failed to save name";
+
                     }
                     outStream.write(Protocol.closeConnection());
                     socket.close();
@@ -147,6 +144,9 @@ public class RegisterClientFragment extends Fragment {
         protected void onPostExecute(String response) {
             Log.d(TAG, response);
             statusText.setText(response);
+            if(!error) {
+                clientNameEditText.setText("");
+            }
         }
     }
 

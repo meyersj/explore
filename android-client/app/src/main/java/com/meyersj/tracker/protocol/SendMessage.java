@@ -1,16 +1,13 @@
-package com.meyersj.tracker.socket;
+package com.meyersj.tracker.protocol;
 
 import android.content.Context;
 import android.util.Log;
 
 import com.meyersj.tracker.Utils;
-import com.meyersj.tracker.socket.Protocol;
 
-import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Properties;

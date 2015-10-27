@@ -14,7 +14,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -26,9 +25,8 @@ import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.meyersj.tracker.ui.MainActivity;
-import com.meyersj.tracker.socket.Protocol;
+import com.meyersj.tracker.protocol.Protocol;
 import com.meyersj.tracker.R;
-import com.meyersj.tracker.socket.SendMessage;
 import com.meyersj.tracker.Utils;
 
 import java.io.DataInputStream;
@@ -120,6 +118,8 @@ public class RegisterBeaconFragment extends Fragment implements ConnectionCallba
                 .build();
     }
 
+
+
     private void setListeners() {
 
         registerBeaconButton.setOnClickListener(new View.OnClickListener() {
@@ -135,9 +135,12 @@ public class RegisterBeaconFragment extends Fragment implements ConnectionCallba
                         statusText.setText("Error: Beacon name is required");
                     }
                     else {
+                        //Double lat = selectedBeacon.lat;
+                        byte[] lat = selectedBeacon.getLatitudeBytes();
+                        byte[] lon = selectedBeacon.getLongitudeBytes();
                         byte[] rawBytes = selectedBeacon.result.getScanRecord().getBytes();
                         Log.d(TAG, Utils.getHexString(rawBytes));
-                        byte[] payload = Protocol.registerBeacon(beaconName.getBytes(), rawBytes);
+                        byte[] payload = Protocol.registerBeacon(beaconName.getBytes(), rawBytes, lat, lon);
                         RegisterBeaconAsync registerAsync = new RegisterBeaconAsync();
                         byte[][] payloads = {payload};
                         registerAsync.execute(payloads);
@@ -151,6 +154,11 @@ public class RegisterBeaconFragment extends Fragment implements ConnectionCallba
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 Utils.hideKeyboard(getActivity());
                 selectedBeacon = nearbyAdapter.getItem(i);
+
+                if (currentLocation != null) {
+                    selectedBeacon.lat = currentLocation.getLatitude();
+                    selectedBeacon.lon = currentLocation.getLongitude();
+                }
                 nearbyAdapter.setActiveBeacon(selectedBeacon);
             }
         });
@@ -200,6 +208,10 @@ public class RegisterBeaconFragment extends Fragment implements ConnectionCallba
         String lon = Double.toString(location.getLongitude());
         String accuracy = Double.toString(location.getAccuracy());
         String coordinates = lat + " " + lon + " (" + accuracy + " accuracy)";
+        if (selectedBeacon != null) {
+            selectedBeacon.lat = location.getLatitude();
+            selectedBeacon.lon = location.getLongitude();
+        }
         coordinatesText.setText(coordinates);
     }
 
@@ -266,7 +278,7 @@ public class RegisterBeaconFragment extends Fragment implements ConnectionCallba
                 selectedBeacon = null;
                 nearbyAdapter.setActiveBeacon(null);
                 nearbyAdapter.clear();
-                coordinatesText.setText("");
+                beaconNameEditText.setText("");
             }
         }
     }

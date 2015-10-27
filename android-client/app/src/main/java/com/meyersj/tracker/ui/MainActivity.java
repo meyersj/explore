@@ -25,6 +25,7 @@ public class MainActivity extends AppCompatActivity
     private final String TAG = getClass().getCanonicalName();
     private NavigationDrawerFragment mNavigationDrawerFragment;
     private CharSequence mTitle;
+    private String currentFragTag;
 
 
     @Override
@@ -40,9 +41,6 @@ public class MainActivity extends AppCompatActivity
         mNavigationDrawerFragment.setUp(
                 R.id.navigation_drawer,
                 (DrawerLayout) findViewById(R.id.drawer_layout));
-
-
-
     }
 
 
@@ -75,6 +73,10 @@ public class MainActivity extends AppCompatActivity
         }
 
         if (!fragTag.isEmpty()) {
+            if (currentFragTag != null) {
+                fragmentManager.saveFragmentInstanceState(fragmentManager.findFragmentByTag(currentFragTag));
+            }
+
             oldFrag = fragmentManager.findFragmentByTag(fragTag);
             if (oldFrag != null) {
                 newFrag = oldFrag;
@@ -82,6 +84,7 @@ public class MainActivity extends AppCompatActivity
             FragmentTransaction transaction = fragmentManager.beginTransaction();
             transaction.addToBackStack(null);
             transaction.replace(R.id.container, newFrag, fragTag).commit();
+            currentFragTag = fragTag;
         }
     }
 
@@ -111,6 +114,8 @@ public class MainActivity extends AppCompatActivity
         actionBar.setDisplayShowTitleEnabled(true);
         actionBar.setTitle(mTitle);
     }
+
+
 
 
     @Override

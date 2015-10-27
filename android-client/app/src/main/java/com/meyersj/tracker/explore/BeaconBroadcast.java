@@ -4,7 +4,7 @@ import android.bluetooth.le.ScanResult;
 import android.content.Context;
 import android.util.Log;
 
-import com.meyersj.tracker.socket.Protocol;
+import com.meyersj.tracker.protocol.Protocol;
 import com.meyersj.tracker.Utils;
 
 
