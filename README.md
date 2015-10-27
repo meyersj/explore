@@ -1,4 +1,4 @@
-# Explorer
+# Explore
 
 Android app to interact with your environment through BLE advertisements. A back-end
 server written in Go and Redis supports the app.
