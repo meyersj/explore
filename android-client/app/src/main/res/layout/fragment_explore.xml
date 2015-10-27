@@ -51,7 +51,7 @@
     </LinearLayout>
 
     <ListView
-        android:id="@+id/active_list"
+        android:id="@+id/nearby_list"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/status_layout"
