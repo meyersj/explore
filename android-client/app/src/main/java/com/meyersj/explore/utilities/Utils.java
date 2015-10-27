@@ -1,4 +1,4 @@
-package com.meyersj.explorer;
+package com.meyersj.explore.utilities;
 
 import android.app.Activity;
 import android.content.Context;
@@ -6,6 +6,8 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.telephony.TelephonyManager;
 import android.view.inputmethod.InputMethodManager;
+
+import com.meyersj.explore.utilities.Cons;
 
 import java.io.IOException;
 import java.io.InputStream;

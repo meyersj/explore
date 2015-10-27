@@ -1,4 +1,4 @@
-package com.meyersj.explorer.explore;
+package com.meyersj.explore.explore;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -13,10 +13,10 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.meyersj.explorer.communicator.AdvertisementCommunicator;
-import com.meyersj.explorer.MainActivity;
-import com.meyersj.explorer.R;
-import com.meyersj.explorer.NearbyBeacon;
+import com.meyersj.explore.communicate.AdvertisementCommunicator;
+import com.meyersj.explore.activity.MainActivity;
+import com.meyersj.explore.R;
+import com.meyersj.explore.nearby.NearbyBeacon;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
@@ -36,7 +36,7 @@ public class ExploreFragment extends Fragment {
     @Bind(R.id.nearby_list) ListView nearbyList;
 
 
-    private com.meyersj.explorer.communicator.AdvertisementCommunicator communicator;
+    private com.meyersj.explore.communicate.AdvertisementCommunicator communicator;
     private ExploreBeaconAdapter exploreBeaconAdapter;
 
         public static ExploreFragment newInstance(int sectionNumber) {

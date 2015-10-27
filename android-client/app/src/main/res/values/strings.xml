@@ -1,14 +1,14 @@
 <resources>
-    <string name="app_name">Bluetooth Tester</string>
+    <string name="app_name">Explore</string>
 
+    <string name="title_explore">Explore</string>
     <string name="title_calibrate">Calibrate</string>
     <string name="title_register">Register</string>
-    <string name="title_explore">Explore</string>
 
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
 
+    <string name="intent_settings">com.meyersj.explore.SETTINGS</string>
     <string name="action_example">Some Action</string>
-
     <string name="action_settings">Settings</string>
 </resources>

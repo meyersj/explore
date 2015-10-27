@@ -1,4 +1,4 @@
-package com.meyersj.explorer;
+package com.meyersj.explore.activity;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -11,6 +11,7 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
 
+import com.meyersj.explore.R;
 
 
 public class SettingsActivity extends AppCompatActivity {

@@ -1,4 +1,4 @@
-package com.meyersj.explorer.communicator;
+package com.meyersj.explore.communicate;
 
 import android.os.Bundle;
 import android.os.Message;

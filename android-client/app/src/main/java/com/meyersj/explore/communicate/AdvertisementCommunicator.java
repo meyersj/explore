@@ -1,4 +1,4 @@
-package com.meyersj.explorer.communicator;
+package com.meyersj.explore.communicate;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.le.BluetoothLeScanner;
@@ -8,7 +8,7 @@ import android.content.Context;
 import android.os.Handler;
 
 import com.google.common.util.concurrent.RateLimiter;
-import com.meyersj.explorer.Utils;
+import com.meyersj.explore.utilities.Utils;
 
 
 public class AdvertisementCommunicator extends ThreadedCommunicator {

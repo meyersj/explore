@@ -1,4 +1,4 @@
-package com.meyersj.explorer;
+package com.meyersj.explore.nearby;
 
 import java.nio.ByteBuffer;
 

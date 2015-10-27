@@ -1,4 +1,4 @@
-package com.meyersj.explorer.register_beacon;
+package com.meyersj.explore.register_beacon;
 
 import android.os.Handler;
 import android.os.Message;

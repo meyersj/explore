@@ -1,4 +1,4 @@
-package com.meyersj.explorer.explore;
+package com.meyersj.explore.explore;
 
 import android.os.Handler;
 import android.os.Message;

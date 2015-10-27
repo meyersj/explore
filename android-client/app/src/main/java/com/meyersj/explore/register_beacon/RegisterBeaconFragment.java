@@ -1,4 +1,4 @@
-package com.meyersj.explorer.register_beacon;
+package com.meyersj.explore.register_beacon;
 
 import android.content.Context;
 import android.location.Location;
@@ -25,12 +25,12 @@ import com.google.android.gms.location.LocationListener;
 
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
-import com.meyersj.explorer.NearbyBeacon;
-import com.meyersj.explorer.communicator.AdvertisementCommunicator;
-import com.meyersj.explorer.MainActivity;
-import com.meyersj.explorer.communicator.Protocol;
-import com.meyersj.explorer.R;
-import com.meyersj.explorer.Utils;
+import com.meyersj.explore.nearby.NearbyBeacon;
+import com.meyersj.explore.communicate.AdvertisementCommunicator;
+import com.meyersj.explore.activity.MainActivity;
+import com.meyersj.explore.communicate.Protocol;
+import com.meyersj.explore.R;
+import com.meyersj.explore.utilities.Utils;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;

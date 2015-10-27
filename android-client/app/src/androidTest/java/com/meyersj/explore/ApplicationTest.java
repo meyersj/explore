@@ -1,4 +1,4 @@
-package com.meyersj.explorer;
+package com.meyersj.explore;
 
 import android.app.Application;
 import android.test.ApplicationTestCase;

@@ -1,4 +1,4 @@
-package com.meyersj.explorer.register_client;
+package com.meyersj.explore.register_client;
 
 import android.content.Context;
 import android.os.AsyncTask;
@@ -13,10 +13,10 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.meyersj.explorer.R;
-import com.meyersj.explorer.Utils;
-import com.meyersj.explorer.communicator.Protocol;
-import com.meyersj.explorer.MainActivity;
+import com.meyersj.explore.R;
+import com.meyersj.explore.utilities.Utils;
+import com.meyersj.explore.communicate.Protocol;
+import com.meyersj.explore.activity.MainActivity;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;

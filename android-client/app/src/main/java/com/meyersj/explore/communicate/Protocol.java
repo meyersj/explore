@@ -1,10 +1,10 @@
-package com.meyersj.explorer.communicator;
+package com.meyersj.explore.communicate;
 
 
 import android.content.Context;
 import android.util.Log;
 
-import com.meyersj.explorer.Utils;
+import com.meyersj.explore.utilities.Utils;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
