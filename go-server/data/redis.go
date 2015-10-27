@@ -1,6 +1,7 @@
 package data
 
 import (
+	"encoding/binary"
 	"fmt"
 	"gopkg.in/redis.v3"
 	"strconv"
@@ -54,8 +55,8 @@ func (c *Client) RegisterClient(device string, name string) {
 	c.GetStatus()
 }
 
-func (c *Client) RegisterBeacon(key string, name string) {
-	c.client.HSet(BEACONS, "beacon:"+key, name)
+func (c *Client) RegisterBeacon(key string, name string, coordinates string) {
+	c.client.HSet(BEACONS, "beacon:"+key, name+":"+coordinates)
 }
 
 func (c *Client) ClientUpdate(update *ClientUpdate) []byte {
@@ -71,9 +72,11 @@ func (c *Client) ClientUpdate(update *ClientUpdate) []byte {
 	data, e := c.client.HGet(BEACONS, beacon_key).Result()
 	if e == nil {
 		bytes := []byte(data)
-		return append([]byte{0x00, byte(len(bytes))}, bytes...)
+		length := make([]byte, 4)
+		binary.BigEndian.PutUint32(length, uint32(len(bytes)))
+		return append(append(length, 0x00), bytes...)
 	}
-	return []byte{0x01}
+	return []byte{0x00, 0x00, 0x00, 0x01, 0x01}
 }
 
 func (c *Client) Get(key string) string {

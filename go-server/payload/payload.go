@@ -1,6 +1,7 @@
 package payload
 
 import (
+	"encoding/binary"
 	"fmt"
 )
 
@@ -17,11 +18,11 @@ func (p *Payload) AddBytes(bytes []byte) bool {
 		// after input bytes are appended payload
 		// will be complete
 		p.Data = append(p.Data, bytes...)
-		// Flag is second byte after Length
-		p.Flag = p.Data[1]
-		if len(p.Data) > 1 {
-			// skip Length+Flag and Delimiter bytes
-			p.Data = p.Data[2 : len(p.Data)-1]
+		// Flag is fifth byte after length
+		p.Flag = p.Data[4]
+		if len(p.Data) > 4 {
+			// skip length+flag and delimiter bytes
+			p.Data = p.Data[5 : len(p.Data)-1]
 		}
 		return true
 	} else {
@@ -38,5 +39,6 @@ func (p *Payload) Print() {
 
 func InitPayload(bytes []byte) *Payload {
 	// create new Payload object with correct defaults
-	return &Payload{Length: int(bytes[0]), Data: []byte{}}
+	length := int(binary.BigEndian.Uint32(bytes[0:4])) + 4
+	return &Payload{Length: length, Data: []byte{}}
 }

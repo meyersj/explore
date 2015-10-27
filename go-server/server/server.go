@@ -7,6 +7,7 @@ import (
 	"bufio"
 	"encoding/binary"
 	"fmt"
+	"math"
 	"net"
 	"strconv"
 	//"strings"
@@ -63,6 +64,7 @@ func Communicate(conn net.Conn, redis_chan chan *data.ClientUpdate) {
 				switch p.Flag {
 				case protocol.CLOSE_CONN:
 					fmt.Println("\nclose connection", time.Now(), "\n")
+					conn.Write([]byte{0x00})
 					return
 				case protocol.REGISTER_CLIENT:
 					conn.Write([]byte{handle_register_client(p)})
@@ -91,15 +93,25 @@ func RedisWriter(redis_chan chan *data.ClientUpdate) {
 	}
 }
 
+func GetCoordinates(lat []byte, lon []byte) string {
+	lat_float := math.Float64frombits(binary.BigEndian.Uint64(lat))
+	lon_float := math.Float64frombits(binary.BigEndian.Uint64(lon))
+	lat_string := strconv.FormatFloat(lat_float, 'f', 5, 64)
+	lon_string := strconv.FormatFloat(lon_float, 'f', 5, 64)
+	return lat_string + " " + lon_string
+}
+
 func handle_register_beacon(p *payload.Payload) byte {
 	fmt.Println("REGISTER BEACON")
 	message := payload.InitMessage(p.Data)
-
-	if len(message.Structures) == 2 {
+	if len(message.Structures) == 3 {
 		name := string(message.Structures[0])
-		key := fmt.Sprintf("%0x", message.Structures[1])
+		key := fmt.Sprintf("%0x", message.Structures[2])
+		lat := message.Structures[1][0:8]
+		lon := message.Structures[1][8:16]
+		coordinates := GetCoordinates(lat, lon)
 		// parse as eddystone
-		adv := payload.InitMessage(message.Structures[1])
+		adv := payload.InitMessage(message.Structures[2])
 		valid, frame := payload.ParseEddyStone(0, adv)
 		if valid {
 			switch frame.(type) {
@@ -109,7 +121,7 @@ func handle_register_beacon(p *payload.Payload) byte {
 			}
 		}
 		client := data.InitClient()
-		client.RegisterBeacon(key, name)
+		client.RegisterBeacon(key, name, coordinates)
 		return 0x00
 	}
 	return 0x01
@@ -147,7 +159,6 @@ func handle_client_update(p *payload.Payload, redis_chan chan *data.ClientUpdate
 		client := data.InitClient()
 		update := &data.ClientUpdate{Device: device, Beacon: key, Rssi: int(rssi)}
 		return client.ClientUpdate(update)
-		//redis_chan <- &data.ClientUpdate{Device: device, Beacon: key, Rssi: int(rssi)}
 	}
 	return []byte{0x02}
 }
