@@ -1,4 +1,4 @@
-package com.meyersj.tracker.register;
+package com.meyersj.tracker.register_client;
 
 import android.content.Context;
 import android.os.AsyncTask;
@@ -15,8 +15,8 @@ import android.widget.Toast;
 
 import com.meyersj.tracker.R;
 import com.meyersj.tracker.Utils;
-import com.meyersj.tracker.protocol.Protocol;
-import com.meyersj.tracker.ui.MainActivity;
+import com.meyersj.tracker.communicator.Protocol;
+import com.meyersj.tracker.MainActivity;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -114,7 +114,7 @@ public class RegisterClientFragment extends Fragment {
             String response;
             Socket socket;
             try {
-                socket = Utils.openSocket(getContext());
+                socket = Protocol.openCommunication(getContext());
                 if (socket != null) {
                     DataOutputStream outStream = new DataOutputStream(socket.getOutputStream());
                     Log.d(TAG, "write " + Utils.getHexString(payloads[0]));
@@ -129,8 +129,7 @@ public class RegisterClientFragment extends Fragment {
                         response = "Error: Server failed to save name";
 
                     }
-                    outStream.write(Protocol.closeConnection());
-                    socket.close();
+                    Protocol.closeCommunication(socket);
                 }
                 else {
                     response = "Error: Failed to open socket";
