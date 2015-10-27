@@ -1,4 +1,4 @@
-package com.meyersj.tracker.communicator;
+package com.meyersj.explorer.communicator;
 
 import android.content.Context;
 import android.os.Handler;

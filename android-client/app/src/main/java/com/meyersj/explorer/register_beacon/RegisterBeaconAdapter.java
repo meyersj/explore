@@ -1,9 +1,9 @@
-package com.meyersj.tracker.register_beacon;
+package com.meyersj.explorer.register_beacon;
 
 import android.content.Context;
 
-import com.meyersj.tracker.NearbyAdapter;
-import com.meyersj.tracker.NearbyBeacon;
+import com.meyersj.explorer.NearbyAdapter;
+import com.meyersj.explorer.NearbyBeacon;
 
 import java.util.ArrayList;
 

@@ -1,4 +1,4 @@
-package com.meyersj.tracker;
+package com.meyersj.explorer;
 
 
 import android.content.Intent;
@@ -13,9 +13,9 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import com.meyersj.tracker.explore.ExploreFragment;
-import com.meyersj.tracker.register_client.RegisterClientFragment;
-import com.meyersj.tracker.register_beacon.RegisterBeaconFragment;
+import com.meyersj.explorer.explore.ExploreFragment;
+import com.meyersj.explorer.register_client.RegisterClientFragment;
+import com.meyersj.explorer.register_beacon.RegisterBeaconFragment;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks {

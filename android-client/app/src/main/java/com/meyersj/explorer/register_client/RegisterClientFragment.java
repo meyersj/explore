@@ -1,4 +1,4 @@
-package com.meyersj.tracker.register_client;
+package com.meyersj.explorer.register_client;
 
 import android.content.Context;
 import android.os.AsyncTask;
@@ -13,10 +13,10 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.meyersj.tracker.R;
-import com.meyersj.tracker.Utils;
-import com.meyersj.tracker.communicator.Protocol;
-import com.meyersj.tracker.MainActivity;
+import com.meyersj.explorer.R;
+import com.meyersj.explorer.Utils;
+import com.meyersj.explorer.communicator.Protocol;
+import com.meyersj.explorer.MainActivity;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;

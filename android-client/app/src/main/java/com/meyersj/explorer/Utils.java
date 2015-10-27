@@ -1,4 +1,4 @@
-package com.meyersj.tracker;
+package com.meyersj.explorer;
 
 import android.app.Activity;
 import android.content.Context;
