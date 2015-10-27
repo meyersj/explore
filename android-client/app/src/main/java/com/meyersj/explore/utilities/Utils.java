@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.telephony.TelephonyManager;
+import android.util.Log;
 import android.view.inputmethod.InputMethodManager;
 
 import com.meyersj.explore.utilities.Cons;
@@ -28,6 +29,13 @@ public class Utils {
         } catch (IOException e) {
         }
         return properties;
+    }
+
+    public static String getNewRelicToken(Context context) {
+        Properties properties = getProperties(context, Cons.CONFIG_FILE);
+        String newRelicToken = properties.getProperty(Cons.NEWRELIC_TOKEN, "");
+        Log.d("NEWRELIC", newRelicToken);
+        return newRelicToken;
     }
 
     public static String getHost(Context context) {

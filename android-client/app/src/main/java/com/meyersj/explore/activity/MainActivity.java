@@ -18,6 +18,8 @@ import com.meyersj.explore.R;
 import com.meyersj.explore.explore.ExploreFragment;
 import com.meyersj.explore.register_client.RegisterClientFragment;
 import com.meyersj.explore.register_beacon.RegisterBeaconFragment;
+import com.meyersj.explore.utilities.Utils;
+import com.newrelic.agent.android.NewRelic;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks {
@@ -36,6 +38,11 @@ public class MainActivity extends AppCompatActivity
         mNavigationDrawerFragment = (NavigationDrawerFragment)
                 getSupportFragmentManager().findFragmentById(R.id.navigation_drawer);
         mTitle = getTitle();
+
+        String newRelicToken = Utils.getNewRelicToken(getApplicationContext());
+        if (!newRelicToken.isEmpty()) {
+            NewRelic.withApplicationToken(newRelicToken).start(this.getApplication());
+        }
 
         // Set up the drawer.
         mNavigationDrawerFragment.setUp(
