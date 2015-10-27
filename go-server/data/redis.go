@@ -71,9 +71,10 @@ func (c *Client) ClientUpdate(update *ClientUpdate) []byte {
 
 	data, e := c.client.HGet(BEACONS, beacon_key).Result()
 	if e == nil {
-		bytes := []byte(data)
+		response := beacon_key + "|" + data
+		bytes := []byte(response)
 		length := make([]byte, 4)
-		binary.BigEndian.PutUint32(length, uint32(len(bytes)))
+		binary.BigEndian.PutUint32(length, uint32(len(bytes)+1))
 		return append(append(length, 0x00), bytes...)
 	}
 	return []byte{0x00, 0x00, 0x00, 0x01, 0x01}
@@ -97,6 +98,5 @@ func (c *Client) GetStatus() {
 				}
 			}
 		}
-		//fmt.Println(beacons)
 	}
 }
