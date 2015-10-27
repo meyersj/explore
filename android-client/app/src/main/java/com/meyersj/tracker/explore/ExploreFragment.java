@@ -9,13 +9,17 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.meyersj.tracker.ui.MainActivity;
+import com.meyersj.tracker.communicator.AdvertisementCommunicator;
+import com.meyersj.tracker.MainActivity;
 import com.meyersj.tracker.R;
+import com.meyersj.tracker.NearbyBeacon;
 
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -29,9 +33,11 @@ public class ExploreFragment extends Fragment {
     @Bind(R.id.start_button) Button startButton;
     @Bind(R.id.stop_button) Button stopButton;
     @Bind(R.id.status_text) TextView statusText;
+    @Bind(R.id.nearby_list) ListView nearbyList;
 
-    private int count = 0;
-    private ExplorerCommunicator ExplorerCommunicator;
+
+    private com.meyersj.tracker.communicator.AdvertisementCommunicator communicator;
+    private ExploreBeaconAdapter exploreBeaconAdapter;
 
         public static ExploreFragment newInstance(int sectionNumber) {
         ExploreFragment fragment = new ExploreFragment();
@@ -49,7 +55,10 @@ public class ExploreFragment extends Fragment {
         Log.d(TAG, "create view");
         View rootView = inflater.inflate(R.layout.fragment_explore, container, false);
         ButterKnife.bind(this, rootView);
-        ExplorerCommunicator = new ExplorerCommunicator(getContext(), new ExploreHandler(this));
+        ArrayList<NearbyBeacon> resultsList = new ArrayList<>();
+        exploreBeaconAdapter = new ExploreBeaconAdapter(getContext(), resultsList);
+        nearbyList.setAdapter(exploreBeaconAdapter);
+        communicator = new AdvertisementCommunicator(getContext(), new ExploreHandler(this));
         setViewListeners();
         return rootView;
     }
@@ -73,7 +82,7 @@ public class ExploreFragment extends Fragment {
     public void onDestroyView() {
         super.onDestroyView();
         Log.d(TAG, "destroy view");
-        ExplorerCommunicator.stop();
+        communicator.stop();
     }
 
     private void setViewListeners() {
@@ -81,8 +90,9 @@ public class ExploreFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 Toast.makeText(getActivity(), "Start Exploring", Toast.LENGTH_SHORT).show();
-                ExplorerCommunicator.start();
+                communicator.start();
                 statusText.setText("Scan started");
+                exploreBeaconAdapter.clear();
             }
         });
 
@@ -90,25 +100,59 @@ public class ExploreFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 Toast.makeText(getActivity(), "Stop Exploring", Toast.LENGTH_SHORT).show();
-                ExplorerCommunicator.stop();
+                communicator.stop();
                 statusText.setText("Scan stopped");
+                exploreBeaconAdapter.clear();
             }
         });
     }
 
-
+    // callback function from ExploreHandler
+    // returns response received from socket
     public void update(Message message) {
-        byte flag = message.getData().getByte("response_flag");
-        if (flag == 0x00) {
-            byte[] response = message.getData().getByteArray("response");
-            try {
-                String responseString = new String(response, "UTF-8");
-                statusText.setText(String.valueOf(++count) + " " + responseString);
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
+        Bundle data = message.getData();
+        if (data != null) {
+            boolean registered = false;
+            byte[] advertisement = data.getByteArray("advertisement");
+            String  name = data.getString("hash");
+            Integer rssi = data.getInt("rssi");
+            byte flag = data.getByte("response_flag");
+            Log.d(TAG, "FLAG: " + flag);
+            switch (flag) {
+
+                case 0x00:
+                    registered = true;
+                    byte[] response = data.getByteArray("response");
+                    if (response != null) {
+                        try {
+                            name = new String(response, "UTF-8");
+                            name = parseResponseName(name);
+                        } catch (UnsupportedEncodingException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    break;
+                case 0x01:
+                    name = "Unregistered";
+                    break;
+            }
+            exploreBeaconAdapter.add(new NearbyBeacon(registered, advertisement, name, rssi));
+        }
+    }
+
+    public String parseResponseName(String value) {
+        String[] split1 = value.split("\\|");
+        if (split1.length == 2) {
+            String[] split2 = split1[1].split(":");
+            if (split2.length == 2) {
+                String name = split2[0];
+                String coordinates = split2[1];
+                return name + " " + coordinates;
             }
         }
+        return "Unregistered";
 
     }
+
 
 }
