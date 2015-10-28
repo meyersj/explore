@@ -16,6 +16,7 @@ import android.widget.Toast;
 import com.meyersj.explore.communicate.AdvertisementCommunicator;
 import com.meyersj.explore.activity.MainActivity;
 import com.meyersj.explore.R;
+import com.meyersj.explore.communicate.ProtocolMessage;
 import com.meyersj.explore.nearby.NearbyBeacon;
 
 import java.io.UnsupportedEncodingException;
@@ -126,7 +127,7 @@ public class ExploreFragment extends Fragment {
                     if (response != null) {
                         try {
                             name = new String(response, "UTF-8");
-                            name = parseResponseName(name);
+                            name = ProtocolMessage.parseBeaconName(name);
                         } catch (UnsupportedEncodingException e) {
                             e.printStackTrace();
                         }
@@ -139,20 +140,4 @@ public class ExploreFragment extends Fragment {
             exploreBeaconAdapter.add(new NearbyBeacon(registered, advertisement, name, rssi));
         }
     }
-
-    public String parseResponseName(String value) {
-        String[] split1 = value.split("\\|");
-        if (split1.length == 2) {
-            String[] split2 = split1[1].split(":");
-            if (split2.length == 2) {
-                String name = split2[0];
-                String coordinates = split2[1];
-                return name + " " + coordinates;
-            }
-        }
-        return "Unregistered";
-
-    }
-
-
 }

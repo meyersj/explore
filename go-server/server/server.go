@@ -5,6 +5,7 @@ import (
 	"../payload"
 	"../protocol"
 	"bufio"
+	"crypto/sha1"
 	"encoding/binary"
 	"fmt"
 	"math"
@@ -101,25 +102,21 @@ func GetCoordinates(lat []byte, lon []byte) string {
 	return lat_string + " " + lon_string
 }
 
+func generate_key(advertisement []byte) string {
+	hash := sha1.Sum(advertisement)
+	hex := fmt.Sprintf("%0x", hash)
+	return hex
+}
+
 func handle_register_beacon(p *payload.Payload) byte {
 	fmt.Println("REGISTER BEACON")
 	message := payload.InitMessage(p.Data)
 	if len(message.Structures) == 3 {
 		name := string(message.Structures[0])
-		key := fmt.Sprintf("%0x", message.Structures[2])
+		key := generate_key(message.Structures[2])
 		lat := message.Structures[1][0:8]
 		lon := message.Structures[1][8:16]
 		coordinates := GetCoordinates(lat, lon)
-		// parse as eddystone
-		adv := payload.InitMessage(message.Structures[2])
-		valid, frame := payload.ParseEddyStone(0, adv)
-		if valid {
-			switch frame.(type) {
-			case *payload.EddyStoneUID:
-				uid, instance := get_eddystone_ident(frame.(*payload.EddyStoneUID))
-				key = uid + "-" + strconv.Itoa(instance)
-			}
-		}
 		client := data.InitClient()
 		client.RegisterBeacon(key, name, coordinates)
 		return 0x00
@@ -146,16 +143,7 @@ func handle_client_update(p *payload.Payload, redis_chan chan *data.ClientUpdate
 	if len(message.Structures) == 3 {
 		rssi := int8(message.Structures[0][0])
 		device := string(message.Structures[1])
-		key := fmt.Sprintf("%0x", message.Structures[2])
-		adv := payload.InitMessage(message.Structures[2])
-		valid, frame := payload.ParseEddyStone(rssi, adv)
-		if valid {
-			switch frame.(type) {
-			case *payload.EddyStoneUID:
-				uid, instance := get_eddystone_ident(frame.(*payload.EddyStoneUID))
-				key = uid + "-" + strconv.Itoa(instance)
-			}
-		}
+		key := generate_key(message.Structures[2])
 		client := data.InitClient()
 		update := &data.ClientUpdate{Device: device, Beacon: key, Rssi: int(rssi)}
 		return client.ClientUpdate(update)

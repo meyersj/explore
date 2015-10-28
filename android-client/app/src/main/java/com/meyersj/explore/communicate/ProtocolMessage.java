@@ -30,4 +30,18 @@ public class ProtocolMessage {
         message.setData(bundle);
         return message;
     }
+
+
+    public static String parseBeaconName(String value) {
+        String[] split1 = value.split("\\|");
+        if (split1.length == 2) {
+            String[] split2 = split1[1].split(":");
+            if (split2.length == 2) {
+                String name = split2[0];
+                String coordinates = split2[1];
+                return name + " " + coordinates;
+            }
+        }
+        return "Unregistered";
+    }
 }

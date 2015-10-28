@@ -80,11 +80,11 @@ public class MainActivity extends AppCompatActivity
                 fragmentManager.saveFragmentInstanceState(fragmentManager.findFragmentByTag(currentFragTag));
             }
 
+            FragmentTransaction transaction = fragmentManager.beginTransaction();
             oldFrag = fragmentManager.findFragmentByTag(fragTag);
             if (oldFrag != null) {
                 newFrag = oldFrag;
             }
-            FragmentTransaction transaction = fragmentManager.beginTransaction();
             transaction.addToBackStack(null);
             transaction.replace(R.id.container, newFrag, fragTag).commit();
             currentFragTag = fragTag;
@@ -107,14 +107,17 @@ public class MainActivity extends AppCompatActivity
 
         }
         Log.d(TAG, "on section attached " + mTitle);
-        //restoreActionBar();
+        restoreActionBar();
     }
 
     public void restoreActionBar() {
         ActionBar actionBar = getSupportActionBar();
-        actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
-        actionBar.setDisplayShowTitleEnabled(true);
-        actionBar.setTitle(mTitle);
+        //actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
+        //actionBar.setIcon(getDrawable(R.drawable.ic_location_city_black_24dp));
+        actionBar.setLogo(getDrawable(R.drawable.ic_location_city_black_24dp));
+        actionBar.setDisplayUseLogoEnabled(true);
+        //actionBar.setDisplayShowTitleEnabled(true);
+        //actionBar.setTitle(mTitle);
     }
 
 

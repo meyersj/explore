@@ -25,6 +25,7 @@ import com.google.android.gms.location.LocationListener;
 
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+import com.meyersj.explore.communicate.ProtocolMessage;
 import com.meyersj.explore.nearby.NearbyBeacon;
 import com.meyersj.explore.communicate.AdvertisementCommunicator;
 import com.meyersj.explore.activity.MainActivity;
@@ -181,6 +182,7 @@ public class RegisterBeaconFragment extends Fragment implements ConnectionCallba
                 googleApiClient.connect();
                 Utils.hideKeyboard(getActivity());
                 statusText.setText("Starting beacon scan");
+                registerBeaconAdapter.clear();
                 communicator.start();
             }
         });
@@ -191,6 +193,7 @@ public class RegisterBeaconFragment extends Fragment implements ConnectionCallba
                 stopLocationUpdates();
                 Utils.hideKeyboard(getActivity());
                 statusText.setText("Stopping beacon scan");
+                registerBeaconAdapter.clear();
                 communicator.stop();
             }
         });
@@ -295,18 +298,30 @@ public class RegisterBeaconFragment extends Fragment implements ConnectionCallba
     public void update(Message message) {
         Bundle data = message.getData();
         if (data != null) {
+            boolean registered = false;
             byte[] advertisement = data.getByteArray("advertisement");
             String  name = data.getString("hash");
             Integer rssi = data.getInt("rssi");
-            byte[] response = data.getByteArray("response");
-            if (response != null) {
-                try {
-                    name = new String(response, "UTF-8");
-                } catch (UnsupportedEncodingException e) {
-                    e.printStackTrace();
-                }
+            byte flag = data.getByte("response_flag");
+            Log.d(TAG, "FLAG: " + flag);
+            switch (flag) {
+                case 0x00:
+                    registered = true;
+                    byte[] response = data.getByteArray("response");
+                    if (response != null) {
+                        try {
+                            name = new String(response, "UTF-8");
+                            name = ProtocolMessage.parseBeaconName(name);
+                        } catch (UnsupportedEncodingException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    break;
+                case 0x01:
+                    name = "Unregistered " + name;
+                    break;
             }
-            registerBeaconAdapter.add(new NearbyBeacon(advertisement, name, rssi));
+            registerBeaconAdapter.add(new NearbyBeacon(registered, advertisement, name, rssi));
         }
     }
 }
