@@ -1,8 +1,11 @@
 package data
 
 import (
+	"crypto/sha1"
+	"encoding/binary"
 	"fmt"
 	"gopkg.in/redis.v3"
+	"math"
 	"strconv"
 	"strings"
 	"time"
@@ -96,4 +99,22 @@ func (c *Client) PutMessage(message *ClientMessage) (string, string) {
 		return client, name
 	}
 	return "anon", name
+}
+
+func BuildCoordinates(lat []byte, lon []byte) string {
+	lat_float := math.Float64frombits(binary.BigEndian.Uint64(lat))
+	lon_float := math.Float64frombits(binary.BigEndian.Uint64(lon))
+	lat_string := strconv.FormatFloat(lat_float, 'f', 5, 64)
+	lon_string := strconv.FormatFloat(lon_float, 'f', 5, 64)
+	return lat_string + " " + lon_string
+}
+
+func BuildClientKey(device []byte) string {
+	return "client:" + string(device)
+}
+
+func BuildBeaconKey(advertisement []byte) string {
+	hash := sha1.Sum(advertisement)
+	hex := fmt.Sprintf("%0x", hash)
+	return "beacon:" + hex
 }

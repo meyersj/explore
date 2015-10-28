@@ -1,7 +1,6 @@
 package server
 
 import (
-	"../handler"
 	"../payload"
 	"../protocol"
 	"bufio"
@@ -28,16 +27,16 @@ func Communicate(conn net.Conn) {
 				fmt.Println("\nconnection closed", time.Now(), "\n")
 				return
 			case protocol.REGISTER_CLIENT:
-				response := handler.RegisterClient(p)
+				response := RegisterClient(p)
 				conn.Write(response)
 			case protocol.REGISTER_BEACON:
-				response := handler.RegisterBeacon(p)
+				response := RegisterBeacon(p)
 				conn.Write(response)
 			case protocol.CLIENT_UPDATE:
-				response := handler.ClientUpdate(p)
+				response := ClientUpdate(p)
 				conn.Write(response)
 			case protocol.PUT_MESSAGE:
-				response := handler.PutMessage(p)
+				response := PutMessage(p)
 				conn.Write(response)
 			}
 		}
