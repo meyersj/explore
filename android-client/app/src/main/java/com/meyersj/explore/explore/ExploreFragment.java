@@ -8,6 +8,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -17,6 +18,7 @@ import android.widget.Toast;
 import com.meyersj.explore.communicate.AdvertisementCommunicator;
 import com.meyersj.explore.activity.MainActivity;
 import com.meyersj.explore.R;
+import com.meyersj.explore.communicate.Protocol;
 import com.meyersj.explore.communicate.ProtocolMessage;
 import com.meyersj.explore.nearby.NearbyBeacon;
 import com.meyersj.explore.utilities.Cons;
@@ -46,6 +48,7 @@ public class ExploreFragment extends Fragment {
 
     private com.meyersj.explore.communicate.AdvertisementCommunicator communicator;
     private ExploreBeaconAdapter exploreBeaconAdapter;
+    private byte[] selectedAdvertisement;
 
         public static ExploreFragment newInstance(int sectionNumber) {
         ExploreFragment fragment = new ExploreFragment();
@@ -111,7 +114,16 @@ public class ExploreFragment extends Fragment {
                 Toast.makeText(getActivity(), "Stop Exploring", Toast.LENGTH_SHORT).show();
                 communicator.stop();
                 statusText.setText("Scan stopped");
-                exploreBeaconAdapter.clear();
+                //exploreBeaconAdapter.clear();
+            }
+        });
+
+        nearbyList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                NearbyBeacon selectedBeacon = exploreBeaconAdapter.getItem(i);
+                exploreBeaconAdapter.setActiveBeacon(selectedBeacon);
+                selectedAdvertisement = selectedBeacon.advertisement;
             }
         });
 
@@ -124,19 +136,16 @@ public class ExploreFragment extends Fragment {
                     statusText.setText("Message is empty");
                 }
                 else {
-                    Log.d(TAG, message);
-                    Collection<NearbyBeacon> beacons = exploreBeaconAdapter.getNearbyBeacons().values();
-                    for (NearbyBeacon beacon: beacons) {
-                        // generate and send message for each or in one message?
-
-                        Log.d(TAG, beacon.beaconKey + " " + Utils.getHexString(beacon.advertisement));
+                    if (selectedAdvertisement != null) {
+                        byte[] device = Utils.getDeviceID(getContext()).getBytes();
+                        byte[] beacon = selectedAdvertisement;
+                        byte[] payload = Protocol.sendMessage(device, message.getBytes(), beacon);
+                        ProtocolMessage protocolMessage = new ProtocolMessage();
+                        protocolMessage.payload = payload;
+                        protocolMessage.payloadFlag = Protocol.PUT_MESSAGE;
+                        communicator.addMessage(protocolMessage);
                     }
                 }
-
-                //Toast.makeText(getActivity(), "Stop Exploring", Toast.LENGTH_SHORT).show();
-                //communicator.stop();
-                //statusText.setText("Scan stopped");
-                exploreBeaconAdapter.clear();
             }
         });
     }
@@ -152,6 +161,22 @@ public class ExploreFragment extends Fragment {
             Integer rssi = data.getInt(Cons.RSSI);
             byte[] flags = data.getByteArray(Cons.RESPONSE_FLAGS);
             Log.d(TAG, "FLAG: " + flags[0]);
+
+            switch(data.getByte(Cons.PAYLOAD_FLAGS)) {
+                case Protocol.PUT_MESSAGE:
+                    byte[] response = data.getByteArray(Cons.RESPONSE);
+                    if (response != null) {
+                        try {
+                            String responseString = new String(response, "UTF-8");
+                            statusText.setText(responseString);
+                        } catch (UnsupportedEncodingException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    Log.d(TAG, "protocol message");
+                    return;
+            }
+
             switch (flags[0]) {
                 case 0x00:
                     registered = true;

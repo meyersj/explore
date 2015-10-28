@@ -42,7 +42,7 @@ public abstract class ThreadedCommunicator {
         }
     }
 
-    protected void addMessage(ProtocolMessage message) {
+    public void addMessage(ProtocolMessage message) {
         try {
             queue.put(message);
         } catch (InterruptedException e) {

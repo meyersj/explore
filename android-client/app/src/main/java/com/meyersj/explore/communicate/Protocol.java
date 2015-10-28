@@ -27,9 +27,7 @@ public class Protocol {
     public static final byte REGISTER_CLIENT = (byte) 0x01;
     public static final byte REGISTER_BEACON = (byte) 0x02;
     public static final byte CLIENT_UPDATE = (byte) 0x03;
-
-
-    public static final byte GET_STATUS = (byte) 0x04;
+    public static final byte PUT_MESSAGE = (byte) 0x04;
     public static final byte DELIMITER = (byte) 0xFF;
 
 
@@ -119,11 +117,31 @@ public class Protocol {
         return newPayload(payload);
     }
 
-    public static byte[] sendMessage(byte[] device, byte[][] beacons) {
-        
-
-
-        return null;
+    public static byte[] sendMessage(byte[] device, byte[] message, byte[] beacon) {
+        // length
+        // flag
+        // length (device)
+        // device
+        // length (message)
+        // message
+        // length (beacon)
+        // beacon
+        byte[] payload = new byte[4+device.length+message.length+beacon.length];
+        int index = 0;
+        payload[index++] = Protocol.PUT_MESSAGE;
+        payload[index++] = (byte) device.length;
+        for(int i = 0; i < device.length; i++) {
+            payload[index++] = device[i];
+        }
+        payload[index++] = (byte) message.length;
+        for(int i = 0; i < message.length; i++) {
+            payload[index++] = message[i];
+        }
+        payload[index++] = (byte) beacon.length;
+        for(int i = 0; i < beacon.length; i++) {
+            payload[index++] = beacon[i];
+        }
+        return newPayload(payload);
     }
 
     public static Socket openCommunication(Context context) throws IOException {

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"gopkg.in/redis.v3"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -22,6 +23,12 @@ type ClientUpdate struct {
 	Device string
 	Beacon string
 	Rssi   int
+}
+
+type ClientMessage struct {
+	Device  string
+	Beacon  string
+	Message string
 }
 
 func InitClient() *Client {
@@ -50,7 +57,6 @@ func (c *Client) RegisterClient(device string, name string) {
 		c.client.HSet(device, CLIENT_NAME, name)
 		c.client.HSet(device, LAST_ACTIVE, strconv.FormatInt(secs, 10))
 	}
-	c.GetStatus()
 }
 
 func (c *Client) RegisterBeacon(key string, name string, coordinates string) {
@@ -77,17 +83,17 @@ func (c *Client) Get(key string) string {
 	return result
 }
 
-func (c *Client) GetStatus() {
-	members, _ := c.client.SMembers(ACTIVE_CLIENTS).Result()
-	beacons, _ := c.client.HGetAll(BEACONS).Result()
-	if members != nil && beacons != nil {
-		for i := 0; i < len(beacons); i += 2 {
-			for j := 0; j < len(members); j++ {
-				data, e := c.client.HGet(members[j], beacons[i]).Result()
-				if e == nil {
-					fmt.Println(members[j], beacons[i], data)
-				}
-			}
-		}
+func (c *Client) PutMessage(message *ClientMessage) (string, string) {
+	c.client.LPush("messages:"+message.Beacon, message.Device+"|"+message.Message)
+	beacon, e := c.client.HGet(BEACONS, message.Beacon).Result()
+	name := "beacon"
+	if e == nil {
+		data := strings.Split(beacon, ":")
+		name = data[0]
 	}
+	client, e := c.client.HGet(message.Device, CLIENT_NAME).Result()
+	if e == nil {
+		return client, name
+	}
+	return "anon", name
 }

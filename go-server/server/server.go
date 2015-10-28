@@ -70,7 +70,9 @@ func Communicate(conn net.Conn) {
 				case protocol.CLIENT_UPDATE:
 					response := handler.ClientUpdate(p)
 					conn.Write(response)
-				case protocol.GET_STATUS:
+				case protocol.PUT_MESSAGE:
+					response := handler.PutMessage(p)
+					conn.Write(response)
 				}
 			}
 		}

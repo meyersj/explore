@@ -87,3 +87,20 @@ func ClientUpdate(p *payload.Payload) []byte {
 	fmt.Println("ERROR: CLIENT UPDATE: not parsed properly")
 	return build_response(0x02, []byte{})
 }
+
+func PutMessage(p *payload.Payload) []byte {
+	message := payload.InitMessage(p.Data)
+	if len(message.Structures) == 3 {
+		device := "client:" + string(message.Structures[0])
+		client_message := string(message.Structures[1])
+		key := generate_beacon_key(message.Structures[2])
+		fmt.Println("\n"+device, key, client_message, "\n")
+		client := data.InitClient()
+		msg := &data.ClientMessage{Device: device, Beacon: key, Message: client_message}
+		client_name, beacon_name := client.PutMessage(msg)
+		display := "<" + beacon_name + "> " + client_name + ": " + client_message
+		return build_response(0x00, []byte(display))
+	}
+	return build_response(0x01, []byte("error"))
+
+}
