@@ -10,21 +10,6 @@ import (
 	"strconv"
 )
 
-func build_response(flag byte, data []byte) []byte {
-	// payload
-	//
-	// | 4 bytes | 4 bytes | n bytes |
-	// | length  | flags   | data    |
-	length := make([]byte, 4)
-	flags := []byte{flag, 0x00, 0x00, 0x00}
-	binary.BigEndian.PutUint32(length, uint32(len(data)))
-	response := append([]byte{}, length...)
-	response = append(response, flags...)
-	response = append(response, data...)
-	return response
-
-}
-
 func GetCoordinates(lat []byte, lon []byte) string {
 	lat_float := math.Float64frombits(binary.BigEndian.Uint64(lat))
 	lon_float := math.Float64frombits(binary.BigEndian.Uint64(lon))
@@ -51,10 +36,10 @@ func RegisterBeacon(p *payload.Payload) []byte {
 		client := data.InitClient()
 		client.RegisterBeacon(key, name, coordinates)
 		fmt.Println("REGISTER BEACON", key, name, coordinates)
-		return build_response(0x00, []byte(key))
+		return payload.Build(0x00, []byte(key))
 	}
 	fmt.Println("ERROR: REGISTER BEACON: not parsed properly")
-	return build_response(0x01, []byte{})
+	return payload.Build(0x01, []byte{})
 }
 
 func RegisterClient(p *payload.Payload) []byte {
@@ -65,10 +50,10 @@ func RegisterClient(p *payload.Payload) []byte {
 		client := data.InitClient()
 		client.RegisterClient(device, name)
 		fmt.Println("REGISTER CLIENT", device, name)
-		return build_response(0x00, []byte{})
+		return payload.Build(0x00, []byte{})
 	}
 	fmt.Println("ERROR: REGISTER CLIENT: not parsed properly")
-	return build_response(0x01, []byte{})
+	return payload.Build(0x01, []byte{})
 }
 
 func ClientUpdate(p *payload.Payload) []byte {
@@ -81,11 +66,11 @@ func ClientUpdate(p *payload.Payload) []byte {
 		update := &data.ClientUpdate{Device: device, Beacon: key, Rssi: int(rssi)}
 		flag, data := client.ClientUpdate(update)
 		fmt.Println("CLIENT UPDATE", device, key, rssi)
-		return build_response(flag, data)
+		return payload.Build(flag, data)
 
 	}
 	fmt.Println("ERROR: CLIENT UPDATE: not parsed properly")
-	return build_response(0x02, []byte{})
+	return payload.Build(0x02, []byte{})
 }
 
 func PutMessage(p *payload.Payload) []byte {
@@ -99,8 +84,8 @@ func PutMessage(p *payload.Payload) []byte {
 		msg := &data.ClientMessage{Device: device, Beacon: key, Message: client_message}
 		client_name, beacon_name := client.PutMessage(msg)
 		display := "<" + beacon_name + "> " + client_name + ": " + client_message
-		return build_response(0x00, []byte(display))
+		return payload.Build(0x00, []byte(display))
 	}
-	return build_response(0x01, []byte("error"))
+	return payload.Build(0x01, []byte("error"))
 
 }
