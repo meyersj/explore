@@ -17,7 +17,7 @@ func build_response(flag byte, data []byte) []byte {
 	// | length  | flags   | data    |
 	length := make([]byte, 4)
 	flags := []byte{flag, 0x00, 0x00, 0x00}
-	binary.BigEndian.PutUint32(length, uint32(len(data)+4))
+	binary.BigEndian.PutUint32(length, uint32(len(data)))
 	response := append([]byte{}, length...)
 	response = append(response, flags...)
 	response = append(response, data...)

@@ -59,8 +59,7 @@ func Communicate(conn net.Conn) {
 			if done {
 				switch p.Flag {
 				case protocol.CLOSE_CONN:
-					fmt.Println("\nclose connection", time.Now(), "\n")
-					conn.Write([]byte{0x00})
+					fmt.Println("\nconnection closed", time.Now(), "\n")
 					return
 				case protocol.REGISTER_CLIENT:
 					response := handler.RegisterClient(p)
