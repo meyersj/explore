@@ -43,13 +43,12 @@ func (c *Client) Set(key string, value string, timeout time.Duration) {
 func (c *Client) RegisterClient(device string, name string) {
 	now := time.Now()
 	secs := now.Unix()
-	client_key := "client:" + device
-	err := c.client.SAdd(ACTIVE_CLIENTS, client_key).Err()
+	err := c.client.SAdd(ACTIVE_CLIENTS, device).Err()
 	if err != nil {
 		fmt.Println("Error:", err)
 	} else {
-		c.client.HSet(client_key, CLIENT_NAME, name)
-		c.client.HSet(client_key, LAST_ACTIVE, strconv.FormatInt(secs, 10))
+		c.client.HSet(device, CLIENT_NAME, name)
+		c.client.HSet(device, LAST_ACTIVE, strconv.FormatInt(secs, 10))
 	}
 	c.GetStatus()
 }

@@ -21,7 +21,6 @@ func build_response(flag byte, data []byte) []byte {
 	response := append([]byte{}, length...)
 	response = append(response, flags...)
 	response = append(response, data...)
-	fmt.Println(response)
 	return response
 
 }
@@ -51,26 +50,28 @@ func RegisterBeacon(p *payload.Payload) []byte {
 		coordinates := GetCoordinates(lat, lon)
 		client := data.InitClient()
 		client.RegisterBeacon(key, name, coordinates)
+		fmt.Println("REGISTER BEACON", key, name, coordinates)
 		return build_response(0x00, []byte(key))
 	}
+	fmt.Println("ERROR: REGISTER BEACON: not parsed properly")
 	return build_response(0x01, []byte{})
 }
 
 func RegisterClient(p *payload.Payload) []byte {
-	fmt.Println("REGISTER CLIENT")
 	message := payload.InitMessage(p.Data)
 	if len(message.Structures) == 2 {
-		device := string(message.Structures[0])
+		device := "client:" + string(message.Structures[0])
 		name := string(message.Structures[1])
 		client := data.InitClient()
 		client.RegisterClient(device, name)
+		fmt.Println("REGISTER CLIENT", device, name)
 		return build_response(0x00, []byte{})
 	}
+	fmt.Println("ERROR: REGISTER CLIENT: not parsed properly")
 	return build_response(0x01, []byte{})
 }
 
 func ClientUpdate(p *payload.Payload) []byte {
-	fmt.Println("CLIENT UPDATE")
 	message := payload.InitMessage(p.Data)
 	if len(message.Structures) == 3 {
 		rssi := int8(message.Structures[0][0])
@@ -79,7 +80,10 @@ func ClientUpdate(p *payload.Payload) []byte {
 		client := data.InitClient()
 		update := &data.ClientUpdate{Device: device, Beacon: key, Rssi: int(rssi)}
 		flag, data := client.ClientUpdate(update)
+		fmt.Println("CLIENT UPDATE", device, key, rssi)
 		return build_response(flag, data)
+
 	}
+	fmt.Println("ERROR: CLIENT UPDATE: not parsed properly")
 	return build_response(0x02, []byte{})
 }
