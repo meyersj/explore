@@ -3,7 +3,7 @@ package com.meyersj.explore.nearby;
 import java.nio.ByteBuffer;
 
 public class NearbyBeacon {
-    public String hash;
+    public String beaconKey;
     public Integer count;
     public Integer rssi;
     public byte[] advertisement;
@@ -13,17 +13,17 @@ public class NearbyBeacon {
     public boolean registered;
 
 
-    public NearbyBeacon(byte[] advertisement, String hash, Integer rssi) {
+    public NearbyBeacon(byte[] advertisement, String beaconKey, Integer rssi) {
         this.advertisement = advertisement;
-        this.hash = hash;
+        this.beaconKey = beaconKey;
         this.rssi = rssi;
         this.count = 0;
         this.registered = false;
     }
 
-    public NearbyBeacon(boolean registered, byte[] advertisement, String hash, Integer rssi) {
+    public NearbyBeacon(boolean registered, byte[] advertisement, String beaconKey, Integer rssi) {
         this.advertisement = advertisement;
-        this.hash = hash;
+        this.beaconKey = beaconKey;
         this.rssi = rssi;
         this.count = 0;
         this.registered = registered;

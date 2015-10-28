@@ -14,6 +14,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.meyersj.explore.R;
+import com.meyersj.explore.communicate.ProtocolResponse;
 import com.meyersj.explore.utilities.Utils;
 import com.meyersj.explore.communicate.Protocol;
 import com.meyersj.explore.activity.MainActivity;
@@ -111,34 +112,33 @@ public class RegisterClientFragment extends Fragment {
         private boolean error = true;
         @Override
         protected String doInBackground(byte[]... payloads) {
-            String response;
+            String display;
             Socket socket;
             try {
                 socket = Protocol.openCommunication(getContext());
                 if (socket != null) {
                     DataOutputStream outStream = new DataOutputStream(socket.getOutputStream());
+                    DataInputStream inStream = new DataInputStream(socket.getInputStream());
                     Log.d(TAG, "write " + Utils.getHexString(payloads[0]));
                     outStream.write(payloads[0]);
-                    DataInputStream inStream = new DataInputStream(socket.getInputStream());
-                    Byte respByte = inStream.readByte();
-                    if (respByte != null && respByte.equals(Protocol.SUCCESS)) {
-                        response = "Registered client <" + clientName + "> successfully";
+                    ProtocolResponse response = ProtocolResponse.read(inStream);
+                    Byte flag = response.getFlags()[0];
+                    if (flag.equals(Protocol.SUCCESS)) {
+                        display = "Registered client <" + clientName + "> successfully";
                         error = false;
                     }
                     else {
-                        response = "Error: Server failed to save name";
-
+                        display = "Error: Server failed to save name";
                     }
                     Protocol.closeCommunication(socket);
                 }
                 else {
-                    response = "Error: Failed to open socket";
-
+                    display = "Error: Failed to open socket";
                 }
             } catch (IOException e) {
-                response = "Error: IOException: " + e.toString();
+                display = "Error: IOException: " + e.toString();
             }
-            return response;
+            return display;
         }
         protected void onPostExecute(String response) {
             Log.d(TAG, response);

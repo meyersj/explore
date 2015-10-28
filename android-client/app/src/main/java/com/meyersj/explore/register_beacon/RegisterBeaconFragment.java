@@ -26,11 +26,13 @@ import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.meyersj.explore.communicate.ProtocolMessage;
+import com.meyersj.explore.communicate.ProtocolResponse;
 import com.meyersj.explore.nearby.NearbyBeacon;
 import com.meyersj.explore.communicate.AdvertisementCommunicator;
 import com.meyersj.explore.activity.MainActivity;
 import com.meyersj.explore.communicate.Protocol;
 import com.meyersj.explore.R;
+import com.meyersj.explore.utilities.Cons;
 import com.meyersj.explore.utilities.Utils;
 
 import java.io.DataInputStream;
@@ -254,33 +256,37 @@ public class RegisterBeaconFragment extends Fragment implements ConnectionCallba
 
         @Override
         protected String doInBackground(byte[]... payloads) {
-            String response;
+            String display;
             Socket socket;
             try {
                 socket = Protocol.openCommunication(getContext());
                 if (socket != null) {
                     DataOutputStream outStream = new DataOutputStream(socket.getOutputStream());
+                    DataInputStream inStream = new DataInputStream(socket.getInputStream());
                     Log.d(TAG, "write " + Utils.getHexString(payloads[0]));
                     outStream.write(payloads[0]);
-                    DataInputStream inStream = new DataInputStream(socket.getInputStream());
-                    Byte respByte = inStream.readByte();
-                    if (respByte != null && respByte.equals(Protocol.SUCCESS)) {
-                        response = "Registered beacon <" + beaconName + "> successfully";
+
+                    ProtocolResponse response = ProtocolResponse.read(inStream);
+                    Byte flag = response.getFlags()[0];
+
+                    if (flag.equals(Protocol.SUCCESS)) {
+                        display = "Registered beacon <" + beaconName + "> successfully";
                         success = true;
                     }
                     else {
-                        response = "Error: Server failed to register beacon";
+                        display = "Error: Server failed to register beacon";
                     }
+
                     Protocol.closeCommunication(socket);
                 }
                 else {
-                    response = "Error: Failed to open socket";
+                    display = "Error: Failed to open socket";
 
                 }
             } catch (IOException e) {
-                response = "Error: IOException: " + e.toString();
+                display = "Error: IOException: " + e.toString();
             }
-            return response;
+            return display;
         }
         protected void onPostExecute(String response) {
             Log.d(TAG, response);
@@ -299,15 +305,15 @@ public class RegisterBeaconFragment extends Fragment implements ConnectionCallba
         Bundle data = message.getData();
         if (data != null) {
             boolean registered = false;
-            byte[] advertisement = data.getByteArray("advertisement");
-            String  name = data.getString("hash");
-            Integer rssi = data.getInt("rssi");
-            byte flag = data.getByte("response_flag");
-            Log.d(TAG, "FLAG: " + flag);
-            switch (flag) {
+            byte[] advertisement = data.getByteArray(Cons.ADVERTISEMENT);
+            String  name = data.getString(Cons.BEACON_KEY);
+            Integer rssi = data.getInt(Cons.RSSI);
+            byte[] flags = data.getByteArray(Cons.RESPONSE_FLAGS);
+            Log.d(TAG, "FLAG: " + flags[0]);
+            switch (flags[0]) {
                 case 0x00:
                     registered = true;
-                    byte[] response = data.getByteArray("response");
+                    byte[] response = data.getByteArray(Cons.RESPONSE);
                     if (response != null) {
                         try {
                             name = new String(response, "UTF-8");
@@ -318,7 +324,6 @@ public class RegisterBeaconFragment extends Fragment implements ConnectionCallba
                     }
                     break;
                 case 0x01:
-                    name = "Unregistered " + name;
                     break;
             }
             registerBeaconAdapter.add(new NearbyBeacon(registered, advertisement, name, rssi));

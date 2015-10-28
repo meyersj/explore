@@ -35,9 +35,9 @@ public class NearbyAdapter extends ArrayAdapter<NearbyBeacon> {
     @Override
     public void add(NearbyBeacon result) {
         // check if beacon signature already exists
-        if (beacons.containsKey(result.hash)) {
+        if (beacons.containsKey(result.beaconKey)) {
             // increment count and update signal strength
-            NearbyBeacon beacon = beacons.get(result.hash);
+            NearbyBeacon beacon = beacons.get(result.beaconKey);
             beacon.count++;
             beacon.rssi = result.rssi;
             // if beacon is not being displayed and minimum count is
@@ -50,7 +50,7 @@ public class NearbyAdapter extends ArrayAdapter<NearbyBeacon> {
         else {
             // if beacon signature does not exists then save it
             result.count++;
-            beacons.put(result.hash, result);
+            beacons.put(result.beaconKey, result);
         }
         // forces list to sort itself based on signal strength
         notifyDataSetChanged();
@@ -64,13 +64,16 @@ public class NearbyAdapter extends ArrayAdapter<NearbyBeacon> {
         }
         TextView rssi = (TextView) view.findViewById(R.id.rssi);
         TextView count = (TextView) view.findViewById(R.id.count);
-        TextView hash = (TextView) view.findViewById(R.id.hash);
+        TextView hash = (TextView) view.findViewById(R.id.beaconKey);
         count.setText(String.valueOf(beacon.count));
         rssi.setText(String.valueOf(beacon.rssi));
-        String name = beacon.hash;
+
+        String name = beacon.beaconKey;
         if (name.length() > 60) {
             name = name.substring(0, 60) + "...";
         }
+
+
         hash.setText(name);
         if (active == beacon) {
             view.setBackground(getContext().getDrawable(R.color.selected));
@@ -97,6 +100,10 @@ public class NearbyAdapter extends ArrayAdapter<NearbyBeacon> {
     public void setActiveBeacon(NearbyBeacon beacon) {
         this.active = beacon;
         notifyDataSetChanged();
+    }
+
+    public HashMap<String, NearbyBeacon> getNearbyBeacons() {
+        return beacons;
     }
 
 

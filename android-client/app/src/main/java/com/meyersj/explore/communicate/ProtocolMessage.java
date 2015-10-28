@@ -2,16 +2,19 @@ package com.meyersj.explore.communicate;
 
 import android.os.Bundle;
 import android.os.Message;
+import android.util.Log;
+
+import com.meyersj.explore.utilities.Cons;
 
 
 public class ProtocolMessage {
 
     public int rssi;
-    public String hash;
+    public String key;
     public byte[] advertisement;
     public byte[] payload;
     public byte payloadFlag;
-    public byte responseFlag;
+    public byte[] responseFlags;
     public byte[] response;
 
 
@@ -19,13 +22,13 @@ public class ProtocolMessage {
 
     public Message getThreadMessage() {
         Bundle bundle = new Bundle();
-        bundle.putByte("payload_flag", payloadFlag);
-        bundle.putByteArray("payload", payload);
-        bundle.putByteArray("advertisement", advertisement);
-        bundle.putString("hash", hash);
-        bundle.putInt("rssi", rssi);
-        bundle.putByte("response_flag", responseFlag);
-        bundle.putByteArray("response", response);
+        bundle.putByte(Cons.PAYLOAD_FLAGS, payloadFlag);
+        bundle.putByteArray(Cons.PAYLOAD, payload);
+        bundle.putByteArray(Cons.ADVERTISEMENT, advertisement);
+        bundle.putString(Cons.BEACON_KEY, key);
+        bundle.putInt(Cons.RSSI, rssi);
+        bundle.putByteArray(Cons.RESPONSE_FLAGS, responseFlags);
+        bundle.putByteArray(Cons.RESPONSE, response);
         Message message = new Message();
         message.setData(bundle);
         return message;
@@ -33,6 +36,7 @@ public class ProtocolMessage {
 
 
     public static String parseBeaconName(String value) {
+        Log.d("PARSE", value);
         String[] split1 = value.split("\\|");
         if (split1.length == 2) {
             String[] split2 = split1[1].split(":");
@@ -42,6 +46,6 @@ public class ProtocolMessage {
                 return name + " " + coordinates;
             }
         }
-        return "Unregistered";
+        return value;
     }
 }

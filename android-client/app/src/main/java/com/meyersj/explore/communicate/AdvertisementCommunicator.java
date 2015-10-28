@@ -25,7 +25,13 @@ public class AdvertisementCommunicator extends ThreadedCommunicator {
                 ProtocolMessage message = new ProtocolMessage();
                 message.advertisement = result.getScanRecord().getBytes();
                 message.rssi = result.getRssi();
-                message.hash = Utils.getHexString(result.getScanRecord().getBytes());
+                String hash = Protocol.hashAdvertisement(result.getScanRecord().getBytes());
+                if (hash != null) {
+                    message.key = "beacon:" + hash;
+                }
+                else {
+                    message.key = Utils.getHexString(result.getScanRecord().getBytes());
+                }
                 message.payload = payload;
                 message.payloadFlag = Protocol.CLIENT_UPDATE;
                 addMessage(message);

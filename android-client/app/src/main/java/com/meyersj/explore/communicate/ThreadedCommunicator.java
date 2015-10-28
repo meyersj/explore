@@ -77,6 +77,7 @@ public abstract class ThreadedCommunicator {
         }
     }
 
+
     private Message sendMessage(Socket socket, ProtocolMessage message) throws IOException {
         DataOutputStream outStream = new DataOutputStream(socket.getOutputStream());
         DataInputStream inStream = new DataInputStream(socket.getInputStream());
@@ -85,14 +86,9 @@ public abstract class ThreadedCommunicator {
     }
 
     private ProtocolMessage getResponse(ProtocolMessage message, DataInputStream inStream) throws IOException {
-        byte[] response = Protocol.readResponse(inStream);
-        if (response != null) {
-            message.responseFlag = response[0];
-            if (response.length > 1) {
-                message.response = new byte[response.length - 2];
-                System.arraycopy(response, 1, message.response, 0, response.length - 2);
-            }
-        }
+        ProtocolResponse response = ProtocolResponse.read(inStream);
+        message.response = response.getResponse();
+        message.responseFlags = response.getFlags();
         return message;
     }
 }

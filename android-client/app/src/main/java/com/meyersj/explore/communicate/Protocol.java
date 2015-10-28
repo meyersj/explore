@@ -4,6 +4,7 @@ package com.meyersj.explore.communicate;
 import android.content.Context;
 import android.util.Log;
 
+import com.meyersj.explore.nearby.NearbyBeacon;
 import com.meyersj.explore.utilities.Utils;
 
 import java.io.DataInputStream;
@@ -11,6 +12,9 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.nio.ByteBuffer;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Collection;
 
 public class Protocol {
 
@@ -115,16 +119,10 @@ public class Protocol {
         return newPayload(payload);
     }
 
-    public static byte[] readResponse(DataInputStream inStream) throws IOException {
-        byte[] responseLength = new byte[4];
-        inStream.read(responseLength);
-        ByteBuffer wrapped = ByteBuffer.wrap(responseLength);
-        Integer length = wrapped.getInt();
-        if (length > 0) {
-            byte[] response = new byte[length];
-            inStream.read(response);
-            return response;
-        }
+    public static byte[] sendMessage(byte[] device, byte[][] beacons) {
+        
+
+
         return null;
     }
 
@@ -139,5 +137,18 @@ public class Protocol {
         outStream.write(Protocol.closeConnection());
         socket.close();
     }
+
+    public static String hashAdvertisement(byte[] data) {
+        MessageDigest md;
+        try {
+            md = MessageDigest.getInstance("SHA-1");
+            return Utils.getHexString(md.digest(data));
+        }
+        catch(NoSuchAlgorithmException e) {}
+        return null;
+    }
+
+
+
 
 }

@@ -9,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -18,9 +19,13 @@ import com.meyersj.explore.activity.MainActivity;
 import com.meyersj.explore.R;
 import com.meyersj.explore.communicate.ProtocolMessage;
 import com.meyersj.explore.nearby.NearbyBeacon;
+import com.meyersj.explore.utilities.Cons;
+import com.meyersj.explore.utilities.Utils;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -35,6 +40,8 @@ public class ExploreFragment extends Fragment {
     @Bind(R.id.stop_button) Button stopButton;
     @Bind(R.id.status_text) TextView statusText;
     @Bind(R.id.nearby_list) ListView nearbyList;
+    @Bind(R.id.message) EditText messageText;
+    @Bind(R.id.save_message_button) Button saveMessageButton;
 
 
     private com.meyersj.explore.communicate.AdvertisementCommunicator communicator;
@@ -60,6 +67,7 @@ public class ExploreFragment extends Fragment {
         exploreBeaconAdapter = new ExploreBeaconAdapter(getContext(), resultsList);
         nearbyList.setAdapter(exploreBeaconAdapter);
         communicator = new AdvertisementCommunicator(getContext(), new ExploreHandler(this));
+
         setViewListeners();
         return rootView;
     }
@@ -106,6 +114,31 @@ public class ExploreFragment extends Fragment {
                 exploreBeaconAdapter.clear();
             }
         });
+
+        saveMessageButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // get text
+                String message = messageText.getText().toString();
+                if (message.isEmpty()) {
+                    statusText.setText("Message is empty");
+                }
+                else {
+                    Log.d(TAG, message);
+                    Collection<NearbyBeacon> beacons = exploreBeaconAdapter.getNearbyBeacons().values();
+                    for (NearbyBeacon beacon: beacons) {
+                        // generate and send message for each or in one message?
+
+                        Log.d(TAG, beacon.beaconKey + " " + Utils.getHexString(beacon.advertisement));
+                    }
+                }
+
+                //Toast.makeText(getActivity(), "Stop Exploring", Toast.LENGTH_SHORT).show();
+                //communicator.stop();
+                //statusText.setText("Scan stopped");
+                exploreBeaconAdapter.clear();
+            }
+        });
     }
 
     // callback function from ExploreHandler
@@ -114,16 +147,15 @@ public class ExploreFragment extends Fragment {
         Bundle data = message.getData();
         if (data != null) {
             boolean registered = false;
-            byte[] advertisement = data.getByteArray("advertisement");
-            String  name = data.getString("hash");
-            Integer rssi = data.getInt("rssi");
-            byte flag = data.getByte("response_flag");
-            Log.d(TAG, "FLAG: " + flag);
-            switch (flag) {
-
+            byte[] advertisement = data.getByteArray(Cons.ADVERTISEMENT);
+            String  name = data.getString(Cons.BEACON_KEY);
+            Integer rssi = data.getInt(Cons.RSSI);
+            byte[] flags = data.getByteArray(Cons.RESPONSE_FLAGS);
+            Log.d(TAG, "FLAG: " + flags[0]);
+            switch (flags[0]) {
                 case 0x00:
                     registered = true;
-                    byte[] response = data.getByteArray("response");
+                    byte[] response = data.getByteArray(Cons.RESPONSE);
                     if (response != null) {
                         try {
                             name = new String(response, "UTF-8");
@@ -134,7 +166,6 @@ public class ExploreFragment extends Fragment {
                     }
                     break;
                 case 0x01:
-                    name = "Unregistered";
                     break;
             }
             exploreBeaconAdapter.add(new NearbyBeacon(registered, advertisement, name, rssi));
