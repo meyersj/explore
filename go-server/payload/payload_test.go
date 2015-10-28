@@ -1,57 +1,73 @@
 package payload
 
 import (
+	"bufio"
 	"bytes"
 	//"fmt"
+	"net"
 	"testing"
+	"time"
 )
 
 // Each message must end in 0xFF
 // First byte is Length field
 
+//func TestMain(m *testing.M) {
+//	os.Exit(m.Run())
+//}
+
+type Runner func(*testing.T, *bufio.Reader)
+
+func socket_tester(t *testing.T, runner Runner, payload []byte) {
+	// start server in separate thread and wait for it to start
+	go start_server(t, runner)
+	time.Sleep(time.Millisecond * 50)
+	// open connection
+	conn, _ := net.Dial("tcp", "127.0.0.1:8082")
+	if conn == nil {
+		t.Fatalf("Failed to accept client connection")
+	}
+	// write data to socket
+	// the runner function will read the test data from that socket
+	// to simulate communication with a client
+
+	conn.Write(payload)
+	// let runner finish reading data
+	time.Sleep(time.Millisecond * 50)
+}
+
+func start_server(t *testing.T, runner Runner) {
+	listener, _ := net.Listen("tcp", ":8082")
+	if listener == nil {
+		t.Fatalf("Failed to start server listener")
+	}
+	for {
+		conn, _ := listener.Accept()
+		if conn == nil {
+			t.Fatalf("Failed to accept connection to client")
+		}
+		buffer := bufio.NewReader(conn)
+		// run test function with opened buffer
+		runner(t, buffer)
+	}
+
+}
+
+func runner_InitPayload(t *testing.T, buffer *bufio.Reader) {
+	p := ReadPayload(buffer)
+	if len(p.Data) != 4 {
+		t.Fatalf("payload.Data length incorrect")
+	}
+	if !bytes.Equal(p.Flags, []byte{0x01, 0x02, 0x03, 0x04}) {
+		t.Fatalf("payload.Flags incorrect")
+	}
+	if !bytes.Equal(p.Data, []byte{0xFF, 0xFF, 0xFF, 0xFF}) {
+		t.Fatalf("payload.Data incorrect")
+	}
+}
+
 func Test_InitPayload(t *testing.T) {
-	payload := []byte{0x00, 0x00, 0x00, 0x03, 0x01, 0x01, 0xFF}
-	p := InitPayload(payload)
-	if p.Length != 7 {
-		t.Fatalf("Length is payload is incorrect")
-	}
-}
-
-func Test_AddBytes_basic(t *testing.T) {
-	payload := []byte{0x00, 0x00, 0x00, 0x03, 0x01, 0x00, 0xFF}
-	p := InitPayload(payload)
-	complete := p.AddBytes(payload)
-	if p.Length != 7 {
-		t.Fatalf("Length is payload is incorrect")
-	}
-	if !complete {
-		t.Fatalf("payload should be finished")
-	}
-	if p.Flag != 0x01 {
-		t.Fatalf("Flag does not eqaul 0x01")
-
-	}
-	if !bytes.Equal(p.Data, []byte{0x00}) {
-		t.Fatalf("payload.Data does not match test data")
-	}
-}
-
-func Test_AddBytes_delimiter1(t *testing.T) {
-	payload1 := []byte{0x00, 0x00, 0x00, 0x05, 0x01, 0x00, 0xFF}
-	payload2 := []byte{0x00, 0xFF}
-	p := InitPayload(payload1)
-	complete := p.AddBytes(payload1)
-	if p.Length != 9 {
-		t.Fatalf("Length is payload is incorrect")
-	}
-	if complete {
-		t.Fatalf("payload should not be finished")
-	}
-	complete = p.AddBytes(payload2)
-	if !complete {
-		t.Fatalf("payload should be finished")
-	}
-	if !bytes.Equal(p.Data, []byte{0x00, 0xFF, 0x00}) {
-		t.Fatalf("payload.Data does not match test data")
-	}
+	header := []byte{0x00, 0x00, 0x00, 0x04, 0x01, 0x02, 0x03, 0x04}
+	data := []byte{0xFF, 0xFF, 0xFF, 0xFF}
+	socket_tester(t, runner_InitPayload, append(header, data...))
 }
