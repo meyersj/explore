@@ -1,7 +1,6 @@
 package data
 
 import (
-	"encoding/binary"
 	"fmt"
 	"gopkg.in/redis.v3"
 	"strconv"
@@ -56,28 +55,21 @@ func (c *Client) RegisterClient(device string, name string) {
 }
 
 func (c *Client) RegisterBeacon(key string, name string, coordinates string) {
-	c.client.HSet(BEACONS, "beacon:"+key, name+":"+coordinates)
+	c.client.HSet(BEACONS, key, name+":"+coordinates)
 }
 
-func (c *Client) ClientUpdate(update *ClientUpdate) []byte {
-	// update last_active entry for client
-	client_key := "client:" + update.Device
-	beacon_key := "beacon:" + update.Beacon
+func (c *Client) ClientUpdate(update *ClientUpdate) (byte, []byte) {
 	now := time.Now()
 	secs := strconv.FormatInt(now.Unix(), 10)
 	data := strconv.Itoa(update.Rssi) + " " + secs
-	c.client.HSet(client_key, LAST_ACTIVE, secs)
-	c.client.HSet(client_key, beacon_key, data)
-
-	data, e := c.client.HGet(BEACONS, beacon_key).Result()
+	c.client.HSet(update.Device, LAST_ACTIVE, secs)
+	c.client.HSet(update.Device, update.Beacon, data)
+	data, e := c.client.HGet(BEACONS, update.Beacon).Result()
 	if e == nil {
-		response := beacon_key + "|" + data
-		bytes := []byte(response)
-		length := make([]byte, 4)
-		binary.BigEndian.PutUint32(length, uint32(len(bytes)+1))
-		return append(append(length, 0x00), bytes...)
+		response := update.Beacon + "|" + data
+		return 0x00, []byte(response)
 	}
-	return []byte{0x00, 0x00, 0x00, 0x01, 0x01}
+	return 0x01, []byte{}
 }
 
 func (c *Client) Get(key string) string {

@@ -1,17 +1,12 @@
 package server
 
 import (
-	"../data"
+	"../handler"
 	"../payload"
 	"../protocol"
 	"bufio"
-	"crypto/sha1"
-	"encoding/binary"
 	"fmt"
-	"math"
 	"net"
-	"strconv"
-	//"strings"
 	"time"
 )
 
@@ -44,7 +39,7 @@ func handle_bytes(p *payload.Payload, bytes []byte, done bool) (
 // main worker thread that handles communication with the client
 // bytes are parsed into separate payloads and passed
 // to a consumer thread
-func Communicate(conn net.Conn, redis_chan chan *data.ClientUpdate) {
+func Communicate(conn net.Conn) {
 	fmt.Println("\nopen connection", time.Now(), "\n")
 	defer conn.Close()
 
@@ -68,85 +63,17 @@ func Communicate(conn net.Conn, redis_chan chan *data.ClientUpdate) {
 					conn.Write([]byte{0x00})
 					return
 				case protocol.REGISTER_CLIENT:
-					conn.Write([]byte{handle_register_client(p)})
+					response := handler.RegisterClient(p)
+					conn.Write(response)
 				case protocol.REGISTER_BEACON:
-					conn.Write([]byte{handle_register_beacon(p)})
+					response := handler.RegisterBeacon(p)
+					conn.Write(response)
 				case protocol.CLIENT_UPDATE:
-					conn.Write(handle_client_update(p, redis_chan))
+					response := handler.ClientUpdate(p)
+					conn.Write(response)
 				case protocol.GET_STATUS:
 				}
 			}
 		}
 	}
-}
-
-func get_eddystone_ident(e *payload.EddyStoneUID) (string, int) {
-	instance := int(binary.BigEndian.Uint32(e.Instance[2:len(e.Instance)]))
-	uid := fmt.Sprintf("%0x", e.Uid)
-	return uid, instance
-}
-
-func RedisWriter(redis_chan chan *data.ClientUpdate) {
-	client := data.InitClient()
-	for {
-		update := <-redis_chan
-		client.ClientUpdate(update)
-	}
-}
-
-func GetCoordinates(lat []byte, lon []byte) string {
-	lat_float := math.Float64frombits(binary.BigEndian.Uint64(lat))
-	lon_float := math.Float64frombits(binary.BigEndian.Uint64(lon))
-	lat_string := strconv.FormatFloat(lat_float, 'f', 5, 64)
-	lon_string := strconv.FormatFloat(lon_float, 'f', 5, 64)
-	return lat_string + " " + lon_string
-}
-
-func generate_key(advertisement []byte) string {
-	hash := sha1.Sum(advertisement)
-	hex := fmt.Sprintf("%0x", hash)
-	return hex
-}
-
-func handle_register_beacon(p *payload.Payload) byte {
-	fmt.Println("REGISTER BEACON")
-	message := payload.InitMessage(p.Data)
-	if len(message.Structures) == 3 {
-		name := string(message.Structures[0])
-		key := generate_key(message.Structures[2])
-		lat := message.Structures[1][0:8]
-		lon := message.Structures[1][8:16]
-		coordinates := GetCoordinates(lat, lon)
-		client := data.InitClient()
-		client.RegisterBeacon(key, name, coordinates)
-		return 0x00
-	}
-	return 0x01
-}
-
-func handle_register_client(p *payload.Payload) byte {
-	fmt.Println("REGISTER CLIENT")
-	message := payload.InitMessage(p.Data)
-	if len(message.Structures) == 2 {
-		device := string(message.Structures[0])
-		name := string(message.Structures[1])
-		client := data.InitClient()
-		client.RegisterClient(device, name)
-		return 0x00
-	}
-	return 0x01
-}
-
-func handle_client_update(p *payload.Payload, redis_chan chan *data.ClientUpdate) []byte {
-	fmt.Println("CLIENT UPDATE")
-	message := payload.InitMessage(p.Data)
-	if len(message.Structures) == 3 {
-		rssi := int8(message.Structures[0][0])
-		device := string(message.Structures[1])
-		key := generate_key(message.Structures[2])
-		client := data.InitClient()
-		update := &data.ClientUpdate{Device: device, Beacon: key, Rssi: int(rssi)}
-		return client.ClientUpdate(update)
-	}
-	return []byte{0x02}
 }

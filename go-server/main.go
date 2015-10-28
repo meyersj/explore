@@ -1,24 +1,19 @@
 package main
 
 import (
-	"./data"
-	//"./payload"
 	"./server"
-	//"encoding/hex"
 	"fmt"
 	"net"
 )
 
 func main() {
 	conf := server.Read_config("config.toml")
-	redis_chan := make(chan *data.ClientUpdate)
 
 	// start listening for client connections
 	listener, listener_error := net.Listen("tcp", ":"+conf.Port)
 
 	if listener != nil {
 		//uid, _ := hex.DecodeString(conf.Uid)
-		go server.RedisWriter(redis_chan)
 		fmt.Println("Accepting connections...")
 
 		// infinite loop to accept connections from clients and
@@ -26,8 +21,8 @@ func main() {
 		for {
 			conn, _ := listener.Accept()
 			if conn != nil {
-				// start communication thread
-				go server.Communicate(conn, redis_chan)
+				// start communication thread with client
+				go server.Communicate(conn)
 			}
 		}
 		listener.Close()
