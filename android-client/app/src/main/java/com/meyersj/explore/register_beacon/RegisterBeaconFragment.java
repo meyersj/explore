@@ -134,12 +134,12 @@ public class RegisterBeaconFragment extends Fragment implements ConnectionCallba
             public void onClick(View view) {
                 //Utils.hideKeyboard(getActivity());
                 if(selectedBeacon == null) {
-                    statusText.setText("Error: No beacon selected");
+                    statusText.setText("No beacon selected");
                 }
                 else {
                     beaconName = beaconNameEditText.getText().toString();
                     if(beaconName.isEmpty()) {
-                        statusText.setText("Error: Beacon name is required");
+                        statusText.setText("Beacon name is required");
                     }
                     else {
                         //Double lat = selectedBeacon.lat;

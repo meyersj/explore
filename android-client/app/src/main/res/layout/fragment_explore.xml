@@ -89,7 +89,7 @@
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:gravity="right"
-                android:text="Start scan to locate beacons"/>
+                android:text="Start scan to find beacons"/>
         </LinearLayout>
 
     </RelativeLayout>
