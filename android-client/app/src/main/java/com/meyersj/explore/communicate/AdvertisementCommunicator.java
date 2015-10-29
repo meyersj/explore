@@ -15,6 +15,8 @@ public class AdvertisementCommunicator extends ThreadedCommunicator {
 
     private RateLimiter rateLimiter;
     private BluetoothLeScanner bleScanner;
+    private boolean scanning = false;
+
     private ScanCallback scanCallback = new ScanCallback() {
 
         @Override
@@ -41,24 +43,24 @@ public class AdvertisementCommunicator extends ThreadedCommunicator {
 
     public AdvertisementCommunicator(Context context, Handler handler) {
         super(context, handler);
-        this.rateLimiter = RateLimiter.create(3);
+        this.rateLimiter = RateLimiter.create(1);
         BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if(bluetoothAdapter != null) {
             bleScanner = bluetoothAdapter.getBluetoothLeScanner();
         }
     }
 
-    public void start() {
-        if (!active) {
+    public void startScan() {
+        if (!scanning) {
             bleScanner.startScan(scanCallback);
+            scanning = true;
         }
-        super.start();
     }
-
-    public void stop() {
-        if (active) {
+    public void stopScan() {
+        if (scanning) {
             bleScanner.stopScan(scanCallback);
+            scanning = false;
         }
-        super.stop();
+
     }
 }

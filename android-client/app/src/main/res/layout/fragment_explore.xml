@@ -13,89 +13,126 @@
         android:id="@+id/control_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
-
-        <Button
-            android:id="@+id/start_button"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Start Scan" />
-
-        <Button
-            android:id="@+id/stop_button"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Stop Scan" />
-    </LinearLayout>
-
-    <ListView
-        android:id="@+id/nearby_list"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_above="@+id/message_layout"
-        android:layout_below="@id/control_layout"
-        android:paddingTop="@dimen/activity_vertical_margin">
-    </ListView>
-
-    <LinearLayout
-        android:id="@id/message_layout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:layout_alignParentBottom="true">
+        android:orientation="horizontal"
+        android:layout_marginBottom="@dimen/activity_vertical_margin">
 
         <LinearLayout
-            android:id="@+id/status_layout"
-            android:paddingTop="@dimen/activity_vertical_margin"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginRight="8dp"
+            android:background="@drawable/rounded_primary"
+            android:elevation="3dp"
+            android:layout_marginBottom="5dp">
+            <Button
+                android:id="@+id/start_button"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="Start Scan"
+                android:background="@color/transparent" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginLeft="8dp"
+            android:background="@drawable/rounded_primary"
+            android:elevation="3dp"
+            android:layout_marginBottom="3dp">
+            <Button
+                android:id="@+id/stop_button"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="Stop Scan"
+                android:background="@color/transparent" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <RelativeLayout
+        android:id="@+id/beacon_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/control_layout"
+        android:layout_above="@+id/message_layout"
+        android:background="@drawable/rounded_primary"
+        android:elevation="3dp"
+        android:layout_marginBottom="4dp">
+
+        <ListView
+            android:id="@+id/nearby_list"
+            android:layout_width="match_parent"
+            android:layout_height="fill_parent"
+            android:layout_above="@+id/status_layout"
+            android:padding="8dp"
+            android:layout_alignParentTop="true">
+        </ListView>
+
+        <LinearLayout
+            android:id="@id/status_layout"
+            android:layout_marginTop="@dimen/activity_vertical_margin"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:padding="8dp"
+            android:orientation="horizontal"
+            android:layout_alignParentBottom="true">
 
             <TextView
-                android:layout_width="0dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
+                android:textColor="@color/secondary_text"
+                android:layout_marginRight="8dp"
                 android:text="Status"/>
             <TextView
                 android:id="@+id/status_text"
-                android:layout_width="0dp"
+                android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="4" />
+                android:gravity="right"
+                android:text="Start scan to locate beacons"/>
         </LinearLayout>
 
+    </RelativeLayout>
 
+    <LinearLayout
+        android:id="@id/message_layout"
+        android:layout_alignParentBottom="true"
+        android:background="@drawable/rounded_primary"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="8dp"
+        android:paddingLeft="12dp"
+        android:paddingRight="12dp"
+        android:layout_marginTop="@dimen/activity_vertical_margin"
+        android:elevation="3dp"
+        android:layout_marginBottom="4dp"
+        android:focusableInTouchMode="true">
 
-        <LinearLayout
-            android:id="@+id/message_form"
-            android:paddingTop="@dimen/activity_vertical_margin"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:focusableInTouchMode="true">
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Message"/>
-
-            <EditText
-                android:id="@+id/message"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="4"
-                android:hint="Enter message" />
-        </LinearLayout>
-
-        <Button
-            android:id="@+id/save_message_button"
+        <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="right"
-            android:text="Save Message" />
+            android:src="@drawable/ic_chat_white_24dp"
+            android:paddingRight="8dp"
+            android:layout_gravity="center_vertical|center_horizontal"/>
+
+        <EditText
+            android:id="@+id/message"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="4"
+            android:hint="Enter message" />
+
+        <ImageView
+            android:id="@+id/save_message_icon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_add_circle_white_24dp"
+            android:paddingLeft="8dp"
+            android:layout_gravity="center_vertical|center_horizontal" />
 
     </LinearLayout>
+
+
 
 </RelativeLayout>

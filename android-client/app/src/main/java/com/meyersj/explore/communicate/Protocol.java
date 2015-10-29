@@ -20,7 +20,6 @@ public class Protocol {
 
     // Error Flags
     public static final byte SUCCESS = (byte) 0x00;
-    public static final byte FAIL = (byte) 0x01;
 
     // Message Type Flags
     public static final byte CLOSE_CONN = (byte) 0x00;
@@ -28,63 +27,60 @@ public class Protocol {
     public static final byte REGISTER_BEACON = (byte) 0x02;
     public static final byte CLIENT_UPDATE = (byte) 0x03;
     public static final byte PUT_MESSAGE = (byte) 0x04;
-    public static final byte DELIMITER = (byte) 0xFF;
 
 
     // prefix length field and append delimiter to payload
-    public static byte[] newPayload(byte[] inPayload) {
-        byte[] payload = new byte[inPayload.length + 4 + 1];
-        byte[] length = ByteBuffer.allocate(4).putInt(inPayload.length + 1).array();
-
-        Log.d("PROTOCOL LENGTH", String.valueOf(inPayload.length + 1) + " " + Utils.getHexString(length));
+    private static byte[] newPayload(byte flag, byte[] inPayload) {
+        byte[] payload = new byte[8 + inPayload.length];
+        byte[] length = ByteBuffer.allocate(4).putInt(inPayload.length).array();
+        byte[] flags = {flag, 0x00, 0x00, 0x00};
         // copy length bytes
+        int index = 0;
         for(int i = 0; i < 4; i++) {
-            payload[i] = length[i];
+            payload[index++] = length[i];
+        }
+        // copy flag bytes
+        for(int i = 0; i < 4; i++) {
+            payload[index++] = flags[i];
         }
         // copy payload bytes
         for(int i = 0; i < inPayload.length; i++) {
-            payload[4+i] = inPayload[i];
+            payload[index++] = inPayload[i];
         }
-        // add delimiter
-        payload[payload.length - 1] = Protocol.DELIMITER;
         return payload;
     }
 
     // Close connection to server
     public static byte[] closeConnection() {
-        byte[] payload = {Protocol.CLOSE_CONN};
-        return newPayload(payload);
+        byte[] payload = {};
+        return newPayload(Protocol.CLOSE_CONN, payload);
     }
+
+    private static Integer addField(byte[] payload, byte[]data, Integer offset) {
+        payload[offset++] = (byte) data.length;
+        for(int i = 0; i < data.length; i++) {
+            payload[offset++] = data[i];
+        }
+        return offset;
+    }
+
 
     // update received beacon advertisement from client
     public static byte[] clientUpdate(byte[] device, byte[] adv, int rssi) {
-        byte[] payload = new byte[5 + device.length + adv.length];
-        payload[0] = Protocol.CLIENT_UPDATE;
-        // signal strength
-        payload[1] = (byte) 1;
-        payload[2] = (byte) rssi;
-        // device data
-        payload[3] = (byte) device.length;
-        for(int i = 0; i < device.length; i++) {
-            payload[4+i] = device[i];
-        }
-        // advertisement data
-        payload[4+device.length] = (byte) adv.length;
-        for(int i = 0; i < adv.length; i++) {
-            payload[5+device.length+i] = adv[i];
-        }
-        return newPayload(payload);
+        byte[] payload = new byte[4 + device.length + adv.length];
+        byte[] strength = {(byte) rssi};
+        Integer index = 0;
+        index = addField(payload, strength, index);
+        index = addField(payload, device, index);
+        addField(payload, adv, index);
+        return newPayload(Protocol.CLIENT_UPDATE, payload);
     }
 
     // register human readable name of beacon
     public static byte[] registerBeacon(byte[] name, byte[] adv, byte[] lat, byte[] lon) {
-        byte[] payload = new byte[3+name.length+17+adv.length];
+        byte[] payload = new byte[3+16+name.length+adv.length];
         int index = 0;
-        payload[index++] = Protocol.REGISTER_BEACON;
-        payload[index++] = (byte) name.length;
-        for(int i = 0; i < name.length; i++) {
-            payload[index++] = name[i];
-        }
+        index = addField(payload, name, index);
         payload[index++] = (byte) 16;
         for(int i = 0; i < 8; i++) {
             payload[index++] = lat[i];
@@ -92,56 +88,27 @@ public class Protocol {
         for(int i = 0; i < 8; i++) {
             payload[index++] = lon[i];
         }
-        payload[index++] = (byte) adv.length;
-        for(int i = 0; i < adv.length; i++) {
-            payload[index++] = adv[i];
-        }
-        return newPayload(payload);
+        addField(payload, adv, index);
+        return newPayload(Protocol.REGISTER_BEACON, payload);
     }
 
     // register human readable name of client
     public static byte[] registerClient(byte[] device, byte[] client) {
-        byte[] payload = new byte[3 + device.length + client.length];
+        byte[] payload = new byte[2 + device.length + client.length];
         int index = 0;
-        payload[index++] = Protocol.REGISTER_CLIENT;
-        // device id
-        payload[index++] = (byte) device.length;
-        for(int i = 0; i < device.length; i++) {
-            payload[index++] = device[i];
-        }
-        // client name
-        payload[index++] = (byte) client.length;
-        for(int i = 0; i < client.length; i++) {
-            payload[index++] = client[i];
-        }
-        return newPayload(payload);
+        index = addField(payload, device, index);
+        addField(payload, client, index);
+        return newPayload(Protocol.REGISTER_CLIENT, payload);
     }
 
-    public static byte[] sendMessage(byte[] device, byte[] message, byte[] beacon) {
-        // length
-        // flag
-        // length (device)
-        // device
-        // length (message)
-        // message
-        // length (beacon)
-        // beacon
-        byte[] payload = new byte[4+device.length+message.length+beacon.length];
+    public static byte[] sendMessage(byte[] device, byte[] user, byte[] message, byte[] beacon) {
+        byte[] payload = new byte[4+device.length+user.length+message.length+beacon.length];
         int index = 0;
-        payload[index++] = Protocol.PUT_MESSAGE;
-        payload[index++] = (byte) device.length;
-        for(int i = 0; i < device.length; i++) {
-            payload[index++] = device[i];
-        }
-        payload[index++] = (byte) message.length;
-        for(int i = 0; i < message.length; i++) {
-            payload[index++] = message[i];
-        }
-        payload[index++] = (byte) beacon.length;
-        for(int i = 0; i < beacon.length; i++) {
-            payload[index++] = beacon[i];
-        }
-        return newPayload(payload);
+        index = addField(payload, device, index);
+        index = addField(payload, user, index);
+        index = addField(payload, message, index);
+        addField(payload, beacon, index);
+        return newPayload(Protocol.PUT_MESSAGE, payload);
     }
 
     public static Socket openCommunication(Context context) throws IOException {
@@ -165,8 +132,4 @@ public class Protocol {
         catch(NoSuchAlgorithmException e) {}
         return null;
     }
-
-
-
-
 }

@@ -2,7 +2,6 @@ package com.meyersj.explore.register_beacon;
 
 import android.content.Context;
 import android.location.Location;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Message;
 import android.support.v4.app.Fragment;
@@ -13,33 +12,26 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
-
 import com.google.android.gms.common.api.GoogleApiClient.ConnectionCallbacks;
 import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener;
 import com.google.android.gms.location.LocationListener;
-
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
-import com.meyersj.explore.communicate.ProtocolMessage;
-import com.meyersj.explore.communicate.ProtocolResponse;
-import com.meyersj.explore.nearby.NearbyBeacon;
-import com.meyersj.explore.communicate.AdvertisementCommunicator;
-import com.meyersj.explore.activity.MainActivity;
-import com.meyersj.explore.communicate.Protocol;
 import com.meyersj.explore.R;
+import com.meyersj.explore.communicate.AdvertisementCommunicator;
+import com.meyersj.explore.communicate.Protocol;
+import com.meyersj.explore.communicate.ProtocolMessage;
+import com.meyersj.explore.nearby.NearbyBeacon;
 import com.meyersj.explore.utilities.Cons;
 import com.meyersj.explore.utilities.Utils;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.net.Socket;
 import java.util.ArrayList;
 
 import butterknife.Bind;
@@ -52,10 +44,10 @@ public class RegisterBeaconFragment extends Fragment implements ConnectionCallba
     private final String TAG = getClass().getCanonicalName();
 
     @Bind(R.id.beacon_name) EditText beaconNameEditText;
-    @Bind(R.id.start_scan_beacon) Button startScanButton;
-    @Bind(R.id.stop_scan_beacon) Button stopScanButton;
+    @Bind(R.id.start_button) Button startScanButton;
+    @Bind(R.id.stop_button) Button stopScanButton;
     @Bind(R.id.nearby_list) ListView nearbyList;
-    @Bind(R.id.register_beacon) Button registerBeaconButton;
+    @Bind(R.id.register_beacon) ImageView registerBeaconButton;
     @Bind(R.id.status_text) TextView statusText;
     @Bind(R.id.coordinates_text) TextView coordinatesText;
 
@@ -65,7 +57,7 @@ public class RegisterBeaconFragment extends Fragment implements ConnectionCallba
     private String beaconName;
     private GoogleApiClient googleApiClient;
     private LocationRequest locationRequest;
-    private boolean requestingLocationUpdates = true;
+    private boolean requestingLocationUpdates = false;
     private Location currentLocation;
 
 
@@ -90,6 +82,7 @@ public class RegisterBeaconFragment extends Fragment implements ConnectionCallba
         registerBeaconAdapter = new RegisterBeaconAdapter(getContext(), resultsList);
         nearbyList.setAdapter(registerBeaconAdapter);
         communicator = new AdvertisementCommunicator(getContext(), new RegisterBeaconHandler(this));
+        communicator.start();
         buildGoogleApiClient();
         createLocationRequest();
         setListeners();
@@ -99,7 +92,13 @@ public class RegisterBeaconFragment extends Fragment implements ConnectionCallba
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        ((MainActivity) getActivity()).onSectionAttached(getArguments().getInt(ARG_SECTION_NUMBER));
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        communicator.stopScan();
+        communicator.stop();
     }
 
     @Override
@@ -133,7 +132,7 @@ public class RegisterBeaconFragment extends Fragment implements ConnectionCallba
         registerBeaconButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Utils.hideKeyboard(getActivity());
+                //Utils.hideKeyboard(getActivity());
                 if(selectedBeacon == null) {
                     statusText.setText("Error: No beacon selected");
                 }
@@ -149,9 +148,13 @@ public class RegisterBeaconFragment extends Fragment implements ConnectionCallba
                         byte[] rawBytes = selectedBeacon.advertisement;
                         Log.d(TAG, Utils.getHexString(rawBytes));
                         byte[] payload = Protocol.registerBeacon(beaconName.getBytes(), rawBytes, lat, lon);
-                        RegisterBeaconAsync registerAsync = new RegisterBeaconAsync();
-                        byte[][] payloads = {payload};
-                        registerAsync.execute(payloads);
+                        ProtocolMessage message = new ProtocolMessage();
+                        message.payload = payload;
+                        message.payloadFlag = Protocol.REGISTER_BEACON;
+                        communicator.addMessage(message);
+                        //RegisterBeaconAsync registerAsync = new RegisterBeaconAsync();
+                        //byte[][] payloads = {payload};
+                        //registerAsync.execute(payloads);
                     }
                 }
             }
@@ -167,12 +170,10 @@ public class RegisterBeaconFragment extends Fragment implements ConnectionCallba
                 }
                 registerBeaconAdapter.setActiveBeacon(selectedBeacon);
                 if (beaconNameEditText.getText().toString().isEmpty()) {
-                    Log.d(TAG, "request focus");
-                    //beaconNameEditText.setFocusableInTouchMode(true);
-                    //beaconNameEditText.requestFocus();
+                    //TODO open up keyboard for edit text and focus it
                 }
                 else {
-                    Utils.hideKeyboard(getActivity());
+                    //Utils.hideKeyboard(getActivity());
                 }
             }
         });
@@ -180,23 +181,29 @@ public class RegisterBeaconFragment extends Fragment implements ConnectionCallba
         startScanButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                requestingLocationUpdates = true;
-                googleApiClient.connect();
-                Utils.hideKeyboard(getActivity());
-                statusText.setText("Starting beacon scan");
-                registerBeaconAdapter.clear();
-                communicator.start();
+                Log.d(TAG,"start scan");
+                if (!requestingLocationUpdates) {
+                    Log.d(TAG,"start scan now");
+                    requestingLocationUpdates = true;
+                    googleApiClient.connect();
+                    //Utils.hideKeyboard(getActivity());
+                    statusText.setText("Starting beacon scan");
+                    registerBeaconAdapter.clear();
+                    communicator.startScan();
+                }
             }
         });
 
         stopScanButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                stopLocationUpdates();
-                Utils.hideKeyboard(getActivity());
-                statusText.setText("Stopping beacon scan");
-                registerBeaconAdapter.clear();
-                communicator.stop();
+                if (requestingLocationUpdates) {
+                    stopLocationUpdates();
+                    //Utils.hideKeyboard(getActivity());
+                    statusText.setText("Stopping beacon scan");
+                    registerBeaconAdapter.clear();
+                    communicator.stopScan();
+                }
             }
         });
 
@@ -240,6 +247,7 @@ public class RegisterBeaconFragment extends Fragment implements ConnectionCallba
 
     protected void startLocationUpdates() {
         LocationServices.FusedLocationApi.requestLocationUpdates(googleApiClient, locationRequest, this);
+        requestingLocationUpdates = true;
     }
 
     protected void stopLocationUpdates() {
@@ -250,6 +258,7 @@ public class RegisterBeaconFragment extends Fragment implements ConnectionCallba
         }
     }
 
+    /*
     public class RegisterBeaconAsync extends AsyncTask<byte[], Void, String> {
 
         private boolean success = false;
@@ -298,11 +307,13 @@ public class RegisterBeaconFragment extends Fragment implements ConnectionCallba
             }
         }
     }
+    */
 
     // callback function from ExploreHandler
     // returns response received from socket
     public void update(Message message) {
         Bundle data = message.getData();
+        Log.d(TAG, "update");
         if (data != null) {
             boolean registered = false;
             byte[] advertisement = data.getByteArray(Cons.ADVERTISEMENT);
@@ -310,6 +321,16 @@ public class RegisterBeaconFragment extends Fragment implements ConnectionCallba
             Integer rssi = data.getInt(Cons.RSSI);
             byte[] flags = data.getByteArray(Cons.RESPONSE_FLAGS);
             Log.d(TAG, "FLAG: " + flags[0]);
+
+            switch(data.getByte(Cons.PAYLOAD_FLAGS)) {
+                case Protocol.REGISTER_BEACON:
+                    if (flags[0] == Protocol.SUCCESS) {
+                        statusText.setText("Registered beacon <" + beaconName + "> successfully");
+                    }
+                    return;
+            }
+
+
             switch (flags[0]) {
                 case 0x00:
                     registered = true;

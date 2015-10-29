@@ -76,7 +76,7 @@ public class NearbyAdapter extends ArrayAdapter<NearbyBeacon> {
 
         hash.setText(name);
         if (active == beacon) {
-            view.setBackground(getContext().getDrawable(R.color.selected));
+            view.setBackground(getContext().getDrawable(R.color.accent));
         }
         else {
             view.setBackground(getContext().getDrawable(R.color.transparent));

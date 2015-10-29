@@ -1,19 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:defaultValue="false" >
+    android:defaultValue="false">
+
+
 
     <Preference
         android:defaultValue=""
         android:enabled="false"/>
 
     <EditTextPreference
+        android:key="user"
+        android:textColor="@color/primary_dark"
+        android:textColorHint="@color/primary_light"
+        android:inputType="text"
+        android:defaultValue="anon"
+        android:title="Username" />
+
+    <EditTextPreference
         android:key="host"
+        android:textColor="@color/primary_dark"
+        android:textColorHint="@color/primary_light"
         android:defaultValue=""
         android:title="Host" />
 
     <EditTextPreference
         android:key="port"
+        android:textColor="@color/primary_dark"
+        android:textColorHint="@color/primary_light"
         android:defaultValue=""
         android:title="Port" />
 

@@ -11,12 +11,12 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.meyersj.explore.communicate.AdvertisementCommunicator;
-import com.meyersj.explore.activity.MainActivity;
 import com.meyersj.explore.R;
 import com.meyersj.explore.communicate.Protocol;
 import com.meyersj.explore.communicate.ProtocolMessage;
@@ -26,12 +26,9 @@ import com.meyersj.explore.utilities.Utils;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
-
 
 public class ExploreFragment extends Fragment {
 
@@ -43,7 +40,9 @@ public class ExploreFragment extends Fragment {
     @Bind(R.id.status_text) TextView statusText;
     @Bind(R.id.nearby_list) ListView nearbyList;
     @Bind(R.id.message) EditText messageText;
-    @Bind(R.id.save_message_button) Button saveMessageButton;
+    @Bind(R.id.save_message_icon) ImageView saveMessageButton;
+    @Bind(R.id.message_layout) LinearLayout messageLayout;
+    //@Bind(R.id.save_message_button) Button saveMessageButton;
 
 
     private com.meyersj.explore.communicate.AdvertisementCommunicator communicator;
@@ -70,7 +69,7 @@ public class ExploreFragment extends Fragment {
         exploreBeaconAdapter = new ExploreBeaconAdapter(getContext(), resultsList);
         nearbyList.setAdapter(exploreBeaconAdapter);
         communicator = new AdvertisementCommunicator(getContext(), new ExploreHandler(this));
-
+        communicator.start();
         setViewListeners();
         return rootView;
     }
@@ -79,21 +78,18 @@ public class ExploreFragment extends Fragment {
     public void onSaveInstanceState(Bundle state) {
         super.onSaveInstanceState(state);
         Log.d(TAG, "save instance state");
-        //state.putCharSequence(App.VSTUP, vstup.getText());
         state.putString("status", statusText.getText().toString());
     }
 
     @Override
     public void onAttach(Context context) {
-        Log.d(TAG, "on attach");
         super.onAttach(context);
-        ((MainActivity) getActivity()).onSectionAttached(getArguments().getInt(ARG_SECTION_NUMBER));
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        Log.d(TAG, "destroy view");
+        communicator.stopScan();
         communicator.stop();
     }
 
@@ -101,8 +97,8 @@ public class ExploreFragment extends Fragment {
         startButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Toast.makeText(getActivity(), "Start Exploring", Toast.LENGTH_SHORT).show();
-                communicator.start();
+                //Toast.makeText(getActivity(), "Start Exploring", Toast.LENGTH_SHORT).show();
+                communicator.startScan();
                 statusText.setText("Scan started");
                 exploreBeaconAdapter.clear();
             }
@@ -111,8 +107,8 @@ public class ExploreFragment extends Fragment {
         stopButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Toast.makeText(getActivity(), "Stop Exploring", Toast.LENGTH_SHORT).show();
-                communicator.stop();
+                //Toast.makeText(getActivity(), "Stop Exploring", Toast.LENGTH_SHORT).show();
+                communicator.stopScan();
                 statusText.setText("Scan stopped");
                 //exploreBeaconAdapter.clear();
             }
@@ -139,7 +135,8 @@ public class ExploreFragment extends Fragment {
                     if (selectedAdvertisement != null) {
                         byte[] device = Utils.getDeviceID(getContext()).getBytes();
                         byte[] beacon = selectedAdvertisement;
-                        byte[] payload = Protocol.sendMessage(device, message.getBytes(), beacon);
+                        byte[] user = Utils.getUser(getContext()).getBytes();
+                        byte[] payload = Protocol.sendMessage(device, user, message.getBytes(), beacon);
                         ProtocolMessage protocolMessage = new ProtocolMessage();
                         protocolMessage.payload = payload;
                         protocolMessage.payloadFlag = Protocol.PUT_MESSAGE;
@@ -153,6 +150,7 @@ public class ExploreFragment extends Fragment {
     // callback function from ExploreHandler
     // returns response received from socket
     public void update(Message message) {
+        Log.d(TAG, "update");
         Bundle data = message.getData();
         if (data != null) {
             boolean registered = false;
@@ -185,6 +183,7 @@ public class ExploreFragment extends Fragment {
                         try {
                             name = new String(response, "UTF-8");
                             name = ProtocolMessage.parseBeaconName(name);
+                            Log.d(TAG, name);
                         } catch (UnsupportedEncodingException e) {
                             e.printStackTrace();
                         }

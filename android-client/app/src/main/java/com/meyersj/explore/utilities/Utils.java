@@ -40,6 +40,13 @@ public class Utils {
         return newRelicToken;
     }
 
+    public static String getUser(Context context) {
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
+        String host = sharedPref.getString(Cons.USER, "");
+        return host;
+    }
+
+
     public static String getHost(Context context) {
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
         String host = sharedPref.getString(Cons.HOST, "");
@@ -83,8 +90,11 @@ public class Utils {
         return deviceId;
     }
 
+    /*
     public static void hideKeyboard(Activity activity) {
         InputMethodManager inputMethodManager = (InputMethodManager)  activity.getSystemService(Activity.INPUT_METHOD_SERVICE);
+        //activity.getCurrentFocus().
         inputMethodManager.hideSoftInputFromWindow(activity.getCurrentFocus().getWindowToken(), 0);
     }
+    */
 }
