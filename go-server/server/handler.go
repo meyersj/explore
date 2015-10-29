@@ -23,6 +23,7 @@ func RegisterBeacon(p *payload.Payload) []byte {
 	return payload.Build(0x01, []byte{})
 }
 
+/*
 func RegisterClient(p *payload.Payload) []byte {
 	message := payload.InitMessage(p.Data)
 	if len(message.Structures) == 2 {
@@ -36,9 +37,15 @@ func RegisterClient(p *payload.Payload) []byte {
 	fmt.Println("ERROR: REGISTER CLIENT: not parsed properly")
 	return payload.Build(0x01, []byte{})
 }
+*/
 
 func ClientUpdate(p *payload.Payload) []byte {
 	message := payload.InitMessage(p.Data)
+	//fmt.Println(message.Structures)
+	//fmt.Println(message.Structures[0])
+	//fmt.Println(string(message.Structures[1]))
+	//fmt.Println(message.Structures[2])
+	//fmt.Println(message.Structures[3])
 	if len(message.Structures) == 3 {
 		rssi := int8(message.Structures[0][0])
 		device := data.BuildClientKey(message.Structures[1])
@@ -56,14 +63,15 @@ func ClientUpdate(p *payload.Payload) []byte {
 
 func PutMessage(p *payload.Payload) []byte {
 	message := payload.InitMessage(p.Data)
-	if len(message.Structures) == 3 {
+	if len(message.Structures) == 4 {
 		device := data.BuildClientKey(message.Structures[0])
-		client_message := string(message.Structures[1])
-		key := data.BuildBeaconKey(message.Structures[2])
+		client_name := string(message.Structures[1])
+		client_message := string(message.Structures[2])
+		key := data.BuildBeaconKey(message.Structures[3])
 		fmt.Println("\n"+device, key, client_message, "\n")
 		client := data.InitClient()
 		msg := &data.ClientMessage{Device: device, Beacon: key, Message: client_message}
-		client_name, beacon_name := client.PutMessage(msg)
+		beacon_name := client.PutMessage(msg)
 		display := "<" + beacon_name + "> " + client_name + ": " + client_message
 		return payload.Build(0x00, []byte(display))
 	}

@@ -50,17 +50,17 @@ func (c *Client) Set(key string, value string, timeout time.Duration) {
 	}
 }
 
-func (c *Client) RegisterClient(device string, name string) {
-	now := time.Now()
-	secs := now.Unix()
-	err := c.client.SAdd(ACTIVE_CLIENTS, device).Err()
-	if err != nil {
-		fmt.Println("Error:", err)
-	} else {
-		c.client.HSet(device, CLIENT_NAME, name)
-		c.client.HSet(device, LAST_ACTIVE, strconv.FormatInt(secs, 10))
-	}
-}
+//func (c *Client) RegisterClient(device string, name string) {
+//	now := time.Now()
+//	secs := now.Unix()
+//	err := c.client.SAdd(ACTIVE_CLIENTS, device).Err()
+//	if err != nil {
+//		fmt.Println("Error:", err)
+//	} else {
+//		c.client.HSet(device, CLIENT_NAME, name)
+//		c.client.HSet(device, LAST_ACTIVE, strconv.FormatInt(secs, 10))
+//	}
+//}
 
 func (c *Client) RegisterBeacon(key string, name string, coordinates string) {
 	c.client.HSet(BEACONS, key, name+":"+coordinates)
@@ -86,7 +86,7 @@ func (c *Client) Get(key string) string {
 	return result
 }
 
-func (c *Client) PutMessage(message *ClientMessage) (string, string) {
+func (c *Client) PutMessage(message *ClientMessage) string {
 	c.client.LPush("messages:"+message.Beacon, message.Device+"|"+message.Message)
 	beacon, e := c.client.HGet(BEACONS, message.Beacon).Result()
 	name := "beacon"
@@ -94,11 +94,11 @@ func (c *Client) PutMessage(message *ClientMessage) (string, string) {
 		data := strings.Split(beacon, ":")
 		name = data[0]
 	}
-	client, e := c.client.HGet(message.Device, CLIENT_NAME).Result()
-	if e == nil {
-		return client, name
-	}
-	return "anon", name
+	//client, e := c.client.HGet(message.Device, CLIENT_NAME).Result()
+	//if e == nil {
+	//	return client, name
+	//}
+	return name
 }
 
 func BuildCoordinates(lat []byte, lon []byte) string {
