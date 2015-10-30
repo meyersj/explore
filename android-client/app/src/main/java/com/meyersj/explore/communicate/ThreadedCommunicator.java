@@ -5,6 +5,9 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 
+import com.meyersj.explore.ExploreApplication;
+import com.meyersj.explore.utilities.Cons;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -24,8 +27,12 @@ public abstract class ThreadedCommunicator {
 
 
     public ThreadedCommunicator(Context context, Handler handler) {
-        this.context = context;
+        this(context);
         this.handler = handler;
+    }
+
+    public ThreadedCommunicator(Context context) {
+        this.context = context;
         this.queue = new LinkedBlockingQueue<>();
         this.active = false;
     }
@@ -57,6 +64,8 @@ public abstract class ThreadedCommunicator {
 
             try {
                 Log.d(TAG, "OPEN SOCKET");
+                //ExploreApplication app = (ExploreApplication) context.getApplicationContext();
+                //Socket socket = app.getProtocolConnection(context);
                 Socket socket = Protocol.openCommunication(context);
                 if (socket != null) {
                     while (active) {
@@ -64,12 +73,18 @@ public abstract class ThreadedCommunicator {
                         if (message != null) {
                             Message threadMessage = sendMessage(socket, message);
                             handler.sendMessage(threadMessage);
+                        } else {
+                            Thread.sleep(Cons.PROTOCOL_POLL);
                         }
                     }
                     Log.d(TAG, "CLOSE SOCKET");
+                    //app.closeProtocolConnection();
                     Protocol.closeCommunication(socket);
                 }
-            } catch (UnknownHostException e) {
+            } catch (InterruptedException e) {
+                Log.d(TAG, e.toString());
+            }
+            catch (UnknownHostException e) {
                 Log.d(TAG, e.toString());
             } catch (IOException e) {
                 Log.d(TAG, e.toString());

@@ -112,6 +112,7 @@ public class Protocol {
         return newPayload(Protocol.PUT_MESSAGE, payload);
     }
 
+
     public static Socket openCommunication(Context context) throws IOException {
         String host = Utils.getHost(context);
         Integer port = Utils.getPort(context);
@@ -123,6 +124,7 @@ public class Protocol {
         outStream.write(Protocol.closeConnection());
         socket.close();
     }
+
 
     public static String hashAdvertisement(byte[] data) {
         MessageDigest md;

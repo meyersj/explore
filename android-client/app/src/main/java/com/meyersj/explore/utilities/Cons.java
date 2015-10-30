@@ -20,6 +20,8 @@ public class Cons {
     public static final String RESPONSE = "response";
     public static final String RESPONSE_FLAGS = "response_flags";
 
+    public static final long PROTOCOL_POLL  = 0;
+
 
 
 

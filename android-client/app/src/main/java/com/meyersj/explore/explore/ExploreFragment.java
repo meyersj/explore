@@ -20,6 +20,7 @@ import com.meyersj.explore.communicate.AdvertisementCommunicator;
 import com.meyersj.explore.R;
 import com.meyersj.explore.communicate.Protocol;
 import com.meyersj.explore.communicate.ProtocolMessage;
+import com.meyersj.explore.communicate.ResponseHandler;
 import com.meyersj.explore.nearby.NearbyBeacon;
 import com.meyersj.explore.utilities.Cons;
 import com.meyersj.explore.utilities.Utils;
@@ -39,15 +40,19 @@ public class ExploreFragment extends Fragment {
     @Bind(R.id.stop_button) Button stopButton;
     @Bind(R.id.status_text) TextView statusText;
     @Bind(R.id.nearby_list) ListView nearbyList;
+    @Bind(R.id.display_list) ListView displayList;
     @Bind(R.id.message) EditText messageText;
     @Bind(R.id.save_message_icon) ImageView saveMessageButton;
+    @Bind(R.id.beacon_layout) LinearLayout beaconLayout;
     @Bind(R.id.message_layout) LinearLayout messageLayout;
-    //@Bind(R.id.save_message_button) Button saveMessageButton;
+    @Bind(R.id.display_layout) LinearLayout displayLayout;
 
-
-    private com.meyersj.explore.communicate.AdvertisementCommunicator communicator;
+    private AdvertisementCommunicator communicator;
     private ExploreBeaconAdapter exploreBeaconAdapter;
+    private MessageDisplayAdapter messageDisplayAdapter;
     private byte[] selectedAdvertisement;
+    private ArrayList<NearbyBeacon> resultsList;
+    private boolean scanning = false;
 
         public static ExploreFragment newInstance(int sectionNumber) {
         ExploreFragment fragment = new ExploreFragment();
@@ -65,12 +70,15 @@ public class ExploreFragment extends Fragment {
         Log.d(TAG, "create view");
         View rootView = inflater.inflate(R.layout.fragment_explore, container, false);
         ButterKnife.bind(this, rootView);
-        ArrayList<NearbyBeacon> resultsList = new ArrayList<>();
+        resultsList = new ArrayList<>();
         exploreBeaconAdapter = new ExploreBeaconAdapter(getContext(), resultsList);
         nearbyList.setAdapter(exploreBeaconAdapter);
-        communicator = new AdvertisementCommunicator(getContext(), new ExploreHandler(this));
+        messageDisplayAdapter = new MessageDisplayAdapter(getContext());
+        displayList.setAdapter(messageDisplayAdapter);
+        communicator = new AdvertisementCommunicator(getContext(), new ResponseHandler(this));
         communicator.start();
         setViewListeners();
+        updateVisibility();
         return rootView;
     }
 
@@ -97,20 +105,14 @@ public class ExploreFragment extends Fragment {
         startButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //Toast.makeText(getActivity(), "Start Exploring", Toast.LENGTH_SHORT).show();
-                communicator.startScan();
-                statusText.setText("Scan started");
-                exploreBeaconAdapter.clear();
+                startScan();
             }
         });
 
         stopButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //Toast.makeText(getActivity(), "Stop Exploring", Toast.LENGTH_SHORT).show();
-                communicator.stopScan();
-                statusText.setText("Scan stopped");
-                //exploreBeaconAdapter.clear();
+                stopScan();
             }
         });
 
@@ -118,15 +120,25 @@ public class ExploreFragment extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 NearbyBeacon selectedBeacon = exploreBeaconAdapter.getItem(i);
-                exploreBeaconAdapter.setActiveBeacon(selectedBeacon);
-                selectedAdvertisement = selectedBeacon.advertisement;
-                if (selectedAdvertisement != null) {
-                    byte[] payload = Protocol.getMessages(selectedAdvertisement);
-                    ProtocolMessage protocolMessage = new ProtocolMessage();
-                    protocolMessage.payload = payload;
-                    protocolMessage.payloadFlag = Protocol.GET_MESSAGE;
-                    communicator.addMessage(protocolMessage);
+                boolean selected = exploreBeaconAdapter.toggleActiveBeacon(selectedBeacon);
+                if (selected) {
+                    messageDisplayAdapter.clear();
+                    selectedAdvertisement = selectedBeacon.advertisement;
+                    messageLayout.setVisibility(View.VISIBLE);
+                    stopScan();
+                    statusText.setText("Enter message below and save it for this location");
+                    if (selectedAdvertisement != null) {
+                        byte[] payload = Protocol.getMessages(selectedAdvertisement);
+                        ProtocolMessage protocolMessage = new ProtocolMessage();
+                        protocolMessage.payload = payload;
+                        protocolMessage.payloadFlag = Protocol.GET_MESSAGE;
+                        communicator.addMessage(protocolMessage);
+                    }
+                } else {
+                    messageLayout.setVisibility(View.GONE);
                 }
+
+
             }
         });
 
@@ -137,8 +149,7 @@ public class ExploreFragment extends Fragment {
                 String message = messageText.getText().toString();
                 if (message.isEmpty()) {
                     statusText.setText("Message is empty");
-                }
-                else {
+                } else {
                     if (selectedAdvertisement != null) {
                         byte[] device = Utils.getDeviceID(getContext()).getBytes();
                         byte[] beacon = selectedAdvertisement;
@@ -148,10 +159,46 @@ public class ExploreFragment extends Fragment {
                         protocolMessage.payload = payload;
                         protocolMessage.payloadFlag = Protocol.PUT_MESSAGE;
                         communicator.addMessage(protocolMessage);
+                        statusText.setText("");
                     }
                 }
             }
         });
+    }
+
+    private void startScan() {
+        if (scanning) return;
+        communicator.startScan();
+        statusText.setText("Scan started");
+        exploreBeaconAdapter.clear();
+        messageDisplayAdapter.clear();
+        messageLayout.setVisibility(View.GONE);
+        scanning = true;
+        updateVisibility();
+
+    }
+
+    private void stopScan() {
+        if(!scanning) return;
+        communicator.stopScan();
+        statusText.setText("Scan stopped");
+        scanning = false;
+        updateVisibility();
+    }
+
+    private void updateVisibility() {
+        if (exploreBeaconAdapter.isEmpty()) {
+            beaconLayout.setVisibility(View.GONE);
+        }
+        else {
+            beaconLayout.setVisibility(View.VISIBLE);
+        }
+        if(messageDisplayAdapter.isEmpty()) {
+            displayLayout.setVisibility(View.GONE);
+        }
+        else {
+            displayLayout.setVisibility(View.VISIBLE);
+        }
     }
 
     // callback function from ExploreHandler
@@ -210,6 +257,7 @@ public class ExploreFragment extends Fragment {
                                     String responseMessage = new String(response, "UTF-8");
                                     responseMessage = ProtocolMessage.parseBeaconName(responseMessage);
                                     Log.d(TAG, responseMessage);
+                                    messageDisplayAdapter.add(responseMessage);
                                 } catch (UnsupportedEncodingException e) {
                                     e.printStackTrace();
                                 }
@@ -220,8 +268,7 @@ public class ExploreFragment extends Fragment {
                     }
                     break;
             }
-
-
+            updateVisibility();
         }
     }
 }

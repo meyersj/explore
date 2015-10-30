@@ -27,6 +27,7 @@ import com.meyersj.explore.R;
 import com.meyersj.explore.communicate.AdvertisementCommunicator;
 import com.meyersj.explore.communicate.Protocol;
 import com.meyersj.explore.communicate.ProtocolMessage;
+import com.meyersj.explore.communicate.ResponseHandler;
 import com.meyersj.explore.nearby.NearbyBeacon;
 import com.meyersj.explore.utilities.Cons;
 import com.meyersj.explore.utilities.Utils;
@@ -81,7 +82,7 @@ public class RegisterBeaconFragment extends Fragment implements ConnectionCallba
         ArrayList<NearbyBeacon> resultsList = new ArrayList<>();
         registerBeaconAdapter = new RegisterBeaconAdapter(getContext(), resultsList);
         nearbyList.setAdapter(registerBeaconAdapter);
-        communicator = new AdvertisementCommunicator(getContext(), new RegisterBeaconHandler(this));
+        communicator = new AdvertisementCommunicator(getContext(), new ResponseHandler(this));
         communicator.start();
         buildGoogleApiClient();
         createLocationRequest();
@@ -168,7 +169,7 @@ public class RegisterBeaconFragment extends Fragment implements ConnectionCallba
                     selectedBeacon.lat = currentLocation.getLatitude();
                     selectedBeacon.lon = currentLocation.getLongitude();
                 }
-                registerBeaconAdapter.setActiveBeacon(selectedBeacon);
+                registerBeaconAdapter.toggleActiveBeacon(selectedBeacon);
                 if (beaconNameEditText.getText().toString().isEmpty()) {
                     //TODO open up keyboard for edit text and focus it
                 }
@@ -348,6 +349,8 @@ public class RegisterBeaconFragment extends Fragment implements ConnectionCallba
                     break;
             }
             registerBeaconAdapter.add(new NearbyBeacon(registered, advertisement, name, rssi));
+
+            nearbyList.invalidate();
         }
     }
 }

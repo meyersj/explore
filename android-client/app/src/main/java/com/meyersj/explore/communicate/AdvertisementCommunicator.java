@@ -41,6 +41,17 @@ public class AdvertisementCommunicator extends ThreadedCommunicator {
         }
     };
 
+
+    public AdvertisementCommunicator(Context context) {
+        super(context);
+        this.rateLimiter = RateLimiter.create(1);
+        BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        if(bluetoothAdapter != null) {
+            bleScanner = bluetoothAdapter.getBluetoothLeScanner();
+        }
+    }
+
+
     public AdvertisementCommunicator(Context context, Handler handler) {
         super(context, handler);
         this.rateLimiter = RateLimiter.create(1);
@@ -48,6 +59,7 @@ public class AdvertisementCommunicator extends ThreadedCommunicator {
         if(bluetoothAdapter != null) {
             bleScanner = bluetoothAdapter.getBluetoothLeScanner();
         }
+
     }
 
     public void startScan() {
@@ -61,6 +73,5 @@ public class AdvertisementCommunicator extends ThreadedCommunicator {
             bleScanner.stopScan(scanCallback);
             scanning = false;
         }
-
     }
 }

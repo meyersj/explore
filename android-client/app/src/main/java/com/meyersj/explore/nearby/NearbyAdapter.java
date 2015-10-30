@@ -20,6 +20,7 @@ public class NearbyAdapter extends ArrayAdapter<NearbyBeacon> {
     private final int MIN_COUNT_DISPLAY = 1;
     private HashMap<String, NearbyBeacon> beacons = new HashMap<>();
     private NearbyBeacon active = null;
+    private boolean selected = false;
 
 
     public NearbyAdapter(Context context, ArrayList<NearbyBeacon> result) {
@@ -97,9 +98,19 @@ public class NearbyAdapter extends ArrayAdapter<NearbyBeacon> {
         super.notifyDataSetChanged();
     }
 
-    public void setActiveBeacon(NearbyBeacon beacon) {
-        this.active = beacon;
-        notifyDataSetChanged();
+
+    public boolean toggleActiveBeacon(NearbyBeacon beacon) {
+        if (this.active == beacon) {
+            this.active = null;
+            notifyDataSetChanged();
+            return false;
+        }
+        else {
+            this.active = beacon;
+            notifyDataSetChanged();
+            return true;
+        }
+        //selected = true;
     }
 
     public HashMap<String, NearbyBeacon> getNearbyBeacons() {

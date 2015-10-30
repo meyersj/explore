@@ -14,16 +14,16 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:layout_marginBottom="@dimen/activity_vertical_margin">
+        android:layout_marginBottom="9dp">
 
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:layout_marginRight="8dp"
+            android:layout_marginRight="6dp"
             android:background="@drawable/rounded_primary"
             android:elevation="3dp"
-            android:layout_marginBottom="5dp">
+            android:layout_marginBottom="3dp">
             <Button
                 android:id="@+id/start_button"
                 android:layout_width="match_parent"
@@ -36,7 +36,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:layout_marginLeft="8dp"
+            android:layout_marginLeft="6dp"
             android:background="@drawable/rounded_primary"
             android:elevation="3dp"
             android:layout_marginBottom="3dp">
@@ -50,49 +50,82 @@
 
     </LinearLayout>
 
-    <RelativeLayout
-        android:id="@+id/beacon_layout"
+    <LinearLayout
+        android:id="@+id/status_layout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
         android:layout_below="@id/control_layout"
-        android:layout_above="@+id/message_layout"
+        android:layout_height="wrap_content"
+        android:padding="8dp"
+        android:orientation="horizontal"
         android:background="@drawable/rounded_primary"
         android:elevation="3dp"
-        android:layout_marginBottom="4dp">
+        android:layout_marginBottom="12dp">
 
-        <ListView
-            android:id="@+id/nearby_list"
-            android:layout_width="match_parent"
-            android:layout_height="fill_parent"
-            android:layout_above="@+id/status_layout"
-            android:padding="8dp"
-            android:layout_alignParentTop="true">
-        </ListView>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/secondary_text"
+            android:layout_marginRight="8dp"
+            android:text="Status"/>
+        <TextView
+            android:id="@+id/status_text"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:gravity="right"
+            android:text="Start scan to find beacons"/>
+    </LinearLayout>
+
+
+
+
+    <LinearLayout
+        android:id="@+id/list_layout"
+        android:layout_width="match_parent"
+        android:layout_height="fill_parent"
+        android:orientation="vertical"
+        android:layout_below="@id/status_layout"
+        android:layout_above="@+id/message_layout">
 
         <LinearLayout
-            android:id="@id/status_layout"
-            android:layout_marginTop="@dimen/activity_vertical_margin"
+            android:id="@+id/beacon_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="8dp"
-            android:orientation="horizontal"
-            android:layout_alignParentBottom="true">
+            android:orientation="vertical"
+            android:background="@drawable/rounded_primary"
+            android:elevation="3dp"
+            android:visibility="gone"
+            android:layout_marginBottom="12dp">
 
-            <TextView
-                android:layout_width="wrap_content"
+            <ListView
+                android:id="@+id/nearby_list"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textColor="@color/secondary_text"
-                android:layout_marginRight="8dp"
-                android:text="Status"/>
-            <TextView
-                android:id="@+id/status_text"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:gravity="right"
-                android:text="Start scan to find beacons"/>
+                android:padding="8dp" >
+            </ListView>
+
         </LinearLayout>
 
-    </RelativeLayout>
+
+        <LinearLayout
+            android:id="@+id/display_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone"
+            android:background="@drawable/rounded_primary"
+            android:elevation="3dp"
+            android:layout_marginBottom="3dp">
+
+            <ListView
+                android:id="@+id/display_list"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="8dp" >
+            </ListView>
+
+        </LinearLayout>
+
+    </LinearLayout>
 
     <LinearLayout
         android:id="@id/message_layout"
@@ -101,11 +134,12 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
+        android:visibility="gone"
         android:padding="8dp"
         android:paddingLeft="12dp"
         android:paddingRight="12dp"
-        android:layout_marginTop="@dimen/activity_vertical_margin"
         android:elevation="3dp"
+        android:layout_marginTop="9dp"
         android:layout_marginBottom="4dp"
         android:focusableInTouchMode="true">
 
