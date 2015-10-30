@@ -27,6 +27,7 @@ public class Protocol {
     public static final byte REGISTER_BEACON = (byte) 0x02;
     public static final byte CLIENT_UPDATE = (byte) 0x03;
     public static final byte PUT_MESSAGE = (byte) 0x04;
+    public static final byte GET_MESSAGE = (byte) 0x05;
 
 
     // prefix length field and append delimiter to payload
@@ -131,5 +132,11 @@ public class Protocol {
         }
         catch(NoSuchAlgorithmException e) {}
         return null;
+    }
+
+    public static byte[] getMessages(byte[] beacon) {
+        byte[] payload = new byte[1+beacon.length];
+        addField(payload, beacon, 0);
+        return newPayload(Protocol.GET_MESSAGE, payload);
     }
 }

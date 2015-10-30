@@ -16,6 +16,7 @@ const (
 	CLIENT_NAME    = "name"
 	LAST_ACTIVE    = "last_active"
 	BEACONS        = "registered_beacons"
+	MESSAGES       = "messages"
 )
 
 type Client struct {
@@ -50,18 +51,6 @@ func (c *Client) Set(key string, value string, timeout time.Duration) {
 	}
 }
 
-//func (c *Client) RegisterClient(device string, name string) {
-//	now := time.Now()
-//	secs := now.Unix()
-//	err := c.client.SAdd(ACTIVE_CLIENTS, device).Err()
-//	if err != nil {
-//		fmt.Println("Error:", err)
-//	} else {
-//		c.client.HSet(device, CLIENT_NAME, name)
-//		c.client.HSet(device, LAST_ACTIVE, strconv.FormatInt(secs, 10))
-//	}
-//}
-
 func (c *Client) RegisterBeacon(key string, name string, coordinates string) {
 	c.client.HSet(BEACONS, key, name+":"+coordinates)
 }
@@ -86,18 +75,33 @@ func (c *Client) Get(key string) string {
 	return result
 }
 
+func (c *Client) GetMessage(beacon string) ([]string, int) {
+	size, e := c.client.LLen(MESSAGES + ":" + beacon).Result()
+	results := []string{}
+	if e != nil {
+		return results, 1
+	}
+	fmt.Println("size", size)
+	data, e := c.client.LRange(MESSAGES+":"+beacon, 0, 4).Result()
+	fmt.Println(data)
+	if e == nil {
+		for i := 0; i < len(data); i++ {
+			results = append(results, strings.Split(data[i], "|")[1])
+		}
+	} else {
+		fmt.Println(e)
+	}
+	return results, 0
+}
+
 func (c *Client) PutMessage(message *ClientMessage) string {
-	c.client.LPush("messages:"+message.Beacon, message.Device+"|"+message.Message)
+	c.client.LPush(MESSAGES+":"+message.Beacon, message.Device+"|"+message.Message)
 	beacon, e := c.client.HGet(BEACONS, message.Beacon).Result()
 	name := "beacon"
 	if e == nil {
 		data := strings.Split(beacon, ":")
 		name = data[0]
 	}
-	//client, e := c.client.HGet(message.Device, CLIENT_NAME).Result()
-	//if e == nil {
-	//	return client, name
-	//}
 	return name
 }
 

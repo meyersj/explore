@@ -26,9 +26,6 @@ func Communicate(conn net.Conn) {
 			case protocol.CLOSE_CONN:
 				fmt.Println("\nconnection closed", time.Now(), "\n")
 				return
-			//case protocol.REGISTER_CLIENT:
-			//	response := RegisterClient(p)
-			//	conn.Write(response)
 			case protocol.REGISTER_BEACON:
 				response := RegisterBeacon(p)
 				conn.Write(response)
@@ -38,6 +35,10 @@ func Communicate(conn net.Conn) {
 			case protocol.PUT_MESSAGE:
 				response := PutMessage(p)
 				conn.Write(response)
+			case protocol.GET_MESSAGE:
+				response := GetMessage(p)
+				conn.Write(response)
+
 			}
 		}
 	}

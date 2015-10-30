@@ -120,6 +120,13 @@ public class ExploreFragment extends Fragment {
                 NearbyBeacon selectedBeacon = exploreBeaconAdapter.getItem(i);
                 exploreBeaconAdapter.setActiveBeacon(selectedBeacon);
                 selectedAdvertisement = selectedBeacon.advertisement;
+                if (selectedAdvertisement != null) {
+                    byte[] payload = Protocol.getMessages(selectedAdvertisement);
+                    ProtocolMessage protocolMessage = new ProtocolMessage();
+                    protocolMessage.payload = payload;
+                    protocolMessage.payloadFlag = Protocol.GET_MESSAGE;
+                    communicator.addMessage(protocolMessage);
+                }
             }
         });
 
@@ -160,9 +167,10 @@ public class ExploreFragment extends Fragment {
             byte[] flags = data.getByteArray(Cons.RESPONSE_FLAGS);
             Log.d(TAG, "FLAG: " + flags[0]);
 
+            byte[] response;
             switch(data.getByte(Cons.PAYLOAD_FLAGS)) {
                 case Protocol.PUT_MESSAGE:
-                    byte[] response = data.getByteArray(Cons.RESPONSE);
+                    response = data.getByteArray(Cons.RESPONSE);
                     if (response != null) {
                         try {
                             String responseString = new String(response, "UTF-8");
@@ -172,27 +180,48 @@ public class ExploreFragment extends Fragment {
                         }
                     }
                     Log.d(TAG, "protocol message");
-                    return;
-            }
-
-            switch (flags[0]) {
-                case 0x00:
-                    registered = true;
-                    byte[] response = data.getByteArray(Cons.RESPONSE);
-                    if (response != null) {
-                        try {
-                            name = new String(response, "UTF-8");
-                            name = ProtocolMessage.parseBeaconName(name);
-                            Log.d(TAG, name);
-                        } catch (UnsupportedEncodingException e) {
-                            e.printStackTrace();
-                        }
+                case Protocol.CLIENT_UPDATE:
+                    switch (flags[0]) {
+                        case 0x00:
+                            registered = true;
+                            response = data.getByteArray(Cons.RESPONSE);
+                            if (response != null) {
+                                try {
+                                    name = new String(response, "UTF-8");
+                                    name = ProtocolMessage.parseBeaconName(name);
+                                    Log.d(TAG, name);
+                                } catch (UnsupportedEncodingException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                            break;
+                        case 0x01:
+                            break;
+                    }
+                    exploreBeaconAdapter.add(new NearbyBeacon(registered, advertisement, name, rssi));
+                    break;
+                case Protocol.GET_MESSAGE:
+                    Log.d(TAG,"get messsage");
+                    switch (flags[0]) {
+                        case 0x00:
+                            response = data.getByteArray(Cons.RESPONSE);
+                            if (response != null) {
+                                try {
+                                    String responseMessage = new String(response, "UTF-8");
+                                    responseMessage = ProtocolMessage.parseBeaconName(responseMessage);
+                                    Log.d(TAG, responseMessage);
+                                } catch (UnsupportedEncodingException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                            break;
+                        case 0x01:
+                            break;
                     }
                     break;
-                case 0x01:
-                    break;
             }
-            exploreBeaconAdapter.add(new NearbyBeacon(registered, advertisement, name, rssi));
+
+
         }
     }
 }

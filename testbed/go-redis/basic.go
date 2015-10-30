@@ -7,7 +7,7 @@ import (
 
 func NewClient() *redis.Client {
 	client := redis.NewClient(&redis.Options{
-		Addr:     "meyersj.com:6379",
+		Addr:     "localhost:6379",
 		Password: "", // no password set
 		DB:       0,  // use default DB
 	})
@@ -31,5 +31,8 @@ func get(client *redis.Client, key string) string {
 }
 
 func main() {
-	//client := NewClient()
+	client := NewClient()
+	res := client.LRange("mylist", -10, -1)
+	fmt.Println(res)
+
 }
