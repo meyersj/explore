@@ -30,9 +30,9 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
 
-        //NewRelic.withApplicationToken(Utils.getNewRelicToken(getApplicationContext()))
-        //        .withLogLevel(AgentLog.DEBUG)
-        //        .start(this.getApplication());
+        NewRelic.withApplicationToken(Utils.getNewRelicToken(getApplicationContext()))
+                .withLogLevel(AgentLog.DEBUG)
+                .start(this.getApplication());
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);

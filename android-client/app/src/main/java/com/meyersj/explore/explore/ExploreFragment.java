@@ -439,7 +439,7 @@ public class ExploreFragment extends Fragment {
                         selectedBeacon.registered = true;
                         selectedBeacon.beaconKey = name;
                         exploreBeaconAdapter.notifyDataSetChanged();
-                        statusText.setText("Location saved\n...store a message below");
+                        statusText.setText("Location saved\n... store a message below");
                     }
                 } catch (UnsupportedEncodingException e) {
                     Log.d(TAG, e.toString());
