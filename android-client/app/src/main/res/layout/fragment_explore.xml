@@ -20,16 +20,16 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:layout_marginRight="6dp"
             android:background="@drawable/rounded_primary"
+            android:layout_marginRight="6dp"
             android:elevation="3dp"
             android:layout_marginBottom="3dp">
             <Button
                 android:id="@+id/start_button"
+                style="@style/Button"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:text="Start Scan"
-                android:background="@color/transparent" />
+                android:text="Start Scan" />
         </LinearLayout>
 
         <LinearLayout
@@ -42,10 +42,10 @@
             android:layout_marginBottom="3dp">
             <Button
                 android:id="@+id/stop_button"
+                style="@style/Button"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:text="Stop Scan"
-                android:background="@color/transparent" />
+                android:text="Stop Scan" />
         </LinearLayout>
 
     </LinearLayout>

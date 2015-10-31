@@ -115,7 +115,10 @@ public class ExploreFragment extends Fragment {
         stopButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                // stopScan() will change scanning flag so we
+                // need to check to update button status properly
                 stopScan();
+                view.setSelected(true);
             }
         });
 
@@ -237,6 +240,8 @@ public class ExploreFragment extends Fragment {
             communicator.startScan();
             selectedBeacon = null;
             scanning = true;
+            startButton.setSelected(true);
+            stopButton.setSelected(false);
         }
         exploreBeaconAdapter.clear();
         exploreBeaconAdapter.setActive(null);
@@ -249,6 +254,8 @@ public class ExploreFragment extends Fragment {
             communicator.stopScan();
             statusText.setText("Scan stopped");
             scanning = false;
+            startButton.setSelected(false);
+            stopButton.setSelected(false);
         }
         updateVisibility();
     }

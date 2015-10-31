@@ -28,4 +28,11 @@
         <item name="android:textColor">@color/primary_darkest</item>
     </style>
 
+    <style name="Button" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="android:background">@drawable/action_button</item>
+        <item name="android:textSize">14dp</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
 </resources>
