@@ -14,6 +14,7 @@
 + Added *save message* functionality
     + for registered beacons you can save a message with it
     + after selecting a nearby beacon you can see all previously saved messages at that location
++ Bug fixes and UI improvements
 
 
 
