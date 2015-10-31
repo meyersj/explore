@@ -14,8 +14,10 @@ import android.view.MenuItem;
 
 import com.meyersj.explore.R;
 import com.meyersj.explore.explore.ExploreFragment;
-import com.meyersj.explore.register_beacon.RegisterBeaconFragment;
 import com.meyersj.explore.utilities.Cons;
+import com.meyersj.explore.utilities.Utils;
+import com.newrelic.agent.android.NewRelic;
+import com.newrelic.agent.android.logging.AgentLog;
 
 import java.util.Locale;
 
@@ -26,15 +28,20 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+
+        //NewRelic.withApplicationToken(Utils.getNewRelicToken(getApplicationContext()))
+        //        .withLogLevel(AgentLog.DEBUG)
+        //        .start(this.getApplication());
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tab_layout);
         tabLayout.addTab(tabLayout.newTab().setText("Explore"));
         //tabLayout.addTab(tabLayout.newTab().setText("Register"));
         tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
         final ViewPager viewPager = (ViewPager) findViewById(R.id.pager);
-        SectionsPagerAdapter adapter = new SectionsPagerAdapter(getSupportFragmentManager());
+        ExplorePagerAdapter adapter = new ExplorePagerAdapter(getSupportFragmentManager());
         viewPager.setAdapter(adapter);
         viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
         tabLayout.setOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
@@ -79,13 +86,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    /**
-     * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
-     * one of the sections/tabs/pages.
-     */
-    public class SectionsPagerAdapter extends FragmentPagerAdapter {
+    public class ExplorePagerAdapter extends FragmentPagerAdapter {
 
-        public SectionsPagerAdapter(FragmentManager fm) {
+        public ExplorePagerAdapter(FragmentManager fm) {
             super(fm);
         }
 

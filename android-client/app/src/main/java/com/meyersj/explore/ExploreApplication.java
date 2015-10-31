@@ -25,6 +25,7 @@ public class ExploreApplication extends Application {
         return new Socket(host, port);
     }
 
+    /*
     public Socket getProtocolConnection(Context context) throws IOException {
         if (socket == null || socket.isClosed()) {
             socket = newSocket(context);
@@ -42,6 +43,7 @@ public class ExploreApplication extends Application {
             socket.close();
         }
     }
+    */
 
     //public AdvertisementCommunicator getCommunicator(Context context) {
     //    if (communicator == null) {
