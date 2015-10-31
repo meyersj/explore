@@ -6,24 +6,10 @@ server written in Go and Redis supports the app.
 ### description
 
 Communication between `android-client` and `go-server` is done using a TCP/IP sockets.
-The app currently provides three modes.
-
-##### Register Client
-
-For this you simply enter a public username and it is associated with a unique
-identifier for your device. 
-
-##### Register Beacon
-
-You conduct a BLE scan looking for advertisements. Once discovered you can enter
-a name for the beacon and register it. This will create a unique identifier and associate
-the name you provided and your current coordinates. Registering beacons allows them to be
-discovered in **Explore** mode.
-
-##### Explorer
-
-You conduct a BLE scan looking for advertisements. If the discovered beacon is registered then
-information will be displayed about it. Otherwise it will show up as unregistered.
+The app currently provides ability to scan for BLE advertisements. A location
+name can be associated with that advertisement signature. Once associated users
+can store messages for that location. Other users retrieve those messages
+when scanning near that beacon.
 
 ### config
 1. rename `ble-tester/test-config.toml` to `config.toml`
@@ -35,4 +21,25 @@ go-server requires a toml and redis packages
 go get github.com/BurntSushi/toml
 go get gopkg.in/redis.v3
 ```
+You also need to have redis installed running on port `6379`. This is hardcoded in `go-server/data/redis_interface.go` but will be changed to config param eventually.
 
+### running
+
+Install go dependencies and start redis on port `6379`, then start the server
+```
+cd go-server
+go run main.go &
+```
+
+To run on LAN you need to figure out what your computers internal IP for your network is. Running `ifconfig`
+on my computer shows `inet addr:192.168.1.101` under the `wlan0` entry. That is the IP what you will want to use
+for the **host** param in the android config. Keep the default **port** `8082`.
+
+Build android app then install `app-debug.apk` found in `android-client/app/build/outputs/apk`
+```
+cd android-client
+./gradlew assembleDebug
+```
+
+After installing open up device and open up *Settings*. Confirm **host** and **port** match your server.
+You can then *Start Scan* and nearby beacons will be displayed.
