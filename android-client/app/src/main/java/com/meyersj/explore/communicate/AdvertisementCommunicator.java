@@ -41,20 +41,9 @@ public class AdvertisementCommunicator extends ThreadedCommunicator {
         }
     };
 
-
-    public AdvertisementCommunicator(Context context) {
-        super(context);
-        this.rateLimiter = RateLimiter.create(1);
-        BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        if(bluetoothAdapter != null) {
-            bleScanner = bluetoothAdapter.getBluetoothLeScanner();
-        }
-    }
-
-
     public AdvertisementCommunicator(Context context, Handler handler) {
         super(context, handler);
-        this.rateLimiter = RateLimiter.create(1);
+        this.rateLimiter = RateLimiter.create(3);
         BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if(bluetoothAdapter != null) {
             bleScanner = bluetoothAdapter.getBluetoothLeScanner();

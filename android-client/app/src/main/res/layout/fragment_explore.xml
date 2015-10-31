@@ -84,7 +84,7 @@
         android:layout_height="fill_parent"
         android:orientation="vertical"
         android:layout_below="@id/status_layout"
-        android:layout_above="@+id/message_layout">
+        android:layout_above="@+id/action_layout">
 
         <LinearLayout
             android:id="@+id/beacon_layout"
@@ -127,45 +127,52 @@
 
     </LinearLayout>
 
-    <LinearLayout
-        android:id="@id/message_layout"
+    <FrameLayout
+        android:id="@id/action_layout"
         android:layout_alignParentBottom="true"
-        android:background="@drawable/rounded_primary"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:visibility="gone"
-        android:padding="8dp"
-        android:paddingLeft="12dp"
-        android:paddingRight="12dp"
+        android:background="@drawable/rounded_primary"
         android:elevation="3dp"
         android:layout_marginTop="9dp"
         android:layout_marginBottom="4dp"
-        android:focusableInTouchMode="true">
+        android:visibility="gone"
+        android:padding="12dp">
 
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/ic_chat_white_24dp"
-            android:paddingRight="8dp"
-            android:layout_gravity="center_vertical|center_horizontal"/>
-
-        <EditText
-            android:id="@+id/message"
+        <LinearLayout
+            android:id="@+id/message_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="4"
-            android:hint="Enter message" />
+            android:orientation="horizontal"
+            android:focusableInTouchMode="true">
 
-        <ImageView
-            android:id="@+id/save_message_icon"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/ic_add_circle_white_24dp"
-            android:paddingLeft="8dp"
-            android:layout_gravity="center_vertical|center_horizontal" />
+            <ImageView
+                android:id="@+id/action_icon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_chat_white_24dp"
+                android:paddingRight="12dp"
+                android:layout_gravity="center_vertical|center_horizontal"/>
 
-    </LinearLayout>
+            <EditText
+                android:id="@+id/message"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="4"
+                android:hint="Enter message" />
+
+            <ImageView
+                android:id="@+id/save_message_icon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_add_circle_white_36dp"
+                android:paddingLeft="12dp"
+                android:layout_gravity="center_vertical|center_horizontal" />
+
+        </LinearLayout>
+
+
+    </FrameLayout>
 
 
 

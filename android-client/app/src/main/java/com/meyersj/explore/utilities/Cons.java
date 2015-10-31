@@ -21,6 +21,7 @@ public class Cons {
     public static final String RESPONSE_FLAGS = "response_flags";
 
     public static final long PROTOCOL_POLL  = 0;
+    public static final long HOURS_24 = 24 * 60 * 60 * 1000;
 
 
 

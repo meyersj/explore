@@ -31,7 +31,7 @@ public class MainActivity extends AppCompatActivity {
 
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tab_layout);
         tabLayout.addTab(tabLayout.newTab().setText("Explore"));
-        tabLayout.addTab(tabLayout.newTab().setText("Register"));
+        //tabLayout.addTab(tabLayout.newTab().setText("Register"));
         tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
         final ViewPager viewPager = (ViewPager) findViewById(R.id.pager);
         SectionsPagerAdapter adapter = new SectionsPagerAdapter(getSupportFragmentManager());
@@ -96,17 +96,18 @@ public class MainActivity extends AppCompatActivity {
             switch (position) {
                 case 0:
                     return ExploreFragment.newInstance(position + 1);
-                default:
-                    return RegisterBeaconFragment.newInstance(position + 1);
+                //default:
+                //    return RegisterBeaconFragment.newInstance(position + 1);
 
             }
+            return null;
             //return ExploreFragment.newInstance(position + 1);  //PlaceholderFragment.newInstance(position + 1);
         }
 
         @Override
         public int getCount() {
             // Show 3 total pages.
-            return 2;
+            return 1;
         }
 
         @Override
@@ -115,30 +116,10 @@ public class MainActivity extends AppCompatActivity {
             switch (position) {
                 case 0:
                     return getString(R.string.title_explore).toUpperCase(l);
-                case 1:
-                    return getString(R.string.title_register).toUpperCase(l);
+                //case 1:
+                //    return getString(R.string.title_register).toUpperCase(l);
             }
             return null;
         }
     }
-        /*
-        public static PlaceholderFragment newInstance(int sectionNumber) {
-            PlaceholderFragment fragment = new PlaceholderFragment();
-            Bundle args = new Bundle();
-            args.putInt(ARG_SECTION_NUMBER, sectionNumber);
-            fragment.setArguments(args);
-            return fragment;
-        }
-
-        public PlaceholderFragment() {
-        }
-
-        @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                                 Bundle savedInstanceState) {
-            View rootView = inflater.inflate(R.layout.fragment_main, container, false);
-            ((TextView) rootView.findViewById(R.id.section_label)).setText("test");
-            return rootView;
-        }
-        */
 }

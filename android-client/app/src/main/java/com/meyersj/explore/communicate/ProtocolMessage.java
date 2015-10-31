@@ -37,15 +37,17 @@ public class ProtocolMessage {
 
     public static String parseBeaconName(String value) {
         Log.d("PARSE", value);
-        String[] split1 = value.split("\\|");
-        if (split1.length == 2) {
-            String[] split2 = split1[1].split(":");
-            if (split2.length == 2) {
-                String name = split2[0];
-                String coordinates = split2[1];
-                return name + " " + coordinates;
-            }
+        String[] fields = value.split("\t");
+        if (fields.length == 3) {
+            return fields[2];
+            //String[] nameField = messages[2].split(":");
+            //if (split2.length == 2) {
+            //    String name = split2[0];
+            //    String coordinates = split2[1];
+            //    return name + " " + coordinates;
+            //}
         }
-        return value;
+        return "error";
+        //return value;
     }
 }

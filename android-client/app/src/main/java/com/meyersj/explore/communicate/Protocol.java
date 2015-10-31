@@ -94,13 +94,13 @@ public class Protocol {
     }
 
     // register human readable name of client
-    public static byte[] registerClient(byte[] device, byte[] client) {
-        byte[] payload = new byte[2 + device.length + client.length];
-        int index = 0;
-        index = addField(payload, device, index);
-        addField(payload, client, index);
-        return newPayload(Protocol.REGISTER_CLIENT, payload);
-    }
+    //public static byte[] registerClient(byte[] device, byte[] client) {
+    //    byte[] payload = new byte[2 + device.length + client.length];
+    //    int index = 0;
+    //    index = addField(payload, device, index);
+    //    addField(payload, client, index);
+    //    return newPayload(Protocol.REGISTER_CLIENT, payload);
+    //}
 
     public static byte[] sendMessage(byte[] device, byte[] user, byte[] message, byte[] beacon) {
         byte[] payload = new byte[4+device.length+user.length+message.length+beacon.length];

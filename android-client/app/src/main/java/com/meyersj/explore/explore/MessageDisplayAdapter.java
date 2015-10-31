@@ -12,12 +12,12 @@ import com.meyersj.explore.R;
 
 import java.util.ArrayList;
 
-public class MessageDisplayAdapter extends ArrayAdapter<String> {
+public class MessageDisplayAdapter extends ArrayAdapter<MessageDisplay> {
 
     private final String TAG = getClass().getCanonicalName();
 
     public MessageDisplayAdapter(Context context) {
-        super(context, 0, new ArrayList<String>());
+        super(context, 0, new ArrayList<MessageDisplay>());
     }
 
     @Override
@@ -27,14 +27,16 @@ public class MessageDisplayAdapter extends ArrayAdapter<String> {
 
     @Override
     public View getView(int position, View view, ViewGroup parent) {
-        String message = getItem(position);
+        MessageDisplay messageDisplay = getItem(position);
         if (view == null) {
             view = LayoutInflater.from(getContext()).inflate(R.layout.message_list_view, parent, false);
         }
+        TextView dateText = (TextView) view.findViewById(R.id.date);
         TextView usernameText = (TextView) view.findViewById(R.id.username);
         TextView messageText = (TextView) view.findViewById(R.id.message);
-        usernameText.setText("testuser");
-        messageText.setText(message);
+        dateText.setText(messageDisplay.getTimestamp());
+        usernameText.setText(messageDisplay.getUsername());
+        messageText.setText(messageDisplay.getMessage());
         return view;
     }
 

@@ -90,11 +90,12 @@ public class Utils {
         return deviceId;
     }
 
-    /*
+
     public static void hideKeyboard(Activity activity) {
-        InputMethodManager inputMethodManager = (InputMethodManager)  activity.getSystemService(Activity.INPUT_METHOD_SERVICE);
-        //activity.getCurrentFocus().
-        inputMethodManager.hideSoftInputFromWindow(activity.getCurrentFocus().getWindowToken(), 0);
+        InputMethodManager inputManager = (InputMethodManager)
+                activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+        inputManager.hideSoftInputFromWindow(activity.getCurrentFocus().getWindowToken(),
+                InputMethodManager.HIDE_NOT_ALWAYS);
     }
-    */
+
 }
