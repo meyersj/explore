@@ -1,7 +1,7 @@
 # Explore
 
 Android app to interact with your environment through BLE advertisements. A back-end
-server written in Go and Redis supports the app.
+server written in Go with Redis supports the app.
 
 ### description
 
