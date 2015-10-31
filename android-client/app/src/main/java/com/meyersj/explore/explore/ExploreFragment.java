@@ -171,7 +171,6 @@ public class ExploreFragment extends Fragment {
                             selectedBeacon = newSelected;
                             actionModeInput.activateRegister();
                             break;
-
                     }
                 }
                 updateVisibility();
@@ -195,8 +194,7 @@ public class ExploreFragment extends Fragment {
                     }
                     if (mode.equals(InputMode.MESSAGE)) {
                         putMessage(message);
-                    }
-                    else if (mode.equals(InputMode.REGISTER)) {
+                    } else if (mode.equals(InputMode.REGISTER)) {
                         registerBeacon(message);
                         actionModeInput.activateMessage();
                     }
@@ -228,6 +226,9 @@ public class ExploreFragment extends Fragment {
                     break;
                 case Protocol.GET_MESSAGE:
                     getMessageResponse(data);
+                    break;
+                case Protocol.REGISTER_BEACON:
+                    getRegisterBeaconMessage(data);
                     break;
             }
             updateVisibility();
@@ -317,8 +318,6 @@ public class ExploreFragment extends Fragment {
         message.payloadFlag = Protocol.REGISTER_BEACON;
         communicator.addMessage(message);
     }
-
-
 
     public void clientUpdateResponse(Bundle data) {
         boolean registered = false;
@@ -418,6 +417,33 @@ public class ExploreFragment extends Fragment {
                 }
                 break;
             case 0x01:
+                break;
+        }
+    }
+
+    public void getRegisterBeaconMessage(Bundle data) {
+        Log.d(TAG, "message response");
+        byte[] response = data.getByteArray(Cons.RESPONSE);
+        byte[] flags = data.getByteArray(Cons.RESPONSE_FLAGS);
+        Log.d(TAG, new String(response));
+        if (flags == null || response == null) return;
+        switch (flags[0]) {
+            case 0x00:
+                try {
+                    String responseString = new String(response, "UTF-8");
+                    String[] fields = responseString.split("\t");
+                    if (fields.length == 3) {
+                        //String key = fields[0];
+                        String name = fields[1];
+                        //String coordinates = fields[2];
+                        selectedBeacon.registered = true;
+                        selectedBeacon.beaconKey = name;
+                        exploreBeaconAdapter.notifyDataSetChanged();
+                        statusText.setText("Location saved\n...store a message below");
+                    }
+                } catch (UnsupportedEncodingException e) {
+                    Log.d(TAG, e.toString());
+                }
                 break;
         }
     }
