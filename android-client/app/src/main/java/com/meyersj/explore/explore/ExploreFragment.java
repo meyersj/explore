@@ -393,7 +393,7 @@ public class ExploreFragment extends Fragment {
                         String responseString = new String(response, "UTF-8");
                         String[] messages = responseString.split("\n");
                         // parse and reverse order of messages
-                        for (int i = messages.length - 1; i > 0; --i) {
+                        for (int i = messages.length - 1; i >= 0; i--) {
                             Log.d(TAG, messages[i]);
                             String[] fields = messages[i].split("\t");
                             if (fields.length == 4) {
