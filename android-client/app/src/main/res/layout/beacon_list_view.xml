@@ -9,13 +9,15 @@
         android:id="@+id/count"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:paddingRight="8dp"/>
+        android:paddingRight="8dp"
+        android:textColor="@color/secondary_text" />
 
     <TextView
         android:id="@+id/rssi"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:paddingRight="8dp"/>
+        android:paddingRight="8dp"
+        android:textColor="@color/secondary_text" />
 
     <TextView
         android:id="@+id/beaconKey"
