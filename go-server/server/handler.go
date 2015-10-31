@@ -17,8 +17,9 @@ func RegisterBeacon(p *payload.Payload) []byte {
 		coordinates := data.BuildCoordinates(lat, lon)
 		client := data.InitClient()
 		client.RegisterBeacon(key, name, coordinates)
+		response := key + "\t" + name + "\t" + coordinates
 		fmt.Println("REGISTER BEACON", key, name, coordinates)
-		return payload.Build(0x00, []byte(key))
+		return payload.Build(0x00, []byte(response))
 	}
 	fmt.Println("ERROR: REGISTER BEACON: not parsed properly")
 	return payload.Build(0x01, []byte{})
