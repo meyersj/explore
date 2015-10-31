@@ -1,28 +1,21 @@
 <resources>
-
-    <!-- Base application theme. -->
-    <!--style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar"-->
-        <!-- Customize your theme here. -->
-    <!--/style-->
-
-    <!-- Base application theme. -->
+    
     <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
-        <!--   your app branding color for the app bar -->
-
         <item name="colorButtonNormal">@color/primary</item>
         <item name="colorPrimary">@color/primary</item>
         <item name="android:editTextColor">@color/primary_text</item>
         <item name="android:textColorHint">@color/secondary_text</item>
         <item name="android:textColor">@color/primary_text</item>
-
-
         <item name="colorPrimaryDark">@color/primary_dark</item>
         <item name="colorAccent">@color/accent</item>
-
         <item name="colorControlNormal">@color/accent</item>
         <item name="colorControlActivated">@color/accent</item>
-
     </style>
 
+    <style name="ListViewStyle">
+        <item name="android:divider">@color/accent</item>
+        <item name="android:dividerHeight">1dp</item>
+        <item name="android:padding">8dp</item>
+    </style>
 
 </resources>

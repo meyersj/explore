@@ -98,9 +98,9 @@
 
             <ListView
                 android:id="@+id/nearby_list"
+                style="@style/ListViewStyle"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:padding="8dp" >
+                android:layout_height="wrap_content" >
             </ListView>
 
         </LinearLayout>
@@ -118,9 +118,9 @@
 
             <ListView
                 android:id="@+id/display_list"
+                style="@style/ListViewStyle"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:padding="8dp" >
+                android:layout_height="wrap_content" >
             </ListView>
 
         </LinearLayout>
