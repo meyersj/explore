@@ -1,5 +1,10 @@
 <resources>
-    
+
+    <style name="StyleTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="colorPrimaryDark">@color/primary_dark</item>
+        <item name="colorControlActivated">@color/primary_darkest</item>
+    </style>
+
     <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="colorButtonNormal">@color/primary</item>
         <item name="colorPrimary">@color/primary</item>
@@ -10,12 +15,17 @@
         <item name="colorAccent">@color/accent</item>
         <item name="colorControlNormal">@color/accent</item>
         <item name="colorControlActivated">@color/accent</item>
+        <item name="colorControlHighlight">@color/accent</item>
     </style>
 
     <style name="ListViewStyle">
-        <item name="android:divider">@color/accent</item>
+        <item name="android:divider">@color/divider</item>
         <item name="android:dividerHeight">1dp</item>
         <item name="android:padding">8dp</item>
+    </style>
+
+    <style name="SettingsPopupStyle" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="android:textColor">@color/primary_darkest</item>
     </style>
 
 </resources>

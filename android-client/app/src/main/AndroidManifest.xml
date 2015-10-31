@@ -27,7 +27,8 @@
 
         <activity
             android:name=".activity.SettingsActivity"
-            android:label="@string/action_settings">
+            android:label="@string/action_settings"
+            android:theme="@style/StyleTheme" >
             <intent-filter>
                 <action android:name="com.meyersj.explore.SETTINGS" />
                 <category android:name="android.intent.category.DEFAULT" />
