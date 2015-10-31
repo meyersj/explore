@@ -2,7 +2,6 @@ package com.meyersj.explore.nearby;
 
 
 import android.content.Context;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -78,7 +77,7 @@ public class NearbyAdapter extends ArrayAdapter<NearbyBeacon> {
         }
         hash.setText(name);
         if (active == beacon) {
-            view.setBackground(getContext().getDrawable(R.drawable.rounded_primary_light));
+            view.setBackground(getContext().getDrawable(R.drawable.rounded_active));
         }
         else {
             view.setBackground(getContext().getDrawable(R.color.transparent));
