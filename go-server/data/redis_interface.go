@@ -31,6 +31,7 @@ type ClientUpdate struct {
 
 type ClientMessage struct {
 	Device  string
+	User    string
 	Beacon  string
 	Message string
 }
@@ -44,15 +45,8 @@ func InitClient() *Client {
 	return &Client{client: client}
 }
 
-func (c *Client) Set(key string, value string, timeout time.Duration) {
-	err := c.client.Set(key, value, timeout).Err()
-	if err != nil {
-		fmt.Println("Error:", err)
-	}
-}
-
 func (c *Client) RegisterBeacon(key string, name string, coordinates string) {
-	c.client.HSet(BEACONS, key, name+":"+coordinates)
+	c.client.HSet(BEACONS, key, name+"\t"+coordinates)
 }
 
 func (c *Client) ClientUpdate(update *ClientUpdate) (byte, []byte) {
@@ -63,43 +57,41 @@ func (c *Client) ClientUpdate(update *ClientUpdate) (byte, []byte) {
 	c.client.HSet(update.Device, update.Beacon, data)
 	data, e := c.client.HGet(BEACONS, update.Beacon).Result()
 	if e == nil {
-		response := update.Beacon + "|" + data
+		name := strings.Split(data, "\t")[0]
+		response := secs + "\t" + update.Beacon + "\t" + name
 		return 0x00, []byte(response)
 	}
 	return 0x01, []byte{}
 }
 
-func (c *Client) Get(key string) string {
-	result := c.client.Get(key).String()
-	fmt.Println(result)
-	return result
-}
-
 func (c *Client) GetMessage(beacon string) ([]string, int) {
-	size, e := c.client.LLen(MESSAGES + ":" + beacon).Result()
+	key := MESSAGES + ":" + beacon
+	size, e := c.client.LLen(key).Result()
 	results := []string{}
 	if e != nil {
 		return results, 1
 	}
 	fmt.Println("size", size)
-	data, e := c.client.LRange(MESSAGES+":"+beacon, 0, 4).Result()
-	fmt.Println(data)
+	data, e := c.client.LRange(key, 0, 20).Result()
 	if e == nil {
-		for i := 0; i < len(data); i++ {
-			results = append(results, strings.Split(data[i], "|")[1])
-		}
-	} else {
-		fmt.Println(e)
+		return data, 0
 	}
 	return results, 0
 }
 
 func (c *Client) PutMessage(message *ClientMessage) string {
-	c.client.LPush(MESSAGES+":"+message.Beacon, message.Device+"|"+message.Message)
+	key := MESSAGES + ":" + message.Beacon
+	now := time.Now()
+	secs := strconv.FormatInt(now.Unix(), 10)
+	value := message.Device + "\t"
+	value += message.User + "\t"
+	value += message.Message + "\t"
+	value += secs
+	c.client.LPush(key, value)
 	beacon, e := c.client.HGet(BEACONS, message.Beacon).Result()
 	name := "beacon"
 	if e == nil {
-		data := strings.Split(beacon, ":")
+		data := strings.Split(beacon, "\t")
 		name = data[0]
 	}
 	return name

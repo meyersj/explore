@@ -4,6 +4,7 @@ import (
 	"../data"
 	"../payload"
 	"fmt"
+	"strings"
 )
 
 func RegisterBeacon(p *payload.Payload) []byte {
@@ -49,9 +50,14 @@ func PutMessage(p *payload.Payload) []byte {
 		key := data.BuildBeaconKey(message.Structures[3])
 		fmt.Println("\n"+device, key, client_message, "\n")
 		client := data.InitClient()
-		msg := &data.ClientMessage{Device: device, Beacon: key, Message: client_message}
+		msg := &data.ClientMessage{
+			Device:  device,
+			User:    client_name,
+			Beacon:  key,
+			Message: client_message,
+		}
 		beacon_name := client.PutMessage(msg)
-		display := "<" + beacon_name + "> " + client_name + ": " + client_message
+		display := beacon_name + "\t" + client_name + "\t" + client_message
 		return payload.Build(0x00, []byte(display))
 	}
 	return payload.Build(0x01, []byte("error"))
@@ -63,11 +69,9 @@ func GetMessage(p *payload.Payload) []byte {
 		key := data.BuildBeaconKey(message.Structures[0])
 		client := data.InitClient()
 		messages, _ := client.GetMessage(key)
-		if len(messages) > 0 {
-			return payload.Build(0x00, []byte(messages[0]))
-			fmt.Println("GET MESSAGE", key, messages[0])
-		}
-		fmt.Println(message.Structures)
+		response := strings.Join(messages, "\n")
+		fmt.Println("GET MESSAGE", key, response)
+		return payload.Build(0x00, []byte(response))
 	}
 	fmt.Println("GET MESSAGE", "failed to parse message")
 	return payload.Build(0x01, []byte{})
