@@ -329,7 +329,7 @@ public class ExploreFragment extends Fragment {
                         name = new String(response, "UTF-8");
                         name = ProtocolMessage.parseBeaconName(name);
                     } catch (UnsupportedEncodingException e) {
-                        e.printStackTrace();
+                        Log.d(TAG, e.toString());
                     }
                 }
                 break;
@@ -364,7 +364,7 @@ public class ExploreFragment extends Fragment {
                     statusText.setText(display);
                 }
             } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
+                Log.d(TAG, e.toString());
             }
         }
         Log.d(TAG, "protocol message");
@@ -402,7 +402,7 @@ public class ExploreFragment extends Fragment {
                             }
                         }
                     } catch (UnsupportedEncodingException e) {
-                        e.printStackTrace();
+                        Log.d(TAG, e.toString());
                     }
                 }
                 break;
