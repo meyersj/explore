@@ -75,6 +75,7 @@ public class LocationMapFragment extends Fragment {
         mapView.setCenterCoordinate(portland);
         mapView.setZoomLevel(8);
         mapView.onCreate(savedInstanceState);
+        mapView.setMyLocationEnabled(true);
         communicator.start();
         ProtocolMessage message = new ProtocolMessage();
         message.payloadFlag = Protocol.GET_BEACONS;
