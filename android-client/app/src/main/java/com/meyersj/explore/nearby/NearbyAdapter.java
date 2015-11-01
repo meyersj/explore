@@ -128,12 +128,9 @@ public class NearbyAdapter extends ArrayAdapter<NearbyBeacon> {
     }
 
     private void activateBeacon() {
-        // save current list
-        // pop out active
-        // clear data
-        // add active
-        // profit
+        //data.remove(active);
         restoreList = new ArrayList<>(data);
+        //restoreList.add(0, active);
         super.clear();
         super.add(active);
     }
@@ -144,7 +141,4 @@ public class NearbyAdapter extends ArrayAdapter<NearbyBeacon> {
             super.add(beacon);
         }
     }
-
-
-
 }
