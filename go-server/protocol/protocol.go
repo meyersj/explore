@@ -8,4 +8,5 @@ const (
 	CLIENT_UPDATE   = 0x03
 	PUT_MESSAGE     = 0x04
 	GET_MESSAGE     = 0x05
+	GET_BEACONS     = 0x06
 )

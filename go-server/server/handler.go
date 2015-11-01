@@ -77,3 +77,11 @@ func GetMessage(p *payload.Payload) []byte {
 	fmt.Println("GET MESSAGE", "failed to parse message")
 	return payload.Build(0x01, []byte{})
 }
+
+func GetBeacons(p *payload.Payload) []byte {
+	client := data.InitClient()
+	beacons := client.GetBeacons()
+	response := strings.Join(beacons, "\n")
+	fmt.Println("GET BEACONS", response)
+	return payload.Build(0x00, []byte(response))
+}

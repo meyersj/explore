@@ -64,6 +64,21 @@ func (c *Client) ClientUpdate(update *ClientUpdate) (byte, []byte) {
 	return 0x01, []byte{}
 }
 
+func (c *Client) GetBeacons() []string {
+	beacons, e := c.client.HGetAll(BEACONS).Result()
+	results := []string{}
+	if e == nil {
+		for i := 0; i < len(beacons); i += 2 {
+			key := beacons[i]
+			data := beacons[i+1]
+			results = append(results, key+"\t"+data)
+			fmt.Println(beacons[i])
+		}
+		return results
+	}
+	return []string{}
+}
+
 func (c *Client) GetMessage(beacon string) ([]string, int) {
 	key := MESSAGES + ":" + beacon
 	size, e := c.client.LLen(key).Result()

@@ -38,7 +38,9 @@ func Communicate(conn net.Conn) {
 			case protocol.GET_MESSAGE:
 				response := GetMessage(p)
 				conn.Write(response)
-
+			case protocol.GET_BEACONS:
+				response := GetBeacons(p)
+				conn.Write(response)
 			}
 		}
 	}
