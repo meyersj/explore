@@ -40,6 +40,7 @@ public class ScannerService extends Service {
     private RateLimiter rateLimiter;
     private boolean scanning = false;
     private Integer serial = 1;
+    private HashMap<String, Integer> counter;
     private HashMap<String, ScanResult> received;
     private List<ScanFilter> scanFilters = new ArrayList<>();
     private ScanSettings scanSettings;
@@ -50,10 +51,19 @@ public class ScannerService extends Service {
         public void onScanResult(int callbackType, ScanResult result) {
             if (result != null && rateLimiter.tryAcquire()) {
                 String beacon = Utils.getHexString(result.getScanRecord().getBytes());
-                if (!received.containsKey(beacon)) {
-                    Log.d(TAG, "handle background ble advertisement" + beacon);
+                if (received.containsKey(beacon)) {
+                    int count = counter.get(beacon) + 1;
+                    Log.d(TAG, "beacon: " + String.valueOf(count));
+                    counter.put(beacon, count);
+                    if (count == 5) {
+                        Log.d(TAG, "handle background ble advertisement" + beacon);
+                        received.put(beacon, result);
+                        handleAdvertisement(result);
+                    }
+                }
+                else {
                     received.put(beacon, result);
-                    handleAdvertisement(result);
+                    counter.put(beacon, 0);
                 }
             }
         }
@@ -63,7 +73,8 @@ public class ScannerService extends Service {
     public void onCreate () {
         Log.d(TAG, "on create service");
         received = new HashMap<>();
-        rateLimiter = RateLimiter.create(0.1);
+        counter = new HashMap<>();
+        rateLimiter = RateLimiter.create(1);
         BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if(bluetoothAdapter != null) {
             bleScanner = bluetoothAdapter.getBluetoothLeScanner();
@@ -82,8 +93,6 @@ public class ScannerService extends Service {
             bleScanner.startScan(scanFilters, scanSettings, scanCallback);
             scanning = true;
         }
-        // We want this service to continue running until it is explicitly
-        // stopped, so return sticky.
         return START_STICKY;
     }
 
@@ -152,8 +161,6 @@ public class ScannerService extends Service {
         Log.d(TAG, "handle response");
         boolean registered = false;
         String beaconName = data.getString(Cons.BEACON_KEY);
-        int rssi = data.getInt(Cons.RSSI);
-        byte[] advertisement = data.getByteArray(Cons.ADVERTISEMENT);
         byte[] flags = data.getByteArray(Cons.RESPONSE_FLAGS);
         byte[] response = data.getByteArray(Cons.RESPONSE);
 
