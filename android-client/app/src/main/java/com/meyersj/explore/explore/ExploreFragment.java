@@ -4,6 +4,7 @@ import android.content.Context;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Message;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -113,9 +114,10 @@ public class ExploreFragment extends Fragment
         super.onDestroyView();
         communicator.stopScan();
         communicator.stop();
-        if (googleApiClient.isConnected()) {
-            googleApiClient.disconnect();
-        }
+        stopLocationUpdates();
+        //if (googleApiClient.isConnected()) {
+        //    googleApiClient.disconnect();
+        //}
     }
 
     private void setViewListeners() {
