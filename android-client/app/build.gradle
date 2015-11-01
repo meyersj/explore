@@ -29,4 +29,7 @@ dependencies {
     compile 'com.newrelic.agent.android:android-agent:5.+'
     compile 'com.jakewharton:butterknife:7.0.1'
     compile 'com.google.guava:guava:18.0'
+    compile ('com.mapbox.mapboxsdk:mapbox-android-sdk:2.1.0@aar'){
+        transitive=true
+    }
 }

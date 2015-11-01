@@ -36,7 +36,12 @@ public class Utils {
     public static String getNewRelicToken(Context context) {
         Properties properties = getProperties(context, Cons.CONFIG_FILE);
         String newRelicToken = properties.getProperty(Cons.NEWRELIC_TOKEN, "");
-        Log.d("NEWRELIC", newRelicToken);
+        return newRelicToken;
+    }
+
+    public static String getMapboxToken(Context context) {
+        Properties properties = getProperties(context, Cons.CONFIG_FILE);
+        String newRelicToken = properties.getProperty(Cons.MAPBOX_TOKEN, "");
         return newRelicToken;
     }
 

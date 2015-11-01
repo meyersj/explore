@@ -2,7 +2,7 @@
     <string name="app_name">Explore</string>
 
     <string name="title_explore">Explore</string>
-    <string name="title_calibrate">Calibrate</string>
+    <string name="title_map">Map</string>
     <string name="title_register">Register</string>
 
     <string name="navigation_drawer_open">Open navigation drawer</string>

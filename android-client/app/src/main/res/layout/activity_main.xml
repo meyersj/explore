@@ -28,10 +28,10 @@
         android:minHeight="?attr/actionBarSize"
         android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"/>
 
-    <android.support.v4.view.ViewPager
+    <com.meyersj.explore.activity.NonSwipeableViewPager
         android:id="@+id/pager"
         android:layout_width="match_parent"
         android:layout_height="fill_parent"
-        android:layout_below="@id/tab_layout"/>
+        android:layout_below="@id/tab_layout" />
 
 </RelativeLayout>
