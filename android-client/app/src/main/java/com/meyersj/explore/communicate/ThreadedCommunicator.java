@@ -16,7 +16,7 @@ import java.net.UnknownHostException;
 import java.util.concurrent.LinkedBlockingQueue;
 
 
-public abstract class ThreadedCommunicator {
+public class ThreadedCommunicator {
 
 
     private final String TAG = getClass().getCanonicalName();

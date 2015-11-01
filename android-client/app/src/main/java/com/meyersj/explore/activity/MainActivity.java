@@ -8,6 +8,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -20,6 +21,10 @@ import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
 
+    private final String TAG = getClass().getCanonicalName();
+    private ExploreFragment exploreFragment;
+    private LocationMapFragment mapFragment;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -28,6 +33,9 @@ public class MainActivity extends AppCompatActivity {
         //NewRelic.withApplicationToken(Utils.getNewRelicToken(getApplicationContext()))
         //        .withLogLevel(AgentLog.DEBUG)
         //        .start(this.getApplication());
+
+        exploreFragment = ExploreFragment.newInstance(1);
+        mapFragment = LocationMapFragment.newInstance(2);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -43,10 +51,19 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
                 viewPager.setCurrentItem(tab.getPosition());
+                switch(tab.getPosition()) {
+                    case 0:
+                        break;
+                    case 1:
+                        Log.d(TAG, "open map fragment");
+                        //mapFragment.updateLocations();
+                }
             }
 
             @Override
-            public void onTabUnselected(TabLayout.Tab tab) {}
+            public void onTabUnselected(TabLayout.Tab tab) {
+
+            }
 
             @Override
             public void onTabReselected(TabLayout.Tab tab) {}
@@ -80,9 +97,9 @@ public class MainActivity extends AppCompatActivity {
         public Fragment getItem(int position) {
             switch (position) {
                 case 0:
-                    return ExploreFragment.newInstance(position + 1);
+                    return exploreFragment;
                 default:
-                    return LocationMapFragment.newInstance(position + 1);
+                    return mapFragment;
             }
         }
 

@@ -1,6 +1,7 @@
 package com.meyersj.explore.explore;
 
 import android.content.Context;
+import android.location.Location;
 import android.os.Bundle;
 import android.os.Message;
 import android.support.v4.app.Fragment;
@@ -17,6 +18,11 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationListener;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
 import com.meyersj.explore.R;
 import com.meyersj.explore.communicate.AdvertisementCommunicator;
 import com.meyersj.explore.communicate.Protocol;
@@ -34,7 +40,9 @@ import java.util.Date;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 
-public class ExploreFragment extends Fragment {
+public class ExploreFragment extends Fragment
+        implements GoogleApiClient.ConnectionCallbacks,
+        GoogleApiClient.OnConnectionFailedListener, LocationListener {
 
     private static final String TAB_NUMBER = "tab_number";
     private final String TAG = getClass().getCanonicalName();
@@ -57,6 +65,10 @@ public class ExploreFragment extends Fragment {
     private boolean scanning = false;
     private NearbyBeacon selectedBeacon;
     private InputMode actionModeInput;
+    private GoogleApiClient googleApiClient;
+    private LocationRequest locationRequest;
+    private boolean requestingLocationUpdates = false;
+    private Location currentLocation;
 
     public static ExploreFragment newInstance(int tabNumber) {
         ExploreFragment fragment = new ExploreFragment();
@@ -80,7 +92,8 @@ public class ExploreFragment extends Fragment {
         communicator = new AdvertisementCommunicator(getContext(), new ResponseHandler(this));
         actionModeInput = new InputMode(getContext(), actionIcon, messageText);
         communicator.start();
-        Log.d(TAG, "onCreateView");
+        buildGoogleApiClient();
+        createLocationRequest();
         setViewListeners();
         return rootView;
     }
@@ -100,6 +113,9 @@ public class ExploreFragment extends Fragment {
         super.onDestroyView();
         communicator.stopScan();
         communicator.stop();
+        if (googleApiClient.isConnected()) {
+            googleApiClient.disconnect();
+        }
     }
 
     private void setViewListeners() {
@@ -133,6 +149,7 @@ public class ExploreFragment extends Fragment {
                         selectedBeacon = null;
                         messageDisplayAdapter.clear();
                         updateVisibility();
+                        stopLocationUpdates();
                         return;
                 }
 
@@ -166,6 +183,8 @@ public class ExploreFragment extends Fragment {
                     }
                     selectedBeacon = newSelection;
                     actionModeInput.activateRegister();
+                    requestingLocationUpdates = true;
+                    googleApiClient.connect();
                 }
                 activateBeacon(newSelection);
                 updateVisibility();
@@ -386,6 +405,8 @@ public class ExploreFragment extends Fragment {
                             Log.d(TAG, messages[i]);
                             String[] fields = messages[i].split("\t");
                             if (fields.length == 4) {
+                                String mystery = fields[0];
+                                Log.d(TAG, "mystery " + mystery);
                                 String username = fields[1];
                                 String message = fields[2];
                                 String epochString = fields[3];
@@ -426,6 +447,7 @@ public class ExploreFragment extends Fragment {
                         //String key = fields[0];
                         String name = fields[1];
                         //String coordinates = fields[2];
+                        stopLocationUpdates();
                         selectedBeacon.registered = true;
                         selectedBeacon.beaconKey = name;
                         exploreBeaconAdapter.notifyDataSetChanged();
@@ -435,6 +457,63 @@ public class ExploreFragment extends Fragment {
                     Log.d(TAG, e.toString());
                 }
                 break;
+        }
+    }
+
+    protected synchronized void buildGoogleApiClient() {
+        googleApiClient = new GoogleApiClient.Builder(getContext())
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .addApi(LocationServices.API)
+                .build();
+    }
+
+    @Override
+    public void onConnected(Bundle bundle) {
+        Log.d(TAG, "on connected");
+        if (requestingLocationUpdates) {
+            startLocationUpdates();
+        }
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {}
+
+    @Override
+    public void onLocationChanged(Location location) {
+        currentLocation = location;
+        String lat = Double.toString(location.getLatitude());
+        String lon = Double.toString(location.getLongitude());
+        String accuracy = Double.toString(location.getAccuracy());
+        String coordinates = lat + " " + lon + " (" + accuracy + " accuracy)";
+        if (selectedBeacon != null) {
+            selectedBeacon.lat = location.getLatitude();
+            selectedBeacon.lon = location.getLongitude();
+        }
+        Log.d(TAG, coordinates);
+    }
+
+    @Override
+    public void onConnectionFailed(ConnectionResult connectionResult) {
+
+    }
+
+    protected void createLocationRequest() {
+        locationRequest = new LocationRequest();
+        locationRequest.setInterval(10000);
+        locationRequest.setFastestInterval(5000);
+        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+    }
+
+    protected void startLocationUpdates() {
+        LocationServices.FusedLocationApi.requestLocationUpdates(googleApiClient, locationRequest, this);
+    }
+
+    protected void stopLocationUpdates() {
+        if (requestingLocationUpdates) {
+            LocationServices.FusedLocationApi.removeLocationUpdates(googleApiClient, this);
+            googleApiClient.disconnect();
+            requestingLocationUpdates = false;
         }
     }
 }

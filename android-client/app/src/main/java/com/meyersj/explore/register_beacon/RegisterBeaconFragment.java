@@ -153,9 +153,6 @@ public class RegisterBeaconFragment extends Fragment implements ConnectionCallba
                         message.payload = payload;
                         message.payloadFlag = Protocol.REGISTER_BEACON;
                         communicator.addMessage(message);
-                        //RegisterBeaconAsync registerAsync = new RegisterBeaconAsync();
-                        //byte[][] payloads = {payload};
-                        //registerAsync.execute(payloads);
                     }
                 }
             }

@@ -5,6 +5,7 @@
     <color name="black">#303030</color>
     <color name="primary">#3F51B5</color>
     <color name="primary_dark">#303F9F</color>
+    <color name="primary_darker">#202a6b</color>
     <color name="primary_darkest">#121949</color>
     <color name="primary_light">#5c6bc0</color>
     <color name="accent">#42a5f5</color>

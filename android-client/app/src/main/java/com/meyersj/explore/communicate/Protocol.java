@@ -28,10 +28,10 @@ public class Protocol {
     public static final byte CLIENT_UPDATE = (byte) 0x03;
     public static final byte PUT_MESSAGE = (byte) 0x04;
     public static final byte GET_MESSAGE = (byte) 0x05;
+    public static final byte GET_BEACONS = (byte) 0x06;
 
 
-    // prefix length field and append delimiter to payload
-    private static byte[] newPayload(byte flag, byte[] inPayload) {
+    public static byte[] newPayload(byte flag, byte[] inPayload) {
         byte[] payload = new byte[8 + inPayload.length];
         byte[] length = ByteBuffer.allocate(4).putInt(inPayload.length).array();
         byte[] flags = {flag, 0x00, 0x00, 0x00};
