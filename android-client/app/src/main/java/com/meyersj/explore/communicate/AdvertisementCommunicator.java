@@ -48,6 +48,8 @@ public class AdvertisementCommunicator extends ThreadedCommunicator {
         if(bluetoothAdapter != null) {
             bleScanner = bluetoothAdapter.getBluetoothLeScanner();
         }
+
+        //bluetoothAdapter.
     }
 
     public void startScan() {

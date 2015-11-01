@@ -35,6 +35,8 @@
             </intent-filter>
         </activity>
 
+        <service android:name=".background.ScannerService" />
+
     </application>
 
 </manifest>

@@ -1,6 +1,7 @@
 package com.meyersj.explore.explore;
 
 import android.content.Context;
+import android.content.Intent;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Message;
@@ -24,6 +25,7 @@ import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.meyersj.explore.R;
+import com.meyersj.explore.background.ScannerService;
 import com.meyersj.explore.communicate.AdvertisementCommunicator;
 import com.meyersj.explore.communicate.MessageBuilder;
 import com.meyersj.explore.communicate.Protocol;
@@ -87,6 +89,8 @@ public class ExploreFragment extends Fragment
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_explore, container, false);
         ButterKnife.bind(this, rootView);
+        Intent intent = new Intent(getContext(), ScannerService.class);
+        getContext().stopService(intent);
         exploreBeaconAdapter = new ExploreBeaconAdapter(getContext(), new ArrayList<NearbyBeacon>());
         nearbyList.setAdapter(exploreBeaconAdapter);
         messageDisplayAdapter = new MessageDisplayAdapter(getContext());
@@ -113,12 +117,13 @@ public class ExploreFragment extends Fragment
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        communicator.stopScan();
+        if (scanning) {
+            communicator.stopScan();
+            Intent intent = new Intent(getContext(), ScannerService.class);
+            getContext().startService(intent);
+        }
         communicator.stop();
         stopLocationUpdates();
-        //if (googleApiClient.isConnected()) {
-        //    googleApiClient.disconnect();
-        //}
     }
 
     private void setViewListeners() {

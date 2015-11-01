@@ -11,7 +11,9 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.meyersj.explore.ExploreApplication;
 import com.meyersj.explore.R;
+import com.meyersj.explore.background.ScannerService;
 import com.meyersj.explore.explore.ExploreFragment;
 import com.meyersj.explore.map.LocationMapFragment;
 import com.meyersj.explore.utilities.Cons;
@@ -64,6 +66,11 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onTabReselected(TabLayout.Tab tab) {}
         });
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
     }
 
     @Override
