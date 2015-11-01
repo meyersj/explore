@@ -81,7 +81,5 @@ public class SettingsActivity extends AppCompatActivity {
                 editTextPreference.setSummary(editTextPreference.getText());
             }
         }
-
     }
-
 }
