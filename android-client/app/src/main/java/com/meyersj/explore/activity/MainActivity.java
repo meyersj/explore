@@ -30,14 +30,14 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
 
-        NewRelic.withApplicationToken(Utils.getNewRelicToken(getApplicationContext()))
-                .withLogLevel(AgentLog.DEBUG)
-                .start(this.getApplication());
+        //NewRelic.withApplicationToken(Utils.getNewRelicToken(getApplicationContext()))
+        //        .withLogLevel(AgentLog.DEBUG)
+        //        .start(this.getApplication());
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tab_layout);
-        tabLayout.addTab(tabLayout.newTab().setText("Explore"));
+        tabLayout.addTab(tabLayout.newTab().setText(getString(R.string.title_explore)));
         //tabLayout.addTab(tabLayout.newTab().setText("Register"));
         tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
         final ViewPager viewPager = (ViewPager) findViewById(R.id.pager);

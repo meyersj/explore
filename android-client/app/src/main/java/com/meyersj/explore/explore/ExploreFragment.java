@@ -36,7 +36,7 @@ import butterknife.ButterKnife;
 
 public class ExploreFragment extends Fragment {
 
-    private static final String ARG_SECTION_NUMBER = "section_number";
+    private static final String TAB_NUMBER = "tab_number";
     private final String TAG = getClass().getCanonicalName();
 
     @Bind(R.id.start_button) Button startButton;
@@ -58,10 +58,10 @@ public class ExploreFragment extends Fragment {
     private NearbyBeacon selectedBeacon;
     private InputMode actionModeInput;
 
-        public static ExploreFragment newInstance(int sectionNumber) {
+    public static ExploreFragment newInstance(int tabNumber) {
         ExploreFragment fragment = new ExploreFragment();
         Bundle args = new Bundle();
-        args.putInt(ARG_SECTION_NUMBER, sectionNumber);
+        args.putInt(TAB_NUMBER, tabNumber);
         fragment.setArguments(args);
         return fragment;
     }
@@ -71,7 +71,6 @@ public class ExploreFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        Log.d(TAG, "create view");
         View rootView = inflater.inflate(R.layout.fragment_explore, container, false);
         ButterKnife.bind(this, rootView);
         exploreBeaconAdapter = new ExploreBeaconAdapter(getContext(), new ArrayList<NearbyBeacon>());
@@ -81,6 +80,7 @@ public class ExploreFragment extends Fragment {
         communicator = new AdvertisementCommunicator(getContext(), new ResponseHandler(this));
         actionModeInput = new InputMode(getContext(), actionIcon, messageText);
         communicator.start();
+        Log.d(TAG, "onCreateView");
         setViewListeners();
         return rootView;
     }
@@ -88,8 +88,6 @@ public class ExploreFragment extends Fragment {
     @Override
     public void onSaveInstanceState(Bundle state) {
         super.onSaveInstanceState(state);
-        Log.d(TAG, "save instance state");
-        state.putString("status", statusText.getText().toString());
     }
 
     @Override
@@ -183,7 +181,7 @@ public class ExploreFragment extends Fragment {
                 Utils.hideKeyboard(getActivity());
                 String message = messageText.getText().toString();
                 if (message.isEmpty()) {
-                    statusText.setText("Message is empty");
+                    statusText.setText(getString(R.string.status_empty_message));
                 } else if (selectedBeacon != null) {
                     statusText.setText("");
                     messageText.setText("");
@@ -202,19 +200,16 @@ public class ExploreFragment extends Fragment {
             }
         });
 
-        messageText.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Log.d(TAG, "message text opened");
-
-            }
-        });
+        //messageText.setOnClickListener(new View.OnClickListener() {
+        //    @Override
+        //    public void onClick(View view) {Log.d(TAG, "TODO hide other views");
+        //    }
+        //});
     }
 
     // callback function from ExploreHandler
     // returns response received from socket
     public void update(Message message) {
-        Log.d(TAG, "update");
         Bundle data = message.getData();
         if (data != null) {
             switch(data.getByte(Cons.PAYLOAD_FLAGS)) {
@@ -236,11 +231,12 @@ public class ExploreFragment extends Fragment {
     }
 
     private void startScan() {
+        Log.d(TAG, "start scan");
         if (!scanning) {
-            statusText.setText("Scan started");
-            communicator.startScan();
+            statusText.setText(getString(R.string.status_scan_started));
             selectedBeacon = null;
             scanning = true;
+            communicator.startScan();
             startButton.setSelected(true);
             stopButton.setSelected(false);
         }
@@ -253,7 +249,7 @@ public class ExploreFragment extends Fragment {
     private void stopScan() {
         if(scanning) {
             communicator.stopScan();
-            statusText.setText("Scan stopped");
+            statusText.setText(getString(R.string.status_scan_stopped));
             scanning = false;
             startButton.setSelected(false);
             stopButton.setSelected(false);
@@ -307,7 +303,6 @@ public class ExploreFragment extends Fragment {
     }
 
     private void registerBeacon(String name) {
-        //Double lat = selectedBeacon.lat;
         byte[] lat = selectedBeacon.getLatitudeBytes();
         byte[] lon = selectedBeacon.getLongitudeBytes();
         byte[] rawBytes = selectedBeacon.advertisement;
@@ -335,7 +330,6 @@ public class ExploreFragment extends Fragment {
                     try {
                         name = new String(response, "UTF-8");
                         name = ProtocolMessage.parseBeaconName(name);
-                        Log.d(TAG, "hey " + name);
                     } catch (UnsupportedEncodingException e) {
                         e.printStackTrace();
                     }
@@ -358,11 +352,10 @@ public class ExploreFragment extends Fragment {
                 String responseString = new String(response, "UTF-8");
                 String[] messages = responseString.split("\t");
                 if (messages.length == 3) {
-                    String beacon = messages[0];
+                    //String beacon = messages[0];
                     String client = messages[1];
                     String message = messages[2];
-                    String display = "Successfully uploaded message";
-                    //String display = "(" + beacon + ") " + client + ": " + message;
+                    String display = getString(R.string.status_message_upload_success);
                     long epoch = System.currentTimeMillis();
                     SimpleDateFormat format = new SimpleDateFormat("h:mm a");
                     String timestamp = format.format(new Date(epoch));
@@ -383,7 +376,6 @@ public class ExploreFragment extends Fragment {
         Log.d(TAG, "message response");
         byte[] response = data.getByteArray(Cons.RESPONSE);
         byte[] flags = data.getByteArray(Cons.RESPONSE_FLAGS);
-        Log.d(TAG,"get messsage");
         if (flags == null) return;
         switch (flags[0]) {
             case 0x00:
@@ -439,7 +431,7 @@ public class ExploreFragment extends Fragment {
                         selectedBeacon.registered = true;
                         selectedBeacon.beaconKey = name;
                         exploreBeaconAdapter.notifyDataSetChanged();
-                        statusText.setText("Location saved\n... store a message below");
+                        statusText.setText(getString(R.string.status_location_saved));
                     }
                 } catch (UnsupportedEncodingException e) {
                     Log.d(TAG, e.toString());

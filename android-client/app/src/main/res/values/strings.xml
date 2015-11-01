@@ -10,4 +10,10 @@
 
     <string name="action_example">Some Action</string>
     <string name="action_settings">Settings</string>
+
+    <string name="status_location_saved">Location saved\n... store a message below</string>
+    <string name="status_message_upload_success">Message saved</string>
+    <string name="status_scan_started">Scan started\n... searching</string>
+    <string name="status_scan_stopped">Scan stopped</string>
+    <string name="status_empty_message">Message is empty</string>
 </resources>
