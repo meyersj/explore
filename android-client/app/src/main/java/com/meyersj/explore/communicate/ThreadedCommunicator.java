@@ -64,8 +64,6 @@ public class ThreadedCommunicator {
 
             try {
                 Log.d(TAG, "OPEN SOCKET");
-                //ExploreApplication app = (ExploreApplication) context.getApplicationContext();
-                //Socket socket = app.getProtocolConnection(context);
                 Socket socket = Protocol.openCommunication(context);
                 if (socket != null) {
                     while (active) {
@@ -78,7 +76,6 @@ public class ThreadedCommunicator {
                         }
                     }
                     Log.d(TAG, "CLOSE SOCKET");
-                    //app.closeProtocolConnection();
                     Protocol.closeCommunication(socket);
                 }
             } catch (InterruptedException e) {
@@ -93,14 +90,14 @@ public class ThreadedCommunicator {
     }
 
 
-    private Message sendMessage(Socket socket, ProtocolMessage message) throws IOException {
+    public static Message sendMessage(Socket socket, ProtocolMessage message) throws IOException {
         DataOutputStream outStream = new DataOutputStream(socket.getOutputStream());
         DataInputStream inStream = new DataInputStream(socket.getInputStream());
         outStream.write(message.payload);
         return getResponse(message, inStream).getThreadMessage();
     }
 
-    private ProtocolMessage getResponse(ProtocolMessage message, DataInputStream inStream) throws IOException {
+    public static ProtocolMessage getResponse(ProtocolMessage message, DataInputStream inStream) throws IOException {
         ProtocolResponse response = ProtocolResponse.read(inStream);
         message.response = response.getResponse();
         message.responseFlags = response.getFlags();

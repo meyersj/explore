@@ -73,6 +73,7 @@ public class ExploreFragment extends Fragment
     private LocationRequest locationRequest;
     private boolean requestingLocationUpdates = false;
     private Location currentLocation;
+    private Bundle restoreExtras;
 
     public static ExploreFragment newInstance(int tabNumber) {
         ExploreFragment fragment = new ExploreFragment();
@@ -101,6 +102,19 @@ public class ExploreFragment extends Fragment
         buildGoogleApiClient();
         createLocationRequest();
         setViewListeners();
+
+        if(restoreExtras != null) {
+            // fragment was launched from a notification
+            // restore beacon from notification
+            boolean registered = restoreExtras.getBoolean(Cons.REGISTERED, false);
+            byte[] adv = restoreExtras.getByteArray(Cons.ADVERTISEMENT);
+            String name = restoreExtras.getString(Cons.BEACON_KEY);
+            int rssi = restoreExtras.getInt(Cons.RSSI, 0);
+            Log.d(TAG, "initialize beacon: " + name);
+            initializeBeacon(registered, adv, name, rssi);
+            //restoreExtras = null;
+        }
+
         return rootView;
     }
 
@@ -523,5 +537,26 @@ public class ExploreFragment extends Fragment
             googleApiClient.disconnect();
             requestingLocationUpdates = false;
         }
+    }
+
+    public void initializeBeacon(boolean registered, byte[] adv, String name, int rssi) {
+        exploreBeaconAdapter.clear();
+        NearbyBeacon beacon = new NearbyBeacon(registered, adv, name, rssi);
+        exploreBeaconAdapter.add(beacon);
+        exploreBeaconAdapter.toggleActiveBeacon(beacon);
+        selectedBeacon = beacon;
+        if (registered) {
+            actionModeInput.activateMessage();
+        } else {
+            actionModeInput.activateRegister();
+            requestingLocationUpdates = true;
+            googleApiClient.connect();
+        }
+        activateBeacon(beacon);
+        updateVisibility();
+    }
+
+    public void setRestoreBundle(Bundle extras) {
+        restoreExtras = extras;
     }
 }
