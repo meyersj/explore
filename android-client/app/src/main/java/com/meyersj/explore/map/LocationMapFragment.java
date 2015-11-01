@@ -72,7 +72,6 @@ public class LocationMapFragment extends Fragment {
         communicator = new ThreadedCommunicator(getContext(), new ResponseHandler(this));
         communicator.start();
         initializeMap(savedInstanceState);
-
         gpsLocationIcon.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -84,8 +83,6 @@ public class LocationMapFragment extends Fragment {
                 }
             }
         });
-
-
         return rootView;
     }
 
@@ -213,5 +210,4 @@ public class LocationMapFragment extends Fragment {
         message.payload = Protocol.newPayload(Protocol.GET_BEACONS, empty);
         communicator.addMessage(message);
     }
-
 }

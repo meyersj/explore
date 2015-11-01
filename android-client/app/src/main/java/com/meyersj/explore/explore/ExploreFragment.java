@@ -4,7 +4,6 @@ import android.content.Context;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Message;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -26,9 +25,11 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.meyersj.explore.R;
 import com.meyersj.explore.communicate.AdvertisementCommunicator;
+import com.meyersj.explore.communicate.MessageBuilder;
 import com.meyersj.explore.communicate.Protocol;
 import com.meyersj.explore.communicate.ProtocolMessage;
 import com.meyersj.explore.communicate.ResponseHandler;
+import com.meyersj.explore.communicate.ThreadedCommunicator;
 import com.meyersj.explore.nearby.NearbyBeacon;
 import com.meyersj.explore.utilities.Cons;
 import com.meyersj.explore.utilities.Utils;
@@ -90,8 +91,8 @@ public class ExploreFragment extends Fragment
         nearbyList.setAdapter(exploreBeaconAdapter);
         messageDisplayAdapter = new MessageDisplayAdapter(getContext());
         displayList.setAdapter(messageDisplayAdapter);
-        communicator = new AdvertisementCommunicator(getContext(), new ResponseHandler(this));
         actionModeInput = new InputMode(getContext(), actionIcon, messageText);
+        communicator = new AdvertisementCommunicator(getContext(), new ResponseHandler(this));
         communicator.start();
         buildGoogleApiClient();
         createLocationRequest();
@@ -303,7 +304,7 @@ public class ExploreFragment extends Fragment
     }
 
     private void activateBeacon(NearbyBeacon selectedBeacon) {
-        byte[] payload = Protocol.getMessages(selectedBeacon.advertisement);
+        byte[] payload = MessageBuilder.getMessages(selectedBeacon.advertisement);
         ProtocolMessage protocolMessage = new ProtocolMessage();
         protocolMessage.payload = payload;
         protocolMessage.payloadFlag = Protocol.GET_MESSAGE;
@@ -314,7 +315,7 @@ public class ExploreFragment extends Fragment
         byte[] device = Utils.getDeviceID(getContext()).getBytes();
         byte[] beacon = selectedBeacon.advertisement;
         byte[] user = Utils.getUser(getContext()).getBytes();
-        byte[] payload = Protocol.sendMessage(device, user, message.getBytes(), beacon);
+        byte[] payload = MessageBuilder.sendMessage(device, user, message.getBytes(), beacon);
         ProtocolMessage protocolMessage = new ProtocolMessage();
         protocolMessage.payload = payload;
         protocolMessage.payloadFlag = Protocol.PUT_MESSAGE;
@@ -326,7 +327,7 @@ public class ExploreFragment extends Fragment
         byte[] lon = selectedBeacon.getLongitudeBytes();
         byte[] rawBytes = selectedBeacon.advertisement;
         Log.d(TAG, Utils.getHexString(rawBytes));
-        byte[] payload = Protocol.registerBeacon(name.getBytes(), rawBytes, lat, lon);
+        byte[] payload = MessageBuilder.registerBeacon(name.getBytes(), rawBytes, lat, lon);
         ProtocolMessage message = new ProtocolMessage();
         message.payload = payload;
         message.payloadFlag = Protocol.REGISTER_BEACON;

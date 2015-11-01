@@ -23,7 +23,7 @@ public class AdvertisementCommunicator extends ThreadedCommunicator {
         public void onScanResult(int callbackType, ScanResult result) {
             if (rateLimiter.tryAcquire()) {
                 byte[] device = Utils.getDeviceID(context).getBytes();
-                byte[] payload = Protocol.clientUpdate(device, result.getScanRecord().getBytes(), result.getRssi());
+                byte[] payload = MessageBuilder.clientUpdate(device, result.getScanRecord().getBytes(), result.getRssi());
                 ProtocolMessage message = new ProtocolMessage();
                 message.advertisement = result.getScanRecord().getBytes();
                 message.rssi = result.getRssi();
@@ -48,7 +48,6 @@ public class AdvertisementCommunicator extends ThreadedCommunicator {
         if(bluetoothAdapter != null) {
             bleScanner = bluetoothAdapter.getBluetoothLeScanner();
         }
-
     }
 
     public void startScan() {

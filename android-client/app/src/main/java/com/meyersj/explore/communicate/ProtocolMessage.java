@@ -34,20 +34,12 @@ public class ProtocolMessage {
         return message;
     }
 
-
     public static String parseBeaconName(String value) {
         Log.d("PARSE", value);
         String[] fields = value.split("\t");
         if (fields.length == 3) {
             return fields[2];
-            //String[] nameField = messages[2].split(":");
-            //if (split2.length == 2) {
-            //    String name = split2[0];
-            //    String coordinates = split2[1];
-            //    return name + " " + coordinates;
-            //}
         }
         return "error";
-        //return value;
     }
 }
