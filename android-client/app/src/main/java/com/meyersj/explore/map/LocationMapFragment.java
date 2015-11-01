@@ -3,6 +3,7 @@ package com.meyersj.explore.map;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Message;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -49,6 +50,7 @@ public class LocationMapFragment extends Fragment {
     private final String TAG = getClass().getCanonicalName();
 
     @Bind(R.id.mapview) MapView mapView;
+    @Bind(R.id.gps_location) FloatingActionButton gpsLocationIcon;
 
     private ThreadedCommunicator communicator;
 
@@ -68,20 +70,22 @@ public class LocationMapFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_map, container, false);
         ButterKnife.bind(this, rootView);
         communicator = new ThreadedCommunicator(getContext(), new ResponseHandler(this));
-        mapView.setAccessToken(Utils.getMapboxToken(getContext()));
-        mapView.onCreate(savedInstanceState);
-        mapView.setStyleUrl(Style.MAPBOX_STREETS);
-        LatLng portland = new LatLng(45.5, -122.5);
-        mapView.setCenterCoordinate(portland);
-        mapView.setZoomLevel(8);
-        mapView.onCreate(savedInstanceState);
-        mapView.setMyLocationEnabled(true);
         communicator.start();
-        ProtocolMessage message = new ProtocolMessage();
-        message.payloadFlag = Protocol.GET_BEACONS;
-        byte[] empty = new byte[0];
-        message.payload = Protocol.newPayload(Protocol.GET_BEACONS, empty);
-        communicator.addMessage(message);
+        initializeMap(savedInstanceState);
+
+        gpsLocationIcon.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (mapView.isMyLocationEnabled()) {
+                    mapView.setMyLocationEnabled(false);
+                }
+                else {
+                    mapView.setMyLocationEnabled(true);
+                }
+            }
+        });
+
+
         return rootView;
     }
 
@@ -119,12 +123,14 @@ public class LocationMapFragment extends Fragment {
     @Override
     public void onPause() {
         super.onPause();
+        //mapView.setMyLocationEnabled(false);
         mapView.onPause();
     }
 
     @Override
     public void onResume() {
         super.onResume();
+        //mapView.setMyLocationEnabled(true);
         mapView.onResume();
     }
 
@@ -133,6 +139,16 @@ public class LocationMapFragment extends Fragment {
     public void onLowMemory() {
         mapView.onLowMemory();
         super.onLowMemory();
+    }
+
+    private void initializeMap(Bundle savedInstanceState) {
+        mapView.setAccessToken(Utils.getMapboxToken(getContext()));
+        mapView.onCreate(savedInstanceState);
+        mapView.setStyleUrl(Style.MAPBOX_STREETS);
+        LatLng portland = new LatLng(45.5, -122.5);
+        mapView.setCenterCoordinate(portland);
+        mapView.setZoomLevel(8);
+        mapView.onCreate(savedInstanceState);
     }
 
     // callback function from ResponseHandler
@@ -156,6 +172,7 @@ public class LocationMapFragment extends Fragment {
         if (flags == null || response == null) return;
 
         if (flags[0] == 0x00) {
+            mapView.removeAllAnnotations();
             try {
                 String responseString = new String(response, "UTF-8");
                 String[] beacons = responseString.split("\n");
@@ -172,8 +189,7 @@ public class LocationMapFragment extends Fragment {
                             Double lat = Double.parseDouble(coordinates[0]);
                             Double lon = Double.parseDouble(coordinates[1]);
                             LatLng location = new LatLng(lat, lon);
-                            mapView.addMarker(new MarkerOptions()
-                                    .position(location).title(name).snippet(key));
+                            addMarker(location, name, key);;
                         }
                     }
                 }
@@ -181,6 +197,21 @@ public class LocationMapFragment extends Fragment {
                 Log.d(TAG, e.toString());
             }
         }
+    }
+
+    public void addMarker(LatLng location, String title, String snippet) {
+        if (mapView != null) {
+            mapView.addMarker(new MarkerOptions()
+                    .position(location).title(title).snippet(snippet));
+        }
+    }
+
+    public void fetchBeaconLocations() {
+        ProtocolMessage message = new ProtocolMessage();
+        message.payloadFlag = Protocol.GET_BEACONS;
+        byte[] empty = new byte[0];
+        message.payload = Protocol.newPayload(Protocol.GET_BEACONS, empty);
+        communicator.addMessage(message);
     }
 
 }

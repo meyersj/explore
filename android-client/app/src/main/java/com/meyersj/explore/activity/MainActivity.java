@@ -55,8 +55,7 @@ public class MainActivity extends AppCompatActivity {
                     case 0:
                         break;
                     case 1:
-                        Log.d(TAG, "open map fragment");
-                        //mapFragment.updateLocations();
+                        mapFragment.fetchBeaconLocations();
                 }
             }
 
