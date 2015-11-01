@@ -123,10 +123,10 @@ public class ExploreFragment extends Fragment {
         nearbyList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                NearbyBeacon newSelected = exploreBeaconAdapter.getItem(i);
-                if (newSelected == null) return;
-                Log.d(TAG, Boolean.toString(newSelected.registered));
-                int selected = exploreBeaconAdapter.toggleActiveBeacon(newSelected);
+                NearbyBeacon newSelection = exploreBeaconAdapter.getItem(i);
+                if (newSelection == null) return;
+                Log.d(TAG, Boolean.toString(newSelection.registered));
+                int selected = exploreBeaconAdapter.toggleActiveBeacon(newSelection);
                 switch (selected) {
                     case -1:
                         // undo selection
@@ -136,41 +136,38 @@ public class ExploreFragment extends Fragment {
                         return;
                 }
 
-                if (newSelected.registered) {
+                if (newSelection.registered) {
                     switch (selected) {
                         case 0:
                             // change selection, clear old messages and fetch new
                             stopScan();
                             messageDisplayAdapter.clear();
-                            fetchBeaconMessages(newSelected);
-                            selectedBeacon = newSelected;
-                            actionModeInput.activateMessage();
                             break;
                         case 1:
                             // create selection, fetch new messages
                             stopScan();
-                            fetchBeaconMessages(newSelected);
-                            selectedBeacon = newSelected;
-                            actionModeInput.activateMessage();
                             break;
+                        default:
+                            return;
                     }
+                    selectedBeacon = newSelection;
+                    actionModeInput.activateMessage();
                 } else {
                     switch (selected) {
                         case 0:
                             stopScan();
                             messageDisplayAdapter.clear();
-                            fetchBeaconMessages(newSelected);
-                            selectedBeacon = newSelected;
-                            actionModeInput.activateRegister();
                             break;
                         case 1:
                             stopScan();
-                            fetchBeaconMessages(newSelected);
-                            selectedBeacon = newSelected;
-                            actionModeInput.activateRegister();
                             break;
+                        default:
+                            return;
                     }
+                    selectedBeacon = newSelection;
+                    actionModeInput.activateRegister();
                 }
+                activateBeacon(newSelection);
                 updateVisibility();
             }
         });
@@ -202,7 +199,8 @@ public class ExploreFragment extends Fragment {
 
         //messageText.setOnClickListener(new View.OnClickListener() {
         //    @Override
-        //    public void onClick(View view) {Log.d(TAG, "TODO hide other views");
+        //    public void onClick(View view) {
+        //        Log.d(TAG, "TODO hide other views");
         //    }
         //});
     }
@@ -283,7 +281,7 @@ public class ExploreFragment extends Fragment {
         }
     }
 
-    private void fetchBeaconMessages(NearbyBeacon selectedBeacon) {
+    private void activateBeacon(NearbyBeacon selectedBeacon) {
         byte[] payload = Protocol.getMessages(selectedBeacon.advertisement);
         ProtocolMessage protocolMessage = new ProtocolMessage();
         protocolMessage.payload = payload;
