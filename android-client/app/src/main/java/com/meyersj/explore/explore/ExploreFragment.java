@@ -217,7 +217,7 @@ public class ExploreFragment extends Fragment
             @Override
             public void onClick(View view) {
                 Utils.hideKeyboard(getActivity());
-                String message = messageText.getText().toString();
+                String message = messageText.getText().toString().trim();
                 if (message.isEmpty()) {
                     statusText.setText(getString(R.string.status_empty_message));
                 } else if (selectedBeacon != null) {

@@ -113,12 +113,22 @@ public class ScannerService extends Service {
     }
 
     public void sendNotification(String beaconName, Bundle extras) {
+
+        int icon = R.drawable.ic_location_city_white_24dp;
+        String title = "New Location";
+        String content = "Touch to register it.";
+        if (extras.getBoolean(Cons.REGISTERED)) {
+            icon = R.drawable.ic_chat_white_24dp;
+            title = beaconName;
+            content = "Touch to add a message.";
+        }
+
         NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(getApplicationContext())
-                        .setSmallIcon(R.drawable.ic_location_city_white_24dp)
-                        .setContentTitle("My notification")
+                        .setSmallIcon(icon)
+                        .setContentTitle(title)
                         .setAutoCancel(true)
-                        .setContentText(beaconName);
+                        .setContentText(content);
 
 
         // setup activity that notification will open
