@@ -9,10 +9,13 @@ import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanFilter;
 import android.bluetooth.le.ScanResult;
 import android.bluetooth.le.ScanSettings;
+import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Message;
+import android.os.Vibrator;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
@@ -131,6 +134,8 @@ public class ScannerService extends Service {
                         .setContentText(content);
 
 
+
+
         // setup activity that notification will open
         Intent resultIntent = new Intent(this, MainActivity.class);
         extras.putBoolean("notification", true);
@@ -142,6 +147,12 @@ public class ScannerService extends Service {
                 PendingIntent.FLAG_UPDATE_CURRENT
         );
         mBuilder.setContentIntent(resultPendingIntent);
+
+        // vibrate and led
+        Vibrator v = (Vibrator) getApplicationContext().getSystemService(Context.VIBRATOR_SERVICE);
+        v.vibrate(2500);
+        mBuilder.setVibrate(new long[] { 0, 1000, 500, 1000});
+        mBuilder.setLights(Color.YELLOW, 3000, 3000);
 
         // issue notification
         NotificationManager mNotifyMgr = (NotificationManager)
