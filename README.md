@@ -12,16 +12,16 @@ can store messages for that location. Other users retrieve those messages
 when scanning near that beacon.
 
 ### config
-1. rename `ble-tester/test-config.toml` to `config.toml`
-2. rename `/ble-tester/android-client/app/src/main/assets/default-config.properties` to `config.properties`
+1. rename `explore/go-server/test-config.toml` to `config.toml`
+2. rename `explore/android-client/app/src/main/assets/default-config.properties` to `config.properties`
 3. in both config files set **host** and **port** appropriately
+4. change **redis** connection param for `go-server` if not running redis on local machine with default port 
 
 go-server requires a toml and redis packages
 ```
 go get github.com/BurntSushi/toml
 go get gopkg.in/redis.v3
 ```
-You also need to have redis installed running on port `6379`. This is hardcoded in `go-server/data/redis_interface.go` but will be changed to config param eventually.
 
 ### running
 
