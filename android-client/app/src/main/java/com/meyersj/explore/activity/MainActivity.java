@@ -8,16 +8,16 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import com.meyersj.explore.ExploreApplication;
 import com.meyersj.explore.R;
-import com.meyersj.explore.background.ScannerService;
 import com.meyersj.explore.explore.ExploreFragment;
 import com.meyersj.explore.map.LocationMapFragment;
 import com.meyersj.explore.utilities.Cons;
+import com.meyersj.explore.utilities.Utils;
+import com.newrelic.agent.android.NewRelic;
+import com.newrelic.agent.android.logging.AgentLog;
 
 import java.util.Locale;
 
@@ -38,12 +38,11 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = getIntent();
         if (intent.getBooleanExtra(Cons.NOTIFICATION, false)) {
             exploreFragment.setRestoreBundle(intent.getExtras());
-
         }
 
-        //NewRelic.withApplicationToken(Utils.getNewRelicToken(getApplicationContext()))
-        //        .withLogLevel(AgentLog.DEBUG)
-        //        .start(this.getApplication());
+        NewRelic.withApplicationToken(Utils.getNewRelicToken(getApplicationContext()))
+                .withLogLevel(AgentLog.DEBUG)
+                .start(this.getApplication());
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
