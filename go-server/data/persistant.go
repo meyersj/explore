@@ -36,12 +36,17 @@ type ClientMessage struct {
 	Message string
 }
 
-func InitClient() *Client {
+func InitClient(address string) *Client {
 	client := redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
+		Addr:     address,
 		Password: "",
 		DB:       0,
 	})
+
+	_, err := client.Ping().Result()
+	if err != nil {
+		panic(fmt.Sprintf(" Failed to ping redis: %v", err))
+	}
 	return &Client{client: client}
 }
 

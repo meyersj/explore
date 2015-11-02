@@ -22,7 +22,7 @@ func main() {
 			conn, _ := listener.Accept()
 			if conn != nil {
 				// start communication thread with client
-				go server.Communicate(conn)
+				go server.Communicate(conn, conf)
 			}
 		}
 		listener.Close()

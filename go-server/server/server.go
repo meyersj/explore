@@ -12,10 +12,11 @@ import (
 // main worker thread that handles communication with the client
 // bytes are parsed into separate payloads and passed
 // to a consumer thread
-func Communicate(conn net.Conn) {
+func Communicate(conn net.Conn, config *Config) {
 	fmt.Println("\nopen connection", time.Now(), "\n")
 	defer conn.Close()
 
+	handler := InitHandler(config.Redis, conn)
 	var p *payload.Payload
 	buffer := bufio.NewReader(conn)
 	for {
@@ -27,20 +28,15 @@ func Communicate(conn net.Conn) {
 				fmt.Println("\nconnection closed", time.Now(), "\n")
 				return
 			case protocol.REGISTER_BEACON:
-				response := RegisterBeacon(p)
-				conn.Write(response)
+				handler.RegisterBeacon(p)
 			case protocol.CLIENT_UPDATE:
-				response := ClientUpdate(p)
-				conn.Write(response)
+				handler.ClientUpdate(p)
 			case protocol.PUT_MESSAGE:
-				response := PutMessage(p)
-				conn.Write(response)
+				handler.PutMessage(p)
 			case protocol.GET_MESSAGE:
-				response := GetMessage(p)
-				conn.Write(response)
+				handler.GetMessage(p)
 			case protocol.GET_BEACONS:
-				response := GetBeacons(p)
-				conn.Write(response)
+				handler.GetBeacons(p)
 			}
 		}
 	}
