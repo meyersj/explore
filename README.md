@@ -32,8 +32,8 @@ go run main.go &
 ```
 
 To run on LAN you need to figure out what your computers internal IP for your network is. Running `ifconfig`
-on my computer shows `inet addr:192.168.1.101` under the `wlan0` entry. That is the IP what you will want to use
-for the **host** param in the android config. Keep the default **port** `8082`.
+on my computer shows `inet addr:192.168.1.101` under the `wlan0` entry. That is the IP you will want to use
+as the **host** param in the android config. Keep the default **port** `8082`.
 
 Build android app then install `app-debug.apk` found in `android-client/app/build/outputs/apk`
 ```
