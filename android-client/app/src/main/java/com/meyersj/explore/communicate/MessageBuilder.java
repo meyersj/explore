@@ -16,12 +16,13 @@ public class MessageBuilder {
         return Protocol.newPayload(Protocol.CLOSE_CONN, payload);
     }
 
-    public static byte[] clientUpdate(byte[] device, byte[] adv, int rssi) {
-        byte[] payload = new byte[4 + device.length + adv.length];
+    public static byte[] clientUpdate(byte[] device, byte[] mac, byte[] adv, int rssi) {
+        byte[] payload = new byte[5 + mac.length + device.length + adv.length];
         byte[] strength = {(byte) rssi};
         Integer index = 0;
         index = addField(payload, strength, index);
         index = addField(payload, device, index);
+        index = addField(payload, mac, index);
         addField(payload, adv, index);
         return Protocol.newPayload(Protocol.CLIENT_UPDATE, payload);
     }
