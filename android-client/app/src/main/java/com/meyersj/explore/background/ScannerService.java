@@ -163,16 +163,10 @@ public class ScannerService extends Service {
         message.rssi = result.getRssi();
         message.mac = result.getDevice().getAddress();
         byte[] device = Utils.getDeviceID(getApplicationContext()).getBytes();
-        //byte[] payload = MessageBuilder.clientUpdate(device, result.getScanRecord().getBytes(), result.getRssi());
-        byte[] payload = MessageBuilder.clientUpdate(device, message.mac.getBytes(), message.advertisement, message.rssi);
-        //String hash = Protocol.hashAdvertisement(result.getScanRecord().getBytes());
-        //if (hash != null) {
-        //    message.key = "beacon:" + hash;
-        //}
-        //else {
-        //    message.key = Utils.getHexString(result.getScanRecord().getBytes());
-        //}
-        message.payload = payload;
+        message.payload = MessageBuilder.clientUpdate(
+                device, message.mac.getBytes(),
+                message.advertisement, message.rssi
+        );
         message.payloadFlag = Protocol.CLIENT_UPDATE;
         communicator.addMessage(message);
     }

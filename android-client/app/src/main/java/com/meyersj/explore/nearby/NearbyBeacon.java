@@ -8,13 +8,10 @@ public class NearbyBeacon {
     public String name;
     public Integer count;
     public Integer rssi;
-    public byte[] advertisement;
     public boolean displayed = false;
     public Double lat;
     public Double lon;
     public boolean registered;
-
-
 
     public NearbyBeacon(boolean registered, String mac, String name, Integer rssi) {
         this.mac = mac;
@@ -23,17 +20,6 @@ public class NearbyBeacon {
         this.count = 0;
         this.registered = registered;
     }
-
-    /*
-    public NearbyBeacon(boolean registered, byte[] advertisement, String mac, String name, Integer rssi) {
-        this.advertisement = advertisement;
-        this.mac = mac;
-        this.name = name;
-        this.rssi = rssi;
-        this.count = 0;
-        this.registered = registered;
-    }
-    */
 
     private byte[] doubleByteArray(double value) {
         byte[] bytes = new byte[8];

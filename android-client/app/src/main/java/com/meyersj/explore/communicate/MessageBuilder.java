@@ -57,6 +57,4 @@ public class MessageBuilder {
         addField(payload, beacon, 0);
         return Protocol.newPayload(Protocol.GET_MESSAGE, payload);
     }
-
-
 }

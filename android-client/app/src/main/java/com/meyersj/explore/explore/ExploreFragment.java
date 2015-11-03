@@ -321,7 +321,7 @@ public class ExploreFragment extends Fragment
     }
 
     private void activateBeacon(NearbyBeacon selectedBeacon) {
-        byte[] payload = MessageBuilder.getMessages(selectedBeacon.advertisement);
+        byte[] payload = MessageBuilder.getMessages(selectedBeacon.mac.getBytes());
         ProtocolMessage protocolMessage = new ProtocolMessage();
         protocolMessage.payload = payload;
         protocolMessage.payloadFlag = Protocol.GET_MESSAGE;
@@ -330,9 +330,10 @@ public class ExploreFragment extends Fragment
 
     private void putMessage(String message) {
         byte[] device = Utils.getDeviceID(getContext()).getBytes();
-        byte[] beacon = selectedBeacon.advertisement;
+        byte[] mac = selectedBeacon.mac.getBytes();
+        Log.d(TAG, "MAC: " + selectedBeacon.mac);
         byte[] user = Utils.getUser(getContext()).getBytes();
-        byte[] payload = MessageBuilder.sendMessage(device, user, message.getBytes(), beacon);
+        byte[] payload = MessageBuilder.sendMessage(device, user, message.getBytes(), mac);
         ProtocolMessage protocolMessage = new ProtocolMessage();
         protocolMessage.payload = payload;
         protocolMessage.payloadFlag = Protocol.PUT_MESSAGE;
@@ -342,9 +343,9 @@ public class ExploreFragment extends Fragment
     private void registerBeacon(String name) {
         byte[] lat = selectedBeacon.getLatitudeBytes();
         byte[] lon = selectedBeacon.getLongitudeBytes();
-        byte[] rawBytes = selectedBeacon.advertisement;
-        Log.d(TAG, Utils.getHexString(rawBytes));
-        byte[] payload = MessageBuilder.registerBeacon(name.getBytes(), rawBytes, lat, lon);
+        byte[] mac = selectedBeacon.mac.getBytes();
+        Log.d(TAG, "Register: " + selectedBeacon.mac);
+        byte[] payload = MessageBuilder.registerBeacon(name.getBytes(), mac, lat, lon);
         ProtocolMessage message = new ProtocolMessage();
         message.payload = payload;
         message.payloadFlag = Protocol.REGISTER_BEACON;
@@ -355,7 +356,6 @@ public class ExploreFragment extends Fragment
         boolean registered = false;
         String mac = data.getString(Cons.MAC);
         String name = mac;
-        //byte[] advertisement = data.getByteArray(Cons.ADVERTISEMENT);
         Integer rssi = data.getInt(Cons.RSSI);
         byte[] flags = data.getByteArray(Cons.RESPONSE_FLAGS);
         byte[] response = data.getByteArray(Cons.RESPONSE);
@@ -470,7 +470,7 @@ public class ExploreFragment extends Fragment
                         //String coordinates = fields[2];
                         stopLocationUpdates();
                         selectedBeacon.registered = true;
-                        selectedBeacon.mac = name;
+                        selectedBeacon.name = name;
                         exploreBeaconAdapter.notifyDataSetChanged();
                         statusText.setText(getString(R.string.status_location_saved));
                     }
