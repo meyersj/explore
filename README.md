@@ -7,9 +7,9 @@ server written in Go with Redis supports the app.
 
 Communication between `android-client` and `go-server` is done using a TCP/IP sockets.
 The app currently provides ability to scan for BLE advertisements. A location
-name can be associated with that advertisement signature. Once associated users
-can store messages for that location. Other users retrieve those messages
-when scanning near that beacon.
+name can be associated with that chip's MAC address. Once associated users
+can store messages at that location (assuming the advertisment is from a beacon
+that stays at that location). Other users retrieve those messages when scanning near that beacon.
 
 ### config
 1. rename `explore/go-server/test-config.toml` to `config.toml`
