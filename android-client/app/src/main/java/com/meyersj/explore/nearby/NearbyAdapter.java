@@ -37,9 +37,9 @@ public class NearbyAdapter extends ArrayAdapter<NearbyBeacon> {
     @Override
     public void add(NearbyBeacon result) {
         // check if beacon signature already exists
-        if (beacons.containsKey(result.beaconKey)) {
+        if (beacons.containsKey(result.mac)) {
             // increment count and update signal strength
-            NearbyBeacon beacon = beacons.get(result.beaconKey);
+            NearbyBeacon beacon = beacons.get(result.mac);
             beacon.count++;
             beacon.rssi = result.rssi;
             // if beacon is not being displayed and minimum count is
@@ -54,7 +54,7 @@ public class NearbyAdapter extends ArrayAdapter<NearbyBeacon> {
         else {
             // if beacon signature does not exists then save it
             result.count++;
-            beacons.put(result.beaconKey, result);
+            beacons.put(result.mac, result);
         }
         // forces list to sort itself based on signal strength
         notifyDataSetChanged();
@@ -68,14 +68,10 @@ public class NearbyAdapter extends ArrayAdapter<NearbyBeacon> {
         }
         TextView rssi = (TextView) view.findViewById(R.id.rssi);
         TextView count = (TextView) view.findViewById(R.id.count);
-        TextView hash = (TextView) view.findViewById(R.id.beaconKey);
+        TextView description = (TextView) view.findViewById(R.id.description);
         count.setText("#" + String.valueOf(beacon.count));
         rssi.setText(String.valueOf(beacon.rssi));
-        String name = beacon.beaconKey;
-        if (name.length() > 60) {
-            name = name.substring(0, 60) + "...";
-        }
-        hash.setText(name);
+        description.setText(beacon.name);
         if (active == beacon) {
             view.setBackground(getContext().getDrawable(R.drawable.rounded_active));
         }

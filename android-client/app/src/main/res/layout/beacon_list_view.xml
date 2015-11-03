@@ -20,7 +20,7 @@
         android:textColor="@color/secondary_text" />
 
     <TextView
-        android:id="@+id/beaconKey"
+        android:id="@+id/description"
         android:layout_gravity="right"
         android:layout_width="match_parent"
         android:layout_height="fill_parent" />

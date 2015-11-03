@@ -133,9 +133,6 @@ public class ScannerService extends Service {
                         .setAutoCancel(true)
                         .setContentText(content);
 
-
-
-
         // setup activity that notification will open
         Intent resultIntent = new Intent(this, MainActivity.class);
         extras.putBoolean("notification", true);
@@ -161,18 +158,20 @@ public class ScannerService extends Service {
     }
 
     private void handleAdvertisement(ScanResult result) {
-        byte[] device = Utils.getDeviceID(getApplicationContext()).getBytes();
-        byte[] payload = MessageBuilder.clientUpdate(device, result.getScanRecord().getBytes(), result.getRssi());
         ProtocolMessage message = new ProtocolMessage();
         message.advertisement = result.getScanRecord().getBytes();
         message.rssi = result.getRssi();
-        String hash = Protocol.hashAdvertisement(result.getScanRecord().getBytes());
-        if (hash != null) {
-            message.key = "beacon:" + hash;
-        }
-        else {
-            message.key = Utils.getHexString(result.getScanRecord().getBytes());
-        }
+        message.mac = result.getDevice().getAddress();
+        byte[] device = Utils.getDeviceID(getApplicationContext()).getBytes();
+        //byte[] payload = MessageBuilder.clientUpdate(device, result.getScanRecord().getBytes(), result.getRssi());
+        byte[] payload = MessageBuilder.clientUpdate(device, message.mac.getBytes(), message.advertisement, message.rssi);
+        //String hash = Protocol.hashAdvertisement(result.getScanRecord().getBytes());
+        //if (hash != null) {
+        //    message.key = "beacon:" + hash;
+        //}
+        //else {
+        //    message.key = Utils.getHexString(result.getScanRecord().getBytes());
+        //}
         message.payload = payload;
         message.payloadFlag = Protocol.CLIENT_UPDATE;
         communicator.addMessage(message);
@@ -181,7 +180,7 @@ public class ScannerService extends Service {
     public void handleResponse(Bundle data) {
         Log.d(TAG, "handle response");
         boolean registered = false;
-        String beaconName = data.getString(Cons.BEACON_KEY);
+        String name = data.getString(Cons.MAC);
         byte[] flags = data.getByteArray(Cons.RESPONSE_FLAGS);
         byte[] response = data.getByteArray(Cons.RESPONSE);
 
@@ -191,8 +190,8 @@ public class ScannerService extends Service {
                 registered = true;
                 if (response != null) {
                     try {
-                        beaconName = new String(response, "UTF-8");
-                        beaconName = ProtocolMessage.parseBeaconName(beaconName);
+                        name = new String(response, "UTF-8");
+                        name = ProtocolMessage.parseBeaconName(name);
                     } catch (UnsupportedEncodingException e) {
                         Log.d(TAG, e.toString());
                     }
@@ -201,9 +200,9 @@ public class ScannerService extends Service {
             case 0x01:
                 break;
         }
-        data.putString(Cons.BEACON_KEY, beaconName);
+        data.putString(Cons.BEACON_NAME, name);
         data.putBoolean(Cons.REGISTERED, registered);
-        sendNotification(beaconName, data);
+        sendNotification(name, data);
     }
 
     public void update(Message message) {

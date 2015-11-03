@@ -31,7 +31,6 @@ import com.meyersj.explore.communicate.MessageBuilder;
 import com.meyersj.explore.communicate.Protocol;
 import com.meyersj.explore.communicate.ProtocolMessage;
 import com.meyersj.explore.communicate.ResponseHandler;
-import com.meyersj.explore.communicate.ThreadedCommunicator;
 import com.meyersj.explore.nearby.NearbyBeacon;
 import com.meyersj.explore.utilities.Cons;
 import com.meyersj.explore.utilities.Utils;
@@ -107,12 +106,11 @@ public class ExploreFragment extends Fragment
             // fragment was launched from a notification
             // restore beacon from notification
             boolean registered = restoreExtras.getBoolean(Cons.REGISTERED, false);
-            byte[] adv = restoreExtras.getByteArray(Cons.ADVERTISEMENT);
-            String name = restoreExtras.getString(Cons.BEACON_KEY);
+            String name = restoreExtras.getString(Cons.BEACON_NAME);
+            String mac = restoreExtras.getString(Cons.MAC);
             int rssi = restoreExtras.getInt(Cons.RSSI, 0);
             Log.d(TAG, "initialize beacon: " + name);
-            initializeBeacon(registered, adv, name, rssi);
-            //restoreExtras = null;
+            initializeBeacon(registered, mac, name, rssi);
         }
 
         return rootView;
@@ -355,8 +353,9 @@ public class ExploreFragment extends Fragment
 
     public void clientUpdateResponse(Bundle data) {
         boolean registered = false;
-        byte[] advertisement = data.getByteArray(Cons.ADVERTISEMENT);
-        String  name = data.getString(Cons.BEACON_KEY);
+        String mac = data.getString(Cons.MAC);
+        String name = mac;
+        //byte[] advertisement = data.getByteArray(Cons.ADVERTISEMENT);
         Integer rssi = data.getInt(Cons.RSSI);
         byte[] flags = data.getByteArray(Cons.RESPONSE_FLAGS);
         byte[] response = data.getByteArray(Cons.RESPONSE);
@@ -377,7 +376,7 @@ public class ExploreFragment extends Fragment
             case 0x01:
                 break;
         }
-        exploreBeaconAdapter.add(new NearbyBeacon(registered, advertisement, name, rssi));
+        exploreBeaconAdapter.add(new NearbyBeacon(registered, mac, name, rssi));
     }
 
     public boolean inLast24(Date aDate) {
@@ -471,7 +470,7 @@ public class ExploreFragment extends Fragment
                         //String coordinates = fields[2];
                         stopLocationUpdates();
                         selectedBeacon.registered = true;
-                        selectedBeacon.beaconKey = name;
+                        selectedBeacon.mac = name;
                         exploreBeaconAdapter.notifyDataSetChanged();
                         statusText.setText(getString(R.string.status_location_saved));
                     }
@@ -539,9 +538,9 @@ public class ExploreFragment extends Fragment
         }
     }
 
-    public void initializeBeacon(boolean registered, byte[] adv, String name, int rssi) {
+    public void initializeBeacon(boolean registered, String mac, String name, int rssi) {
         exploreBeaconAdapter.clear();
-        NearbyBeacon beacon = new NearbyBeacon(registered, adv, name, rssi);
+        NearbyBeacon beacon = new NearbyBeacon(registered, mac, name, rssi);
         exploreBeaconAdapter.add(beacon);
         exploreBeaconAdapter.toggleActiveBeacon(beacon);
         selectedBeacon = beacon;

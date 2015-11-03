@@ -3,7 +3,9 @@ package com.meyersj.explore.nearby;
 import java.nio.ByteBuffer;
 
 public class NearbyBeacon {
-    public String beaconKey;
+
+    public String mac;
+    public String name;
     public Integer count;
     public Integer rssi;
     public byte[] advertisement;
@@ -13,21 +15,25 @@ public class NearbyBeacon {
     public boolean registered;
 
 
-    public NearbyBeacon(byte[] advertisement, String beaconKey, Integer rssi) {
-        this.advertisement = advertisement;
-        this.beaconKey = beaconKey;
-        this.rssi = rssi;
-        this.count = 0;
-        this.registered = false;
-    }
 
-    public NearbyBeacon(boolean registered, byte[] advertisement, String beaconKey, Integer rssi) {
-        this.advertisement = advertisement;
-        this.beaconKey = beaconKey;
+    public NearbyBeacon(boolean registered, String mac, String name, Integer rssi) {
+        this.mac = mac;
+        this.name = name;
         this.rssi = rssi;
         this.count = 0;
         this.registered = registered;
     }
+
+    /*
+    public NearbyBeacon(boolean registered, byte[] advertisement, String mac, String name, Integer rssi) {
+        this.advertisement = advertisement;
+        this.mac = mac;
+        this.name = name;
+        this.rssi = rssi;
+        this.count = 0;
+        this.registered = registered;
+    }
+    */
 
     private byte[] doubleByteArray(double value) {
         byte[] bytes = new byte[8];
