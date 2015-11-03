@@ -7,10 +7,14 @@ schema=$PWD/schema.sql
 log=$research/data/20151102_log.csv
 
 psql postgres << EOF
+    
+    -- build database
     DROP DATABASE $db;
     CREATE DATABASE $db;
     \c $db
     CREATE EXTENSION postgis;
+    
+    -- create schema and load data
     \i ${schema}
     \copy log FROM ${log} CSV HEADER
     
@@ -28,4 +32,5 @@ psql postgres << EOF
     ALTER TABLE log DROP COLUMN lon;
     ALTER TABLE log DROP COLUMN accuracy;
     \q
+
 EOF
