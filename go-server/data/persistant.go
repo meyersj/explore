@@ -1,7 +1,6 @@
 package data
 
 import (
-	//"crypto/sha1"
 	"encoding/binary"
 	"fmt"
 	"gopkg.in/redis.v3"
@@ -130,5 +129,5 @@ func BuildClientKey(device []byte) string {
 }
 
 func BuildBeaconKey(mac []byte) string {
-	return "beacon:" + string(mac)
+	return "beacon:" + strings.Replace(string(mac), ":", "", -1)
 }

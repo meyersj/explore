@@ -63,7 +63,7 @@ func (h *Handler) PutMessage(p *payload.Payload) {
 		client_name := string(message.Structures[1])
 		client_message := string(message.Structures[2])
 		key := data.BuildBeaconKey(message.Structures[3])
-		fmt.Println("\n"+device, key, client_message, "\n")
+		fmt.Println("PUT MESSAGE", device, key, client_message, "\n")
 		msg := &data.ClientMessage{
 			Device:  device,
 			User:    client_name,
