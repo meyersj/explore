@@ -22,18 +22,15 @@ public class AdvertisementCommunicator extends ThreadedCommunicator {
         @Override
         public void onScanResult(int callbackType, ScanResult result) {
             if (rateLimiter.tryAcquire()) {
-                byte[] device = Utils.getDeviceID(context).getBytes();
-                byte[] payload = MessageBuilder.clientUpdate(device, result.getScanRecord().getBytes(), result.getRssi());
                 ProtocolMessage message = new ProtocolMessage();
+                message.mac = result.getDevice().getAddress();
                 message.advertisement = result.getScanRecord().getBytes();
                 message.rssi = result.getRssi();
-                String hash = Protocol.hashAdvertisement(result.getScanRecord().getBytes());
-                if (hash != null) {
-                    message.key = "beacon:" + hash;
-                }
-                else {
-                    message.key = Utils.getHexString(result.getScanRecord().getBytes());
-                }
+                byte[] device = Utils.getDeviceID(context).getBytes();
+                byte[] payload = MessageBuilder.clientUpdate(
+                        device, message.mac.getBytes(),
+                        message.advertisement, message.rssi
+                );
                 message.payload = payload;
                 message.payloadFlag = Protocol.CLIENT_UPDATE;
                 addMessage(message);
@@ -48,8 +45,6 @@ public class AdvertisementCommunicator extends ThreadedCommunicator {
         if(bluetoothAdapter != null) {
             bleScanner = bluetoothAdapter.getBluetoothLeScanner();
         }
-
-        //bluetoothAdapter.
     }
 
     public void startScan() {
