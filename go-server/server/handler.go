@@ -40,10 +40,11 @@ func (h *Handler) RegisterBeacon(p *payload.Payload) {
 func (h *Handler) ClientUpdate(p *payload.Payload) {
 	res := payload.Build(0x02, []byte{})
 	message := payload.InitMessage(p.Data)
-	if len(message.Structures) == 3 {
+	if len(message.Structures) == 4 {
 		rssi := int8(message.Structures[0][0])
 		device := data.BuildClientKey(message.Structures[1])
 		key := data.BuildBeaconKey(message.Structures[2])
+		//advertisement := message.Structures[3]
 		update := &data.ClientUpdate{Device: device, Beacon: key, Rssi: int(rssi)}
 		flag, data := h.Client.ClientUpdate(update)
 		fmt.Println("CLIENT UPDATE", device, key, rssi)

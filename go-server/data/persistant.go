@@ -1,7 +1,7 @@
 package data
 
 import (
-	"crypto/sha1"
+	//"crypto/sha1"
 	"encoding/binary"
 	"fmt"
 	"gopkg.in/redis.v3"
@@ -129,8 +129,6 @@ func BuildClientKey(device []byte) string {
 	return "client:" + string(device)
 }
 
-func BuildBeaconKey(advertisement []byte) string {
-	hash := sha1.Sum(advertisement)
-	hex := fmt.Sprintf("%0x", hash)
-	return "beacon:" + hex
+func BuildBeaconKey(mac []byte) string {
+	return "beacon:" + string(mac)
 }
