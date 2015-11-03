@@ -23,6 +23,10 @@
     + You will begin receiving Android notifications of nearby beacons
     + Tapping on beacon will bring you into app to either add message or register it
 
+#### master
++ Switched to using MAC address of BLE devices as key instead of hashing the raw advertisement bytes
++ Add notification letting you know the app is scanning in background
+
 
 
 
