@@ -3,7 +3,7 @@ CREATE TABLE log (
     mac varchar,
     rssi integer,
     name varchar,
-    advertisement bytea,
+    bytes varchar,
     lat varchar,
     lon varchar,
     accuracy numeric

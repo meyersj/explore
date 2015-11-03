@@ -9,7 +9,7 @@ log=$research/data/20151102_log.csv
 psql postgres << EOF
     
     -- build database
-    DROP DATABASE $db;
+    DROP DATABASE IF EXISTS $db;
     CREATE DATABASE $db;
     \c $db
     CREATE EXTENSION postgis;
@@ -21,7 +21,7 @@ psql postgres << EOF
     -- clean up data
     DELETE FROM log WHERE lat IS NULL;
     UPDATE log SET name = NULL WHERE name = 'null';
-    
+    UPDATE log SET bytes = substring(bytes FROM 0 FOR 63);    
     -- convert lat-lon to geometry field
     SELECT AddGeometryColumn ('public','log','geom',4326,'POINT',2);
     UPDATE log
