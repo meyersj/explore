@@ -9,8 +9,9 @@ import com.meyersj.explore.utilities.Cons;
 
 public class ProtocolMessage {
 
+    public String mac;
     public int rssi;
-    public String key;
+    public String name;
     public byte[] advertisement;
     public byte[] payload;
     public byte payloadFlag;
@@ -22,10 +23,10 @@ public class ProtocolMessage {
 
     public Message getThreadMessage() {
         Bundle bundle = new Bundle();
+        bundle.putString(Cons.MAC, mac);
         bundle.putByte(Cons.PAYLOAD_FLAGS, payloadFlag);
         bundle.putByteArray(Cons.PAYLOAD, payload);
         bundle.putByteArray(Cons.ADVERTISEMENT, advertisement);
-        bundle.putString(Cons.BEACON_KEY, key);
         bundle.putInt(Cons.RSSI, rssi);
         bundle.putByteArray(Cons.RESPONSE_FLAGS, responseFlags);
         bundle.putByteArray(Cons.RESPONSE, response);
