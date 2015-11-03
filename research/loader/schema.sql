@@ -4,7 +4,7 @@ CREATE TABLE log (
     rssi integer,
     name varchar,
     advertisement bytea,
-    lat numeric,
-    lon numeric,
+    lat varchar,
+    lon varchar,
     accuracy numeric
 );
