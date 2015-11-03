@@ -38,13 +38,26 @@ import java.util.List;
 
 public class ScannerService extends Service {
 
+    public class Device {
+
+        public Integer counter;
+        public ScanResult result;
+        public Boolean notified;
+
+        public Device(ScanResult result) {
+            this.counter = 0;
+            this.result = result;
+            this.notified = false;
+        }
+    }
+
     private final String TAG = getClass().getCanonicalName();
     private BluetoothLeScanner bleScanner;
     private RateLimiter rateLimiter;
     private boolean scanning = false;
     private Integer serial = 1;
-    private HashMap<String, Integer> counter;
-    private HashMap<String, ScanResult> received;
+    private HashMap<String, Device> devices;
+   // private HashMap<String, ScanResult> received;
     private List<ScanFilter> scanFilters = new ArrayList<>();
     private ScanSettings scanSettings;
     private ThreadedCommunicator communicator;
@@ -52,22 +65,32 @@ public class ScannerService extends Service {
 
         @Override
         public void onScanResult(int callbackType, ScanResult result) {
-            if (result != null && rateLimiter.tryAcquire()) {
-                String beacon = Utils.getHexString(result.getScanRecord().getBytes());
-                if (received.containsKey(beacon)) {
-                    int count = counter.get(beacon) + 1;
-                    Log.d(TAG, "beacon: " + String.valueOf(count));
-                    counter.put(beacon, count);
-                    if (count == 5) {
-                        Log.d(TAG, "handle background ble advertisement" + beacon);
-                        received.put(beacon, result);
-                        handleAdvertisement(result);
-                    }
-                }
-                else {
-                    received.put(beacon, result);
-                    counter.put(beacon, 0);
-                }
+            if (result == null) return;
+            String mac = result.getDevice().getAddress();
+            Device device = devices.get(mac);
+            // first ping from device
+            if (device == null) {
+                device = new Device(result);
+                device.counter++;
+                devices.put(mac, device);
+                Log.d(TAG, "new device");
+                return;
+            }
+            // user has already been notified about this beacon
+            if (device.notified) {
+                Log.d(TAG, "already notified");
+                return;
+            }
+            // device meets threshold, send notification
+            if (device.counter + 1 > Cons.NEW_DEVICE_THRESHOLD) {
+                device.notified = true;
+                handleAdvertisement(device.result);
+                return;
+            }
+            // prevent multiple signals received at once
+            if(rateLimiter.tryAcquire()) {
+                Log.d(TAG, mac + " " + String.valueOf(device.counter + 1));
+                device.counter++;
             }
         }
     };
@@ -75,9 +98,9 @@ public class ScannerService extends Service {
     @Override
     public void onCreate () {
         Log.d(TAG, "on create service");
-        received = new HashMap<>();
-        counter = new HashMap<>();
-        rateLimiter = RateLimiter.create(1);
+        devices = new HashMap<>();
+        //counter = new HashMap<>();
+        rateLimiter = RateLimiter.create(2);
         BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if(bluetoothAdapter != null) {
             bleScanner = bluetoothAdapter.getBluetoothLeScanner();
@@ -92,9 +115,11 @@ public class ScannerService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.d(TAG, "on start command");
         if (bleScanner != null) {
+            devices.clear();
             communicator.start();
             bleScanner.startScan(scanFilters, scanSettings, scanCallback);
             scanning = true;
+            scanningNotification();
         }
         return START_STICKY;
     }
@@ -113,6 +138,33 @@ public class ScannerService extends Service {
             bleScanner.stopScan(scanCallback);
             scanning = false;
         }
+    }
+
+    public void scanningNotification() {
+        int icon = R.drawable.ic_track_changes_white_24dp;
+        String title = "Explore";
+        String content = "Scanning for locations";
+        NotificationCompat.Builder mBuilder =
+                new NotificationCompat.Builder(getApplicationContext())
+                        .setSmallIcon(icon)
+                        .setContentTitle(title)
+                        .setAutoCancel(true)
+                        .setContentText(content);
+
+        // setup activity that notification will open
+        Intent resultIntent = new Intent(this, MainActivity.class);
+        PendingIntent resultPendingIntent = PendingIntent.getActivity(
+                this,
+                0,
+                resultIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT
+        );
+        mBuilder.setContentIntent(resultPendingIntent);
+
+        // issue notification
+        NotificationManager mNotifyMgr = (NotificationManager)
+                getSystemService(NOTIFICATION_SERVICE);
+        mNotifyMgr.notify(serial++, mBuilder.build());
     }
 
     public void sendNotification(String beaconName, Bundle extras) {

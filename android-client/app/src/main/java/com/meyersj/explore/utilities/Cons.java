@@ -22,6 +22,7 @@ public class Cons {
     public static final String NOTIFICATION = "notification";
     public static final String MAC = "mac";
 
+    public static final int NEW_DEVICE_THRESHOLD  = 3;
     public static final long PROTOCOL_POLL  = 0;
     public static final long HOURS_24 = 24 * 60 * 60 * 1000;
 }

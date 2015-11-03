@@ -531,7 +531,7 @@ public class ExploreFragment extends Fragment
     }
 
     protected void stopLocationUpdates() {
-        if (requestingLocationUpdates) {
+        if (requestingLocationUpdates && googleApiClient.isConnected()) {
             LocationServices.FusedLocationApi.removeLocationUpdates(googleApiClient, this);
             googleApiClient.disconnect();
             requestingLocationUpdates = false;
