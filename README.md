@@ -17,7 +17,7 @@ that stays at that location). Other users retrieve those messages when scanning 
 3. in both config files set **host** and **port** appropriately
 4. change **redis** connection param for `go-server` if not running redis on local machine with default port 
 
-go-server requires a toml and redis packages
+go-server requires toml and redis packages
 ```
 go get github.com/BurntSushi/toml
 go get gopkg.in/redis.v3
