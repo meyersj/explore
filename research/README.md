@@ -7,9 +7,9 @@ Walked along SW 5th Avenue and collected BLE data on November 2nd and 3rd.
 
 ![Logged Data](https://github.com/meyersj/explore/blob/master/research/logged_data.png)
 
-Loaded data into Postgres and ran some simple queries to find devices that sent
-pings on both days. For those devices create some convex hulls showing where
-they are active
+Loaded data into Postgres and ran some queries to find devices that broadcasted
+pings on both days. For those devices, create convex hulls showing where
+they are active.
 
 ![Persistant Signals](https://github.com/meyersj/explore/blob/master/research/persistant_signals.png)
     
