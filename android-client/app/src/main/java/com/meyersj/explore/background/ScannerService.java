@@ -1,7 +1,5 @@
 package com.meyersj.explore.background;
 
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.le.BluetoothLeScanner;
@@ -9,19 +7,13 @@ import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanFilter;
 import android.bluetooth.le.ScanResult;
 import android.bluetooth.le.ScanSettings;
-import android.content.Context;
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Message;
-import android.os.Vibrator;
-import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
 import com.google.common.util.concurrent.RateLimiter;
-import com.meyersj.explore.R;
-import com.meyersj.explore.activity.MainActivity;
 import com.meyersj.explore.communicate.MessageBuilder;
 import com.meyersj.explore.communicate.Protocol;
 import com.meyersj.explore.communicate.ProtocolMessage;
@@ -57,9 +49,9 @@ public class ScannerService extends Service {
     private boolean scanning = false;
     private Integer serial = 1;
     private HashMap<String, Device> devices;
-   // private HashMap<String, ScanResult> received;
     private List<ScanFilter> scanFilters = new ArrayList<>();
     private ScanSettings scanSettings;
+    private Notifier notifier;
     private ThreadedCommunicator communicator;
     private ScanCallback scanCallback = new ScanCallback() {
 
@@ -109,6 +101,7 @@ public class ScannerService extends Service {
         scanSettingsBuilder.setScanMode(ScanSettings.SCAN_MODE_LOW_POWER);
         scanSettings = scanSettingsBuilder.build();
         communicator = new ThreadedCommunicator(getApplicationContext(), new ResponseHandler(this));
+        notifier = new Notifier(this, getApplicationContext());
     }
 
     @Override
@@ -119,7 +112,7 @@ public class ScannerService extends Service {
             communicator.start();
             bleScanner.startScan(scanFilters, scanSettings, scanCallback);
             scanning = true;
-            scanningNotification();
+            notifier.scanningNotification();
         }
         return START_STICKY;
     }
@@ -138,75 +131,6 @@ public class ScannerService extends Service {
             bleScanner.stopScan(scanCallback);
             scanning = false;
         }
-    }
-
-    public void scanningNotification() {
-        int icon = R.drawable.ic_track_changes_white_24dp;
-        String title = "Explore";
-        String content = "Scanning for locations";
-        NotificationCompat.Builder mBuilder =
-                new NotificationCompat.Builder(getApplicationContext())
-                        .setSmallIcon(icon)
-                        .setContentTitle(title)
-                        .setAutoCancel(true)
-                        .setContentText(content);
-
-        // setup activity that notification will open
-        Intent resultIntent = new Intent(this, MainActivity.class);
-        PendingIntent resultPendingIntent = PendingIntent.getActivity(
-                this,
-                0,
-                resultIntent,
-                PendingIntent.FLAG_UPDATE_CURRENT
-        );
-        mBuilder.setContentIntent(resultPendingIntent);
-
-        // issue notification
-        NotificationManager mNotifyMgr = (NotificationManager)
-                getSystemService(NOTIFICATION_SERVICE);
-        mNotifyMgr.notify(serial++, mBuilder.build());
-    }
-
-    public void sendNotification(String beaconName, Bundle extras) {
-
-        int icon = R.drawable.ic_location_city_white_24dp;
-        String title = "New Location";
-        String content = "Touch to register it.";
-        if (extras.getBoolean(Cons.REGISTERED)) {
-            icon = R.drawable.ic_chat_white_24dp;
-            title = beaconName;
-            content = "Touch to add a message.";
-        }
-
-        NotificationCompat.Builder mBuilder =
-                new NotificationCompat.Builder(getApplicationContext())
-                        .setSmallIcon(icon)
-                        .setContentTitle(title)
-                        .setAutoCancel(true)
-                        .setContentText(content);
-
-        // setup activity that notification will open
-        Intent resultIntent = new Intent(this, MainActivity.class);
-        extras.putBoolean("notification", true);
-        resultIntent.putExtras(extras);
-        PendingIntent resultPendingIntent = PendingIntent.getActivity(
-                this,
-                0,
-                resultIntent,
-                PendingIntent.FLAG_UPDATE_CURRENT
-        );
-        mBuilder.setContentIntent(resultPendingIntent);
-
-        // vibrate and led
-        Vibrator v = (Vibrator) getApplicationContext().getSystemService(Context.VIBRATOR_SERVICE);
-        v.vibrate(2500);
-        mBuilder.setVibrate(new long[] { 0, 1000, 500, 1000});
-        mBuilder.setLights(Color.YELLOW, 3000, 3000);
-
-        // issue notification
-        NotificationManager mNotifyMgr = (NotificationManager)
-                getSystemService(NOTIFICATION_SERVICE);
-        mNotifyMgr.notify(serial++, mBuilder.build());
     }
 
     private void handleAdvertisement(ScanResult result) {
@@ -248,7 +172,7 @@ public class ScannerService extends Service {
         }
         data.putString(Cons.BEACON_NAME, name);
         data.putBoolean(Cons.REGISTERED, registered);
-        sendNotification(name, data);
+        notifier.beaconNotification(serial++, name, data);
     }
 
     public void update(Message message) {

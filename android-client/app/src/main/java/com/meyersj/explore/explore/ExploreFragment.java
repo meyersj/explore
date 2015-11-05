@@ -204,6 +204,7 @@ public class ExploreFragment extends Fragment
                     selectedBeacon = newSelection;
                     actionModeInput.activateRegister();
                     requestingLocationUpdates = true;
+                    Log.d(TAG, "connecting");
                     googleApiClient.connect();
                 }
                 activateBeacon(newSelection);
@@ -493,6 +494,7 @@ public class ExploreFragment extends Fragment
     public void onConnected(Bundle bundle) {
         Log.d(TAG, "on connected");
         if (requestingLocationUpdates) {
+            Log.d(TAG, "requesting location on connection");
             startLocationUpdates();
         }
     }
@@ -502,6 +504,7 @@ public class ExploreFragment extends Fragment
 
     @Override
     public void onLocationChanged(Location location) {
+        Log.d(TAG, "location changed");
         currentLocation = location;
         String lat = Double.toString(location.getLatitude());
         String lon = Double.toString(location.getLongitude());
@@ -516,7 +519,10 @@ public class ExploreFragment extends Fragment
 
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
-
+        Log.d(TAG, "connection failed");
+        if(connectionResult != null) {
+            Log.d(TAG, connectionResult.toString());
+        }
     }
 
     protected void createLocationRequest() {
