@@ -1,6 +1,7 @@
 package server
 
 import (
+	"../data"
 	"../payload"
 	"../protocol"
 	"bufio"
@@ -12,11 +13,10 @@ import (
 // main worker thread that handles communication with the client
 // bytes are parsed into separate payloads and passed
 // to a consumer thread
-func Communicate(conn net.Conn, config *Config) {
-	fmt.Println("\nopen connection", time.Now(), "\n")
+func Communicate(conn net.Conn, redis_client *data.Client) {
 	defer conn.Close()
-
-	handler := InitHandler(config.Redis, conn)
+	fmt.Println("\nopen connection", time.Now(), "\n")
+	handler := InitHandler(conn, redis_client)
 	var p *payload.Payload
 	buffer := bufio.NewReader(conn)
 	for {

@@ -13,9 +13,8 @@ type Handler struct {
 	Conn   net.Conn
 }
 
-func InitHandler(redis string, conn net.Conn) *Handler {
-	client := data.InitClient(redis)
-	return &Handler{Client: client, Conn: conn}
+func InitHandler(conn net.Conn, redis_client *data.Client) *Handler {
+	return &Handler{Client: redis_client, Conn: conn}
 }
 
 func (h *Handler) RegisterBeacon(p *payload.Payload) {
