@@ -13,7 +13,7 @@ func main() {
 	if len(config_file) == 0 {
 		config_file = "config.toml"
 	}
-	conf := server.Read_config("config.toml")
+	conf := server.Read_config(config_file)
 
 	// start listening for client connections
 	listener, listener_error := net.Listen("tcp", ":"+conf.Port)
