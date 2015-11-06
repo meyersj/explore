@@ -12,10 +12,10 @@ can store messages at that location (assuming the advertisment is from a beacon
 that stays at that location). Other users retrieve those messages when scanning near that beacon.
 
 ### config
-1. rename `explore/go-server/test-config.toml` to `config.toml`
-2. rename `explore/android-client/app/src/main/assets/default-config.properties` to `config.properties`
-3. in both config files set **host** and **port** appropriately
-4. change **redis** connection param for `go-server` if not running redis on local machine with default port 
+1. Copy `explore/go-server/test-config.toml` to `config.toml`
+2. Set **Port** and change **Redis** if redis is not running on same machine 
+2. Copy `explore/android-client/app/src/main/assets/default-config.properties` to `config.properties`
+4. Set **host** and **port**
 
 go-server requires toml and redis packages
 ```
