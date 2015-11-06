@@ -5,9 +5,14 @@ import (
 	"./server"
 	"fmt"
 	"net"
+	"os"
 )
 
 func main() {
+	config_file := os.Getenv("EXPLORE_CONFIG")
+	if len(config_file) == 0 {
+		config_file = "config.toml"
+	}
 	conf := server.Read_config("config.toml")
 
 	// start listening for client connections
