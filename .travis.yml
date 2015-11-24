@@ -4,4 +4,4 @@ go:
 install:
     - go get github.com/BurntSushi/toml
     - go get gopkg.in/redis.v3
-script: go-server/run_tests.sh
+script: go test go-server/payload/*
