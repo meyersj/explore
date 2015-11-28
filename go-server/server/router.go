@@ -29,3 +29,17 @@ func InitNearbyClient(id string, conn net.Conn) *NearbyClient {
 func InitRouter() *Router {
 	return &Router{Clients: make(map[string]*NearbyClient)}
 }
+
+func (r *Router) AddClient(client *NearbyClient) {
+	_, exists := r.Clients[client.Id]
+	if !exists {
+		r.Clients[client.Id] = client
+	}
+}
+
+func (r *Router) RemoveClient(client *NearbyClient) {
+	_, exists := r.Clients[client.Id]
+	if exists {
+		delete(r.Clients, client.Id)
+	}
+}

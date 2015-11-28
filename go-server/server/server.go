@@ -16,6 +16,7 @@ import (
 func Communicate(conn net.Conn, redis_client *data.Client, dispatcher chan *Broadcast) {
 	defer conn.Close()
 	fmt.Println("\nopen connection", time.Now(), "\n")
+	//init := true
 	handler := InitHandler(conn, redis_client, dispatcher)
 	var p *payload.Payload
 	buffer := bufio.NewReader(conn)
@@ -31,12 +32,14 @@ func Communicate(conn net.Conn, redis_client *data.Client, dispatcher chan *Broa
 				handler.RegisterBeacon(p)
 			case protocol.CLIENT_UPDATE:
 				handler.ClientUpdate(p)
-			case protocol.PUT_MESSAGE:
-				handler.PutMessage(p)
 			case protocol.GET_MESSAGE:
 				handler.GetMessage(p)
 			case protocol.GET_BEACONS:
 				handler.GetBeacons(p)
+			case protocol.JOIN_CHANNEL:
+				fmt.Println("JOIN CHANNEL")
+			case protocol.BROADCAST:
+				handler.PutMessage(p)
 			}
 		}
 	}
@@ -46,7 +49,6 @@ func Communicate(conn net.Conn, redis_client *data.Client, dispatcher chan *Broa
 // for forwarding
 func DispatchRouter(router *Router, dispatcher chan *Broadcast) {
 	fmt.Println("\nStarting DispatchRouter", time.Now(), "\n")
-	fmt.Println(router)
 	for {
 		broadcast := <-dispatcher
 		fmt.Println("broadcast", broadcast.Message)
