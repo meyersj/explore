@@ -9,4 +9,6 @@ const (
 	PUT_MESSAGE     = 0x04
 	GET_MESSAGE     = 0x05
 	GET_BEACONS     = 0x06
+	JOIN_CHANNEL    = 0x07
+	BROADCAST       = 0x08
 )
