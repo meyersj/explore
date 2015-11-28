@@ -9,12 +9,17 @@ import (
 )
 
 type Handler struct {
-	Client *data.Client
-	Conn   net.Conn
+	Client     *data.Client
+	Conn       net.Conn
+	Dispatcher chan *Broadcast
 }
 
-func InitHandler(conn net.Conn, redis_client *data.Client) *Handler {
-	return &Handler{Client: redis_client, Conn: conn}
+func InitHandler(
+	conn net.Conn,
+	redis_client *data.Client,
+	dispatcher chan *Broadcast,
+) *Handler {
+	return &Handler{Client: redis_client, Conn: conn, Dispatcher: dispatcher}
 }
 
 func (h *Handler) RegisterBeacon(p *payload.Payload) {
@@ -68,6 +73,11 @@ func (h *Handler) PutMessage(p *payload.Payload) {
 			User:    client_name,
 			Beacon:  key,
 			Message: client_message,
+		}
+		h.Dispatcher <- &Broadcast{
+			ClientId: client_name,
+			Message:  client_message,
+			Beacon:   key,
 		}
 		beacon_name := h.Client.PutMessage(msg)
 		display := beacon_name + "\t" + client_name + "\t" + client_message

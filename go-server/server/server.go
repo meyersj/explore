@@ -13,10 +13,10 @@ import (
 // main worker thread that handles communication with the client
 // bytes are parsed into separate payloads and passed
 // to a consumer thread
-func Communicate(conn net.Conn, redis_client *data.Client) {
+func Communicate(conn net.Conn, redis_client *data.Client, dispatcher chan *Broadcast) {
 	defer conn.Close()
 	fmt.Println("\nopen connection", time.Now(), "\n")
-	handler := InitHandler(conn, redis_client)
+	handler := InitHandler(conn, redis_client, dispatcher)
 	var p *payload.Payload
 	buffer := bufio.NewReader(conn)
 	for {
@@ -39,5 +39,16 @@ func Communicate(conn net.Conn, redis_client *data.Client) {
 				handler.GetBeacons(p)
 			}
 		}
+	}
+}
+
+// basic function to receive broadcasts and pass them to router
+// for forwarding
+func DispatchRouter(router *Router, dispatcher chan *Broadcast) {
+	fmt.Println("\nStarting DispatchRouter", time.Now(), "\n")
+	fmt.Println(router)
+	for {
+		broadcast := <-dispatcher
+		fmt.Println("broadcast", broadcast.Message)
 	}
 }
