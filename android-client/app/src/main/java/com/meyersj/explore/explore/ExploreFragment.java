@@ -66,6 +66,7 @@ public class ExploreFragment extends Fragment
     private ExploreBeaconAdapter exploreBeaconAdapter;
     private MessageDisplayAdapter messageDisplayAdapter;
     private boolean scanning = false;
+    private byte[] activeChannel = null;
     private NearbyBeacon selectedBeacon;
     private InputMode actionModeInput;
     private GoogleApiClient googleApiClient;
@@ -127,6 +128,13 @@ public class ExploreFragment extends Fragment
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        Log.d(TAG, "ON resume");
+
+    }
+
+    @Override
     public void onDestroyView() {
         super.onDestroyView();
         if (scanning) {
@@ -170,6 +178,10 @@ public class ExploreFragment extends Fragment
                         messageDisplayAdapter.clear();
                         updateVisibility();
                         stopLocationUpdates();
+                        if (activeChannel != null) {
+                            leaveChannel(activeChannel);
+                            activeChannel = null;
+                        }
                         return;
                 }
 
@@ -228,7 +240,7 @@ public class ExploreFragment extends Fragment
                         return;
                     }
                     if (mode.equals(InputMode.MESSAGE)) {
-                        putMessage(message);
+                        broadcastMessage(message);
                     } else if (mode.equals(InputMode.REGISTER)) {
                         registerBeacon(message);
                         actionModeInput.activateMessage();
@@ -251,7 +263,7 @@ public class ExploreFragment extends Fragment
         Bundle data = message.getData();
         if (data != null) {
             switch(data.getByte(Cons.PAYLOAD_FLAGS)) {
-                case Protocol.PUT_MESSAGE:
+                case Protocol.SEND_BROADCAST:
                     putMessageResponse(data);
                     break;
                 case Protocol.CLIENT_UPDATE:
@@ -262,6 +274,9 @@ public class ExploreFragment extends Fragment
                     break;
                 case Protocol.REGISTER_BEACON:
                     getRegisterBeaconMessage(data);
+                    break;
+                case Protocol.RECEIVE_BROADCAST:
+                    receiveBroadcastMessage(data);
                     break;
             }
             updateVisibility();
@@ -322,22 +337,40 @@ public class ExploreFragment extends Fragment
     }
 
     private void activateBeacon(NearbyBeacon selectedBeacon) {
-        byte[] payload = MessageBuilder.getMessages(selectedBeacon.mac.getBytes());
+        // get messages
+        //byte[] payload = MessageBuilder.getMessages(selectedBeacon.mac.getBytes());
+        //ProtocolMessage protocolMessage = new ProtocolMessage();
+        //protocolMessage.payload = payload;
+        //protocolMessage.payloadFlag = Protocol.GET_MESSAGE;
+        //communicator.addMessage(protocolMessage);
+
+        byte[] device = Utils.getDeviceID(getContext()).getBytes();
+        byte[] payload = MessageBuilder.joinChannel(device, selectedBeacon.mac.getBytes());
         ProtocolMessage protocolMessage = new ProtocolMessage();
         protocolMessage.payload = payload;
-        protocolMessage.payloadFlag = Protocol.GET_MESSAGE;
+        protocolMessage.payloadFlag = Protocol.JOIN_CHANNEL;
+        communicator.addMessage(protocolMessage);
+        activeChannel = selectedBeacon.mac.getBytes();
+    }
+
+    private void leaveChannel(byte[] channel) {
+        byte[] device = Utils.getDeviceID(getContext()).getBytes();
+        byte[] payload = MessageBuilder.leaveChannel(device, channel);
+        ProtocolMessage protocolMessage = new ProtocolMessage();
+        protocolMessage.payload = payload;
+        protocolMessage.payloadFlag = Protocol.LEAVE_CHANNEL;
         communicator.addMessage(protocolMessage);
     }
 
-    private void putMessage(String message) {
+    private void broadcastMessage(String message) {
         byte[] device = Utils.getDeviceID(getContext()).getBytes();
         byte[] mac = selectedBeacon.mac.getBytes();
-        Log.d(TAG, "MAC: " + selectedBeacon.mac);
+        Log.d(TAG, "Broadcast: " + selectedBeacon.mac + " " + message);
         byte[] user = Utils.getUser(getContext()).getBytes();
-        byte[] payload = MessageBuilder.sendMessage(device, user, message.getBytes(), mac);
+        byte[] payload = MessageBuilder.broadcastMessage(device, user, message.getBytes(), mac);
         ProtocolMessage protocolMessage = new ProtocolMessage();
         protocolMessage.payload = payload;
-        protocolMessage.payloadFlag = Protocol.PUT_MESSAGE;
+        protocolMessage.payloadFlag = Protocol.SEND_BROADCAST;
         communicator.addMessage(protocolMessage);
     }
 
@@ -398,10 +431,10 @@ public class ExploreFragment extends Fragment
                     long epoch = System.currentTimeMillis();
                     SimpleDateFormat format = new SimpleDateFormat("h:mm a");
                     String timestamp = format.format(new Date(epoch));
-                    messageDisplayAdapter.add(new MessageDisplay(client, message, timestamp));
-                    if (display.length() > 144) {
-                        display = display.substring(0, 144);
-                    }
+                    //messageDisplayAdapter.add(new MessageDisplay(client, message, timestamp));
+                    //if (display.length() > 144) {
+                    //    display = display.substring(0, 144);
+                    //}
                     statusText.setText(display);
                 }
             } catch (UnsupportedEncodingException e) {
@@ -474,6 +507,34 @@ public class ExploreFragment extends Fragment
                         selectedBeacon.name = name;
                         exploreBeaconAdapter.notifyDataSetChanged();
                         statusText.setText(getString(R.string.status_location_saved));
+                    }
+                } catch (UnsupportedEncodingException e) {
+                    Log.d(TAG, e.toString());
+                }
+                break;
+        }
+    }
+
+    public void receiveBroadcastMessage(Bundle data) {
+        Log.d(TAG, "receive broadcast message");
+        byte[] response = data.getByteArray(Cons.RESPONSE);
+        byte[] flags = data.getByteArray(Cons.RESPONSE_FLAGS);
+        Log.d(TAG, new String(response));
+        if (flags == null || response == null) return;
+        switch (flags[0]) {
+            case 0x00:
+                try {
+                    String responseString = new String(response, "UTF-8");
+                    String[] fields = responseString.split("\t");
+                    if (fields.length == 2) {
+                        String client = fields[0];
+                        String message = fields[1];
+                        Log.d(TAG, "Broadcast " + client + " " + message);
+                        long epoch = System.currentTimeMillis();
+                        SimpleDateFormat format = new SimpleDateFormat("h:mm a");
+                        String timestamp = format.format(new Date(epoch));
+                        Log.d(TAG, timestamp);
+                        messageDisplayAdapter.add(new MessageDisplay(client, message, timestamp));
                     }
                 } catch (UnsupportedEncodingException e) {
                     Log.d(TAG, e.toString());

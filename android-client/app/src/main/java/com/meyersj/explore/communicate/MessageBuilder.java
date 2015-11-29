@@ -42,19 +42,31 @@ public class MessageBuilder {
         return Protocol.newPayload(Protocol.REGISTER_BEACON, payload);
     }
 
-    public static byte[] sendMessage(byte[] device, byte[] user, byte[] message, byte[] beacon) {
+    public static byte[] broadcastMessage(byte[] device, byte[] user, byte[] message, byte[] beacon) {
         byte[] payload = new byte[4+device.length+user.length+message.length+beacon.length];
         int index = 0;
         index = addField(payload, device, index);
         index = addField(payload, user, index);
         index = addField(payload, message, index);
         addField(payload, beacon, index);
-        return Protocol.newPayload(Protocol.PUT_MESSAGE, payload);
+        return Protocol.newPayload(Protocol.SEND_BROADCAST, payload);
     }
 
-    public static byte[] getMessages(byte[] beacon) {
-        byte[] payload = new byte[1+beacon.length];
-        addField(payload, beacon, 0);
-        return Protocol.newPayload(Protocol.GET_MESSAGE, payload);
+    //public static byte[] getMessages(byte[] beacon) {
+    //    byte[] payload = new byte[1+beacon.length];
+    //    addField(payload, beacon, 0);
+    //    return Protocol.newPayload(Protocol.GET_MESSAGE, payload);
+    //}
+
+    public static byte[] joinChannel(byte[] device, byte[] beacon) {
+        byte[] payload = new byte[2+device.length+beacon.length];
+        addField(payload, beacon, addField(payload, device, 0));
+        return Protocol.newPayload(Protocol.JOIN_CHANNEL, payload);
+    }
+
+    public static byte[] leaveChannel(byte[] device, byte[] channel) {
+        byte[] payload = new byte[2+device.length+channel.length];
+        addField(payload, channel, addField(payload, device, 0));
+        return Protocol.newPayload(Protocol.LEAVE_CHANNEL, payload);
     }
 }

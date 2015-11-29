@@ -41,7 +41,7 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tab_layout);
         tabLayout.addTab(tabLayout.newTab().setText(getString(R.string.title_explore)));
-        tabLayout.addTab(tabLayout.newTab().setText(getString(R.string.title_map)));
+       // tabLayout.addTab(tabLayout.newTab().setText(getString(R.string.title_map)));
         tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
         final NonSwipeableViewPager viewPager = (NonSwipeableViewPager) findViewById(R.id.pager);
         ExplorePagerAdapter adapter = new ExplorePagerAdapter(getSupportFragmentManager());
@@ -107,7 +107,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public int getCount() {
-            return 2;
+            return 1;
         }
 
         @Override

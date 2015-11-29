@@ -7,12 +7,14 @@ import android.util.Log;
 
 import com.meyersj.explore.ExploreApplication;
 import com.meyersj.explore.utilities.Cons;
+import com.meyersj.explore.utilities.Utils;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.nio.ByteBuffer;
 import java.util.concurrent.LinkedBlockingQueue;
 
 
@@ -72,7 +74,39 @@ public class ThreadedCommunicator {
                             Message threadMessage = sendMessage(socket, message);
                             handler.sendMessage(threadMessage);
                         } else {
-                            Thread.sleep(Cons.PROTOCOL_POLL);
+                            DataInputStream inStream = new DataInputStream(socket.getInputStream());
+                            if (inStream.available() >= 8) {
+                                byte[] responseLength = new byte[4];
+                                byte[] flags = new byte[4];
+                                byte[] response = null;
+                                inStream.readFully(responseLength);
+                                inStream.readFully(flags);
+                                ByteBuffer wrapped = ByteBuffer.wrap(responseLength);
+                                Integer length = wrapped.getInt();
+                                //Log.d(TAG, "LENGTH " + String.valueOf(length));
+                                //Log.d(TAG, "FLAGS " + Utils.getHexString(flags));
+                                if (length > 0) {
+                                    response = new byte[length];
+                                    inStream.readFully(response);
+                                    Log.d(TAG, "RESPONSE " + response.toString());
+                                    //return new ProtocolResponse(flags, response);
+                                }
+                                ProtocolMessage broadcastMessage = new ProtocolMessage();
+                                broadcastMessage.response = response;
+                                broadcastMessage.responseFlags = flags;
+                                broadcastMessage.payloadFlag = Protocol.RECEIVE_BROADCAST;
+                                handler.sendMessage(broadcastMessage.getThreadMessage());
+                            }
+                            else {
+                                Thread.sleep(Cons.PROTOCOL_POLL);
+                            }
+                            //Message threadMessage = checkBroadcast(socket, message);
+                            //if (threadMessage != null) {
+                            //    handler.sendMessage(threadMessage);
+                           // }
+                            //else {
+                             //
+                            //}
                         }
                     }
                     Log.d(TAG, "CLOSE SOCKET");
@@ -87,6 +121,17 @@ public class ThreadedCommunicator {
                 Log.d(TAG, e.toString());
             }
         }
+    }
+
+    public static Message checkBroadcast(Socket socket, ProtocolMessage message) throws IOException {
+        Log.d("ThreadedCommunicator", "check broadcast");
+        DataInputStream inStream = new DataInputStream(socket.getInputStream());
+        if (inStream.available() > 8) {
+            ProtocolResponse response = ProtocolResponse.read(inStream);
+            message.response = response.getResponse();
+            Log.d("ThreadedCommunicator", "Broadcast: " + message.response.toString());
+        }
+        return null;
     }
 
 
