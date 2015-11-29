@@ -13,11 +13,16 @@ import (
 // main worker thread that handles communication with the client
 // bytes are parsed into separate payloads and passed
 // to a consumer thread
-func Communicate(conn net.Conn, redis_client *data.Client, dispatcher chan *Broadcast) {
+func Communicate(
+	conn net.Conn,
+	redis_client *data.Client,
+	dispatcher chan *Broadcast,
+	router *Router,
+) {
 	defer conn.Close()
 	fmt.Println("\nopen connection", time.Now(), "\n")
 	//init := true
-	handler := InitHandler(conn, redis_client, dispatcher)
+	handler := InitHandler(conn, redis_client, dispatcher, router)
 	var p *payload.Payload
 	buffer := bufio.NewReader(conn)
 	for {
@@ -32,14 +37,16 @@ func Communicate(conn net.Conn, redis_client *data.Client, dispatcher chan *Broa
 				handler.RegisterBeacon(p)
 			case protocol.CLIENT_UPDATE:
 				handler.ClientUpdate(p)
-			case protocol.GET_MESSAGE:
-				handler.GetMessage(p)
+			//case protocol.GET_MESSAGE:
+			//	handler.GetMessage(p)
 			case protocol.GET_BEACONS:
 				handler.GetBeacons(p)
 			case protocol.JOIN_CHANNEL:
-				fmt.Println("JOIN CHANNEL")
+				handler.JoinChannel(p)
+			case protocol.LEAVE_CHANNEL:
+				handler.LeaveChannel(p)
 			case protocol.BROADCAST:
-				handler.PutMessage(p)
+				handler.BroadcastMessage(p)
 			}
 		}
 	}
@@ -51,6 +58,6 @@ func DispatchRouter(router *Router, dispatcher chan *Broadcast) {
 	fmt.Println("\nStarting DispatchRouter", time.Now(), "\n")
 	for {
 		broadcast := <-dispatcher
-		fmt.Println("broadcast", broadcast.Message)
+		router.Broadcast(broadcast)
 	}
 }

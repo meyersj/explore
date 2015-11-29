@@ -12,14 +12,21 @@ type Handler struct {
 	Client     *data.Client
 	Conn       net.Conn
 	Dispatcher chan *Broadcast
+	Router     *Router
 }
 
 func InitHandler(
 	conn net.Conn,
 	redis_client *data.Client,
 	dispatcher chan *Broadcast,
+	router *Router,
 ) *Handler {
-	return &Handler{Client: redis_client, Conn: conn, Dispatcher: dispatcher}
+	return &Handler{
+		Client:     redis_client,
+		Conn:       conn,
+		Dispatcher: dispatcher,
+		Router:     router,
+	}
 }
 
 func (h *Handler) RegisterBeacon(p *payload.Payload) {
@@ -59,7 +66,7 @@ func (h *Handler) ClientUpdate(p *payload.Payload) {
 	h.Conn.Write(res)
 }
 
-func (h *Handler) PutMessage(p *payload.Payload) {
+func (h *Handler) BroadcastMessage(p *payload.Payload) {
 	res := payload.Build(0x01, []byte("error"))
 	message := payload.InitMessage(p.Data)
 	if len(message.Structures) == 4 {
@@ -67,21 +74,54 @@ func (h *Handler) PutMessage(p *payload.Payload) {
 		client_name := string(message.Structures[1])
 		client_message := string(message.Structures[2])
 		key := data.BuildBeaconKey(message.Structures[3])
-		fmt.Println("PUT MESSAGE", device, key, client_message, "\n")
+		fmt.Println("BROADCAST MESSAGE", device, key, client_message)
 		msg := &data.ClientMessage{
 			Device:  device,
 			User:    client_name,
 			Beacon:  key,
 			Message: client_message,
 		}
-		h.Dispatcher <- &Broadcast{
-			ClientId: client_name,
-			Message:  client_message,
-			Beacon:   key,
-		}
 		beacon_name := h.Client.PutMessage(msg)
 		display := beacon_name + "\t" + client_name + "\t" + client_message
 		res = payload.Build(0x00, []byte(display))
+		h.Conn.Write(res)
+		h.Dispatcher <- &Broadcast{
+			ClientId:   device,
+			ClientName: client_name,
+			Message:    client_message,
+			Beacon:     key,
+		}
+	} else {
+		h.Conn.Write(res)
+	}
+}
+
+func (h *Handler) JoinChannel(p *payload.Payload) {
+	res := payload.Build(0x01, []byte{})
+	message := payload.InitMessage(p.Data)
+	if len(message.Structures) == 2 {
+		device := data.BuildClientKey(message.Structures[0])
+		key := data.BuildBeaconKey(message.Structures[1])
+		h.Router.JoinChannel(InitActiveClient(device, h.Conn), key)
+		fmt.Println("JOIN CHANNEL", device, key)
+		res = payload.Build(0x00, []byte{})
+	} else {
+		fmt.Println("JOIN CHANNEL", "failed to parse message")
+	}
+	h.Conn.Write(res)
+}
+
+func (h *Handler) LeaveChannel(p *payload.Payload) {
+	res := payload.Build(0x01, []byte{})
+	message := payload.InitMessage(p.Data)
+	if len(message.Structures) == 2 {
+		device := data.BuildClientKey(message.Structures[0])
+		key := data.BuildBeaconKey(message.Structures[1])
+		h.Router.LeaveChannel(device, key)
+		fmt.Println("LEAVE CHANNEL", device, key)
+		res = payload.Build(0x00, []byte{})
+	} else {
+		fmt.Println("LEAVE CHANNEL", "failed to parse message")
 	}
 	h.Conn.Write(res)
 }

@@ -33,7 +33,7 @@ func main() {
 			conn, _ := listener.Accept()
 			if conn != nil {
 				// start communication thread with client
-				go server.Communicate(conn, redis_client, dispatcher)
+				go server.Communicate(conn, redis_client, dispatcher, router)
 			}
 		}
 		listener.Close()
