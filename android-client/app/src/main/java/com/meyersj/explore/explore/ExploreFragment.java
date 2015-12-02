@@ -498,7 +498,7 @@ public class ExploreFragment extends Fragment
                 try {
                     String responseString = new String(response, "UTF-8");
                     String[] fields = responseString.split("\t");
-                    if (fields.length == 3) {
+                    if (fields.length == 4) {
                         //String key = fields[0];
                         String name = fields[1];
                         //String coordinates = fields[2];

@@ -21,6 +21,7 @@ import java.util.Locale;
 public class MainActivity extends AppCompatActivity {
 
     private final String TAG = getClass().getCanonicalName();
+    private final Integer TAB_COUNT = 1;
     private ExploreFragment exploreFragment;
     private LocationMapFragment mapFragment;
 
@@ -30,23 +31,24 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         exploreFragment = ExploreFragment.newInstance(1);
-        mapFragment = LocationMapFragment.newInstance(2);
+        //mapFragment = LocationMapFragment.newInstance(2);
 
         Intent intent = getIntent();
         if (intent.getBooleanExtra(Cons.NOTIFICATION, false)) {
             exploreFragment.setRestoreBundle(intent.getExtras());
         }
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        setSupportActionBar((Toolbar) findViewById(R.id.toolbar));
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tab_layout);
         tabLayout.addTab(tabLayout.newTab().setText(getString(R.string.title_explore)));
-       // tabLayout.addTab(tabLayout.newTab().setText(getString(R.string.title_map)));
-        tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
-        final NonSwipeableViewPager viewPager = (NonSwipeableViewPager) findViewById(R.id.pager);
+        //tabLayout.addTab(tabLayout.newTab().setText(getString(R.string.title_map)));
+        //tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
+
+        final NonSwipingViewPager viewPager = (NonSwipingViewPager) findViewById(R.id.pager);
         ExplorePagerAdapter adapter = new ExplorePagerAdapter(getSupportFragmentManager());
         viewPager.setAdapter(adapter);
         viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
+
         tabLayout.setOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
@@ -107,7 +109,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public int getCount() {
-            return 1;
+            return TAB_COUNT;
         }
 
         @Override
