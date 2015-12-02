@@ -1,9 +1,12 @@
 package data
 
 import (
+	"database/sql"
 	"encoding/binary"
 	"fmt"
+	_ "github.com/lib/pq"
 	"gopkg.in/redis.v3"
+	"log"
 	"math"
 	"strconv"
 	"strings"
@@ -49,23 +52,53 @@ func InitClient(address string) *Client {
 	return &Client{client: client}
 }
 
-func (c *Client) RegisterBeacon(key string, name string, coordinates string) {
-	c.client.HSet(BEACONS, key, name+"\t"+coordinates)
+func (c *Client) RegisterBeacon(key string, name string, lat string, lon string) {
+	db, err := sql.Open("postgres", "postgres://jeff:password@localhost/explore")
+	if err != nil {
+		log.Fatal(db)
+	}
+	insert := "INSERT INTO beacons VALUES ($1, $2, $3, $4)"
+	result, err := db.Query(insert, key, name, lat, lon)
+	if err == nil {
+		log.Println(result)
+	} else {
+		log.Fatal(err)
+	}
 }
 
 func (c *Client) ClientUpdate(update *ClientUpdate) (byte, []byte) {
+	name := c.ClientUpdatePostgres(update)
 	now := time.Now()
 	secs := strconv.FormatInt(now.Unix(), 10)
-	data := strconv.Itoa(update.Rssi) + " " + secs
-	c.client.HSet(update.Device, LAST_ACTIVE, secs)
-	c.client.HSet(update.Device, update.Beacon, data)
-	data, e := c.client.HGet(BEACONS, update.Beacon).Result()
-	if e == nil {
-		name := strings.Split(data, "\t")[0]
+	//data := strconv.Itoa(update.Rssi) + " " + secs
+	//c.client.HSet(update.Device, LAST_ACTIVE, secs)
+	//c.client.HSet(update.Device, update.Beacon, data)
+	//data, e := c.client.HGet(BEACONS, update.Beacon).Result()
+	if name != "" {
+		//	name := strings.Split(data, "\t")[0]
 		response := secs + "\t" + update.Beacon + "\t" + name
 		return 0x00, []byte(response)
 	}
 	return 0x01, []byte{}
+}
+
+func (c *Client) ClientUpdatePostgres(update *ClientUpdate) string {
+	db, oerr := sql.Open("postgres", "postgres://jeff:password@localhost/explore")
+	if oerr != nil {
+		log.Fatal(oerr)
+	}
+	query := "SELECT name, lat, lon FROM beacons WHERE beacon = $1"
+	log.Println(update.Beacon)
+	var name string
+	var lat, lon float64
+	qerr := db.QueryRow(query, update.Beacon).Scan(&name, &lat, &lon)
+	if qerr == sql.ErrNoRows {
+		log.Print(qerr)
+		return ""
+	} else {
+		log.Print(name)
+		return name
+	}
 }
 
 func (c *Client) GetBeacons() []string {
@@ -98,6 +131,25 @@ func (c *Client) GetMessage(beacon string) ([]string, int) {
 	return results, 0
 }
 
+func (c *Client) BroadcastMessage(message *ClientMessage) string {
+	db, err := sql.Open("postgres", "postgres://jeff:password@localhost/explore")
+	if err != nil {
+		log.Fatal(db)
+		return ""
+	}
+	insert := "INSERT INTO broadcasts VALUES ($1, $2, $3, $4)"
+	result, err := db.Query(
+		insert,
+		message.Beacon, message.Device, message.User, message.Message,
+	)
+	if err == nil {
+		log.Println(result)
+	} else {
+		log.Fatal(err)
+	}
+	return ""
+}
+
 func (c *Client) PutMessage(message *ClientMessage) string {
 	key := MESSAGES + ":" + message.Beacon
 	now := time.Now()
@@ -116,18 +168,18 @@ func (c *Client) PutMessage(message *ClientMessage) string {
 	return name
 }
 
-func BuildCoordinates(lat []byte, lon []byte) string {
-	lat_float := math.Float64frombits(binary.BigEndian.Uint64(lat))
-	lon_float := math.Float64frombits(binary.BigEndian.Uint64(lon))
-	lat_string := strconv.FormatFloat(lat_float, 'f', 5, 64)
-	lon_string := strconv.FormatFloat(lon_float, 'f', 5, 64)
-	return lat_string + " " + lon_string
+func BuildCoordinates(coord []byte) (string, string) {
+	lat := math.Float64frombits(binary.BigEndian.Uint64(coord[0:8]))
+	lon := math.Float64frombits(binary.BigEndian.Uint64(coord[8:16]))
+	lat_string := strconv.FormatFloat(lat, 'f', 5, 64)
+	lon_string := strconv.FormatFloat(lon, 'f', 5, 64)
+	return lat_string, lon_string
 }
 
 func BuildClientKey(device []byte) string {
-	return "client:" + string(device)
+	return string(device) //"client:" + string(device)
 }
 
 func BuildBeaconKey(mac []byte) string {
-	return "beacon:" + strings.Replace(string(mac), ":", "", -1)
+	return string(mac) //"beacon:" + strings.Replace(string(mac), ":", "", -1)
 }

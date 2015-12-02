@@ -34,13 +34,13 @@ func (h *Handler) RegisterBeacon(p *payload.Payload) {
 	message := payload.InitMessage(p.Data)
 	if len(message.Structures) == 3 {
 		name := string(message.Structures[0])
-		key := data.BuildBeaconKey(message.Structures[2])
-		lat := message.Structures[1][0:8]
-		lon := message.Structures[1][8:16]
-		coordinates := data.BuildCoordinates(lat, lon)
-		h.Client.RegisterBeacon(key, name, coordinates)
-		response := key + "\t" + name + "\t" + coordinates
-		fmt.Println("REGISTER BEACON", key, name, coordinates)
+		//key := data.BuildBeaconKey(message.Structures[2])
+		key := string(message.Structures[2])
+		lat, lon := data.BuildCoordinates(message.Structures[1])
+		//h.Client.RegisterBeacon(key, name, coordinates)
+		h.Client.RegisterBeacon(string(key), name, lat, lon)
+		response := key + "\t" + name + "\t" + lat + "\t" + lon
+		fmt.Println("REGISTER BEACON", key, name, lat, lon)
 		res = payload.Build(0x00, []byte(response))
 	} else {
 		fmt.Println("ERROR: REGISTER BEACON: not parsed properly")
@@ -82,6 +82,7 @@ func (h *Handler) BroadcastMessage(p *payload.Payload) {
 			Message: client_message,
 		}
 		beacon_name := h.Client.PutMessage(msg)
+		h.Client.BroadcastMessage(msg)
 		display := beacon_name + "\t" + client_name + "\t" + client_message
 		res = payload.Build(0x00, []byte(display))
 		h.Conn.Write(res)
