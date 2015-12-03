@@ -92,6 +92,7 @@ public class ThreadedCommunicator {
                                     //return new ProtocolResponse(flags, response);
                                 }
                                 ProtocolMessage broadcastMessage = new ProtocolMessage();
+                                broadcastMessage.handler = ProtocolMessage.CHAT_HANDLER;
                                 broadcastMessage.response = response;
                                 broadcastMessage.responseFlags = flags;
                                 broadcastMessage.payloadFlag = Protocol.RECEIVE_BROADCAST;

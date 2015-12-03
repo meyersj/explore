@@ -18,12 +18,11 @@ import com.meyersj.explore.utilities.Cons;
 
 import java.util.Locale;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends LocationListenerActivity {
 
     private final String TAG = getClass().getCanonicalName();
     private final Integer TAB_COUNT = 1;
     private ExploreFragment exploreFragment;
-    private LocationMapFragment mapFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,7 +30,6 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         exploreFragment = ExploreFragment.newInstance(1);
-        //mapFragment = LocationMapFragment.newInstance(2);
 
         Intent intent = getIntent();
         if (intent.getBooleanExtra(Cons.NOTIFICATION, false)) {
@@ -41,8 +39,6 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar((Toolbar) findViewById(R.id.toolbar));
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tab_layout);
         tabLayout.addTab(tabLayout.newTab().setText(getString(R.string.title_explore)));
-        //tabLayout.addTab(tabLayout.newTab().setText(getString(R.string.title_map)));
-        //tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
 
         final NonSwipingViewPager viewPager = (NonSwipingViewPager) findViewById(R.id.pager);
         ExplorePagerAdapter adapter = new ExplorePagerAdapter(getSupportFragmentManager());
@@ -56,8 +52,6 @@ public class MainActivity extends AppCompatActivity {
                 switch(tab.getPosition()) {
                     case 0:
                         break;
-                    case 1:
-                        mapFragment.fetchBeaconLocations();
                 }
             }
 
@@ -103,7 +97,7 @@ public class MainActivity extends AppCompatActivity {
                 case 0:
                     return exploreFragment;
                 default:
-                    return mapFragment;
+                    return null;
             }
         }
 
@@ -122,6 +116,11 @@ public class MainActivity extends AppCompatActivity {
                     return getString(R.string.title_map).toUpperCase(l);
             }
             return null;
+        }
+
+        public void initializeLocationListener() {
+            buildGoogleApiClient();
+            createLocationRequest();
         }
     }
 }

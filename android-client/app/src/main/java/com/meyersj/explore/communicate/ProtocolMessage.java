@@ -9,6 +9,10 @@ import com.meyersj.explore.utilities.Cons;
 
 public class ProtocolMessage {
 
+    public static final String HANDLER = "handler";
+    public static final int SEARCH_HANDLER = 1;
+    public static final int CHAT_HANDLER = 2;
+    public int handler = 0;
     public String mac;
     public int rssi;
     public String name;
@@ -23,6 +27,7 @@ public class ProtocolMessage {
 
     public Message getThreadMessage() {
         Bundle bundle = new Bundle();
+        bundle.putInt(HANDLER, handler);
         bundle.putString(Cons.MAC, mac);
         bundle.putByte(Cons.PAYLOAD_FLAGS, payloadFlag);
         bundle.putByteArray(Cons.PAYLOAD, payload);

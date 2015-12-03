@@ -23,16 +23,17 @@ public class AdvertisementCommunicator extends ThreadedCommunicator {
         public void onScanResult(int callbackType, ScanResult result) {
             if (rateLimiter.tryAcquire()) {
                 ProtocolMessage message = new ProtocolMessage();
+                message.handler = ProtocolMessage.SEARCH_HANDLER;
                 message.mac = result.getDevice().getAddress();
                 message.advertisement = result.getScanRecord().getBytes();
                 message.rssi = result.getRssi();
                 byte[] device = Utils.getDeviceID(context).getBytes();
-                byte[] payload = MessageBuilder.clientUpdate(
+                byte[] payload = MessageBuilder.beaconLookup(
                         device, message.mac.getBytes(),
                         message.advertisement, message.rssi
                 );
                 message.payload = payload;
-                message.payloadFlag = Protocol.CLIENT_UPDATE;
+                message.payloadFlag = Protocol.BEACON_LOOKUP;
                 addMessage(message);
             }
         }

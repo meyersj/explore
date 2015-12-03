@@ -16,7 +16,7 @@ public class MessageBuilder {
         return Protocol.newPayload(Protocol.CLOSE_CONN, payload);
     }
 
-    public static byte[] clientUpdate(byte[] device, byte[] mac, byte[] adv, int rssi) {
+    public static byte[] beaconLookup(byte[] device, byte[] mac, byte[] adv, int rssi) {
         byte[] payload = new byte[5 + mac.length + device.length + adv.length];
         byte[] strength = {(byte) rssi};
         Integer index = 0;
@@ -24,22 +24,16 @@ public class MessageBuilder {
         index = addField(payload, device, index);
         index = addField(payload, mac, index);
         addField(payload, adv, index);
-        return Protocol.newPayload(Protocol.CLIENT_UPDATE, payload);
+        return Protocol.newPayload(Protocol.BEACON_LOOKUP, payload);
     }
 
-    public static byte[] registerBeacon(byte[] name, byte[] adv, byte[] lat, byte[] lon) {
-        byte[] payload = new byte[3+16+name.length+adv.length];
-        int index = 0;
+    public static byte[] beaconRegister(byte[] name, byte[] mac) {
+        byte[] payload = new byte[2+name.length+mac.length];
+        addField(payload, name, addField(payload, name, 0));
+        Integer index = 0;
         index = addField(payload, name, index);
-        payload[index++] = (byte) 16;
-        for(int i = 0; i < 8; i++) {
-            payload[index++] = lat[i];
-        }
-        for(int i = 0; i < 8; i++) {
-            payload[index++] = lon[i];
-        }
-        addField(payload, adv, index);
-        return Protocol.newPayload(Protocol.REGISTER_BEACON, payload);
+        addField(payload, mac, index);
+        return Protocol.newPayload(Protocol.BEACON_REGISTER, payload);
     }
 
     public static byte[] broadcastMessage(byte[] device, byte[] user, byte[] message, byte[] beacon) {
@@ -51,12 +45,6 @@ public class MessageBuilder {
         addField(payload, beacon, index);
         return Protocol.newPayload(Protocol.SEND_BROADCAST, payload);
     }
-
-    //public static byte[] getMessages(byte[] beacon) {
-    //    byte[] payload = new byte[1+beacon.length];
-    //    addField(payload, beacon, 0);
-    //    return Protocol.newPayload(Protocol.GET_MESSAGE, payload);
-    //}
 
     public static byte[] joinChannel(byte[] device, byte[] beacon) {
         byte[] payload = new byte[2+device.length+beacon.length];

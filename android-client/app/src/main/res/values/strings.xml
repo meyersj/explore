@@ -1,9 +1,14 @@
 <resources>
-    <string name="app_name">Explore</string>
+    <string name="app_name">Nearby</string>
 
     <string name="title_explore">Explore</string>
     <string name="title_map">Map</string>
     <string name="title_register">Register</string>
+
+    <string name="title_search">Search</string>
+    <string name="title_chat">Chat</string>
+    <string name="title_post">Post</string>
+
 
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>

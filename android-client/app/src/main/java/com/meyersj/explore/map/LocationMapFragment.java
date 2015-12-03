@@ -154,11 +154,11 @@ public class LocationMapFragment extends Fragment {
         Log.d(TAG, "update");
         Bundle data = message.getData();
         if (data != null) {
-            switch(data.getByte(Cons.PAYLOAD_FLAGS)) {
-                case Protocol.GET_BEACONS:
-                    getBeaconsResponse(data);
-                    break;
-            }
+            //switch(data.getByte(Cons.PAYLOAD_FLAGS)) {
+                //case Protocol.GET_BEACONS:
+                //    getBeaconsResponse(data);
+                //    break;
+            //}
         }
     }
 
@@ -203,6 +203,7 @@ public class LocationMapFragment extends Fragment {
         }
     }
 
+    /*
     public void fetchBeaconLocations() {
         ProtocolMessage message = new ProtocolMessage();
         message.payloadFlag = Protocol.GET_BEACONS;
@@ -210,4 +211,5 @@ public class LocationMapFragment extends Fragment {
         message.payload = Protocol.newPayload(Protocol.GET_BEACONS, empty);
         communicator.addMessage(message);
     }
+    */
 }

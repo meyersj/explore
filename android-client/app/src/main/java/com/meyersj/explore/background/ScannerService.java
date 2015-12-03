@@ -139,11 +139,11 @@ public class ScannerService extends Service {
         message.rssi = result.getRssi();
         message.mac = result.getDevice().getAddress();
         byte[] device = Utils.getDeviceID(getApplicationContext()).getBytes();
-        message.payload = MessageBuilder.clientUpdate(
+        message.payload = MessageBuilder.beaconLookup(
                 device, message.mac.getBytes(),
                 message.advertisement, message.rssi
         );
-        message.payloadFlag = Protocol.CLIENT_UPDATE;
+        message.payloadFlag = Protocol.BEACON_LOOKUP;
         communicator.addMessage(message);
     }
 

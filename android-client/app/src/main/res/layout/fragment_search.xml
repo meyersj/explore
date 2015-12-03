@@ -1,0 +1,106 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:background="@color/secondary_text"
+    tools:context="com.meyersj.explore.explore2.SearchFragment">
+
+    <LinearLayout
+        android:id="@+id/status_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="12dp">
+
+        <TextView
+            android:id="@+id/status_text"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:gravity="right"
+            android:textSize="14sp"
+            android:text="Start scan to find beacons"
+            android:textColor="@color/primary_darker"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/list_layout"
+        android:layout_width="match_parent"
+        android:layout_height="fill_parent"
+        android:orientation="vertical"
+        android:layout_below="@id/status_layout"
+        android:layout_above="@+id/action_layout">
+
+        <LinearLayout
+            android:id="@+id/nearby_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/rounded_primary"
+            android:elevation="3dp"
+            android:visibility="gone"
+            android:layout_marginBottom="12dp">
+
+            <ListView
+                android:id="@+id/nearby_list"
+                style="@style/ListViewStyle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" >
+            </ListView>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <FrameLayout
+        android:id="@id/action_layout"
+        android:layout_alignParentBottom="true"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/rounded_primary"
+        android:elevation="3dp"
+        android:layout_marginTop="9dp"
+        android:layout_marginBottom="4dp"
+        android:visibility="gone"
+        android:padding="12dp">
+
+        <LinearLayout
+            android:id="@+id/message_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:focusableInTouchMode="true">
+
+            <ImageView
+                android:id="@+id/action_icon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_location_city_white_24dp"
+                android:paddingRight="12dp"
+                android:layout_gravity="center_vertical|center_horizontal"/>
+
+            <EditText
+                android:id="@+id/message"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="4"
+                android:hint="Enter location name" />
+
+            <ImageView
+                android:id="@+id/save_location_icon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="8dp"
+                android:src="@drawable/ic_add_circle_white_36dp"
+                android:layout_gravity="center_vertical|center_horizontal" />
+
+        </LinearLayout>
+
+    </FrameLayout>
+
+</RelativeLayout>

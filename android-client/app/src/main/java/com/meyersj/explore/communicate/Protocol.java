@@ -18,19 +18,15 @@ import java.util.Collection;
 
 public class Protocol {
 
-    // Error Flags
-    public static final byte SUCCESS = (byte) 0x00;
-
     // Message Type Flags
     public static final byte CLOSE_CONN = (byte) 0x00;
-    public static final byte REGISTER_BEACON = (byte) 0x02;
-    public static final byte CLIENT_UPDATE = (byte) 0x03;
-    public static final byte GET_MESSAGE = (byte) 0x05;
-    public static final byte GET_BEACONS = (byte) 0x06;
-    public static final byte JOIN_CHANNEL = (byte) 0x07;
-    public static final byte LEAVE_CHANNEL = (byte) 0x08;
-    public static final byte SEND_BROADCAST = (byte) 0x09;
-    public static final byte RECEIVE_BROADCAST = (byte) 0x10;
+    public static final byte BEACON_LOOKUP = (byte) 0x01;
+    public static final byte BEACON_REGISTER = (byte) 0x02;
+    public static final byte JOIN_CHANNEL = (byte) 0x03;
+    public static final byte LEAVE_CHANNEL = (byte) 0x04;
+    public static final byte SEND_BROADCAST = (byte) 0x05;
+    public static final byte RECEIVE_BROADCAST = (byte) 0x06;
+
 
 
     public static byte[] newPayload(byte flag, byte[] inPayload) {

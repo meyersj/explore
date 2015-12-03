@@ -101,6 +101,8 @@ public class ExploreFragment extends Fragment
         communicator.start();
         buildGoogleApiClient();
         createLocationRequest();
+
+
         setViewListeners();
 
         if(restoreExtras != null) {
@@ -266,13 +268,13 @@ public class ExploreFragment extends Fragment
                 case Protocol.SEND_BROADCAST:
                     putMessageResponse(data);
                     break;
-                case Protocol.CLIENT_UPDATE:
+                case Protocol.BEACON_LOOKUP:
                     clientUpdateResponse(data);
                     break;
-                case Protocol.GET_MESSAGE:
-                    getMessageResponse(data);
-                    break;
-                case Protocol.REGISTER_BEACON:
+                //case Protocol.GET_MESSAGE:
+                //    getMessageResponse(data);
+                //    break;
+                case Protocol.BEACON_REGISTER:
                     getRegisterBeaconMessage(data);
                     break;
                 case Protocol.RECEIVE_BROADCAST:
@@ -379,10 +381,10 @@ public class ExploreFragment extends Fragment
         byte[] lon = selectedBeacon.getLongitudeBytes();
         byte[] mac = selectedBeacon.mac.getBytes();
         Log.d(TAG, "Register: " + selectedBeacon.mac);
-        byte[] payload = MessageBuilder.registerBeacon(name.getBytes(), mac, lat, lon);
+        byte[] payload = MessageBuilder.beaconRegister(name.getBytes(), mac);
         ProtocolMessage message = new ProtocolMessage();
         message.payload = payload;
-        message.payloadFlag = Protocol.REGISTER_BEACON;
+        message.payloadFlag = Protocol.BEACON_REGISTER;
         communicator.addMessage(message);
     }
 
@@ -543,6 +545,7 @@ public class ExploreFragment extends Fragment
         }
     }
 
+
     protected synchronized void buildGoogleApiClient() {
         googleApiClient = new GoogleApiClient.Builder(getContext())
                 .addConnectionCallbacks(this)
@@ -550,6 +553,7 @@ public class ExploreFragment extends Fragment
                 .addApi(LocationServices.API)
                 .build();
     }
+
 
     @Override
     public void onConnected(Bundle bundle) {
