@@ -1,24 +1,39 @@
 package main
 
 import (
-	"bufio"
+	"database/sql"
 	"fmt"
-	"os"
+	_ "github.com/lib/pq"
+	"log"
 )
 
 func main() {
 	fmt.Println("start")
-
-	w := 
-	w := bufio.NewWriter(os.Stdout)
-	w.Write([]byte("hello\n"))
-	w.Flush()
-	//r := bufio.NewReader(os.Stdin)
-	//fmt.Println(r)
-	//data := make([]byte, 5)
-	//r.Read(data)
-	//fmt.Println(data)
-	//x := r.ReadByte()
-	//fmt.Println(x)
-	//w.Flush()
+	db, err := sql.Open("postgres", "postgres://jeff:password@localhost/explore")
+	if err != nil {
+		log.Fatal(db)
+	} else {
+		//age := 21
+		_, err := db.Query("INSERT INTO gotest VALUES ($1, $2)", 3, "c")
+		if err != nil {
+			log.Fatal(err)
+		}
+		rows, err := db.Query("SELECT a, b FROM gotest")
+		if err == nil {
+			log.Println(rows.Columns())
+			defer rows.Close()
+			for rows.Next() {
+				var a int
+				var b string
+				err = rows.Scan(&a, &b)
+				log.Println(a, b)
+			}
+			err = rows.Err()
+			if err != nil {
+				log.Fatal(err)
+			}
+		} else {
+			log.Fatal(err)
+		}
+	}
 }

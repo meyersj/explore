@@ -5,30 +5,55 @@ import (
 	"../payload"
 	"fmt"
 	"net"
-	"strings"
 )
 
 type Handler struct {
-	Client *data.Client
-	Conn   net.Conn
+	DBClient   *data.DBClient
+	Conn       net.Conn
+	Dispatcher chan *Broadcast
+	Router     *Router
 }
 
-func InitHandler(conn net.Conn, redis_client *data.Client) *Handler {
-	return &Handler{Client: redis_client, Conn: conn}
+func InitHandler(
+	conn net.Conn,
+	db *data.DBClient,
+	dispatcher chan *Broadcast,
+	router *Router,
+) *Handler {
+	return &Handler{
+		DBClient:   db,
+		Conn:       conn,
+		Dispatcher: dispatcher,
+		Router:     router,
+	}
 }
 
-func (h *Handler) RegisterBeacon(p *payload.Payload) {
+func (h *Handler) BeaconLookup(p *payload.Payload) {
+	res := payload.Build(0x02, []byte{})
+	message := payload.InitMessage(p.Data)
+	if len(message.Structures) == 4 {
+		rssi := int8(message.Structures[0][0])
+		device := string(message.Structures[1])
+		key := string(message.Structures[2])
+		update := &data.BeaconLookup{Device: device, Beacon: key, Rssi: int(rssi)}
+		flag, data := h.DBClient.BeaconLookup(update)
+		fmt.Println("BEACON LOOKUP", device, rssi, string(data))
+		res = payload.Build(flag, data)
+	} else {
+		fmt.Println("ERROR: BEACON UPDATE: not parsed properly")
+	}
+	h.Conn.Write(res)
+}
+
+func (h *Handler) BeaconRegister(p *payload.Payload) {
 	res := payload.Build(0x01, []byte{})
 	message := payload.InitMessage(p.Data)
-	if len(message.Structures) == 3 {
+	if len(message.Structures) == 2 {
 		name := string(message.Structures[0])
-		key := data.BuildBeaconKey(message.Structures[2])
-		lat := message.Structures[1][0:8]
-		lon := message.Structures[1][8:16]
-		coordinates := data.BuildCoordinates(lat, lon)
-		h.Client.RegisterBeacon(key, name, coordinates)
-		response := key + "\t" + name + "\t" + coordinates
-		fmt.Println("REGISTER BEACON", key, name, coordinates)
+		key := string(message.Structures[1])
+		h.DBClient.BeaconRegister(string(key), name)
+		response := key + "\t" + name
+		fmt.Println("REGISTER BEACON", key, name)
 		res = payload.Build(0x00, []byte(response))
 	} else {
 		fmt.Println("ERROR: REGISTER BEACON: not parsed properly")
@@ -36,64 +61,66 @@ func (h *Handler) RegisterBeacon(p *payload.Payload) {
 	h.Conn.Write(res)
 }
 
-func (h *Handler) ClientUpdate(p *payload.Payload) {
-	res := payload.Build(0x02, []byte{})
-	message := payload.InitMessage(p.Data)
-	if len(message.Structures) == 4 {
-		rssi := int8(message.Structures[0][0])
-		device := data.BuildClientKey(message.Structures[1])
-		key := data.BuildBeaconKey(message.Structures[2])
-		//advertisement := message.Structures[3]
-		update := &data.ClientUpdate{Device: device, Beacon: key, Rssi: int(rssi)}
-		flag, data := h.Client.ClientUpdate(update)
-		fmt.Println("CLIENT UPDATE", device, key, rssi)
-		res = payload.Build(flag, data)
-	} else {
-		fmt.Println("ERROR: CLIENT UPDATE: not parsed properly")
-	}
-	h.Conn.Write(res)
-}
-
-func (h *Handler) PutMessage(p *payload.Payload) {
+func (h *Handler) SendBroadcast(p *payload.Payload) {
 	res := payload.Build(0x01, []byte("error"))
 	message := payload.InitMessage(p.Data)
 	if len(message.Structures) == 4 {
-		device := data.BuildClientKey(message.Structures[0])
+		device := string(message.Structures[0])
 		client_name := string(message.Structures[1])
 		client_message := string(message.Structures[2])
-		key := data.BuildBeaconKey(message.Structures[3])
-		fmt.Println("PUT MESSAGE", device, key, client_message, "\n")
-		msg := &data.ClientMessage{
+		key := string(message.Structures[3])
+		fmt.Println("BROADCAST MESSAGE", device, key, client_message)
+		msg := &data.Broadcast{
 			Device:  device,
 			User:    client_name,
 			Beacon:  key,
 			Message: client_message,
 		}
-		beacon_name := h.Client.PutMessage(msg)
+		beacon_name := "Test"
+		h.DBClient.SendBroadcast(msg)
 		display := beacon_name + "\t" + client_name + "\t" + client_message
 		res = payload.Build(0x00, []byte(display))
+		h.Conn.Write(res)
+		h.Dispatcher <- &Broadcast{
+			ClientId:   device,
+			ClientName: client_name,
+			Message:    client_message,
+			Beacon:     key,
+		}
+	} else {
+		h.Conn.Write(res)
 	}
-	h.Conn.Write(res)
 }
 
-func (h *Handler) GetMessage(p *payload.Payload) {
+func (h *Handler) JoinChannel(p *payload.Payload) (string, string) {
 	res := payload.Build(0x01, []byte{})
 	message := payload.InitMessage(p.Data)
-	if len(message.Structures) == 1 {
-		key := data.BuildBeaconKey(message.Structures[0])
-		messages, _ := h.Client.GetMessage(key)
-		response := strings.Join(messages, "\n")
-		fmt.Println("GET MESSAGE", key, response)
-		res = payload.Build(0x00, []byte(response))
+	if len(message.Structures) == 2 {
+		device := string(message.Structures[0])
+		key := string(message.Structures[1])
+		h.Router.JoinChannel(InitActiveClient(device, h.Conn), key)
+		fmt.Println("JOIN CHANNEL", device, key)
+		res = payload.Build(0x00, []byte{})
+		h.Conn.Write(res)
+		return device, key
 	} else {
-		fmt.Println("GET MESSAGE", "failed to parse message")
+		fmt.Println("JOIN CHANNEL", "failed to parse message")
+		h.Conn.Write(res)
+		return "", ""
 	}
-	h.Conn.Write(res)
 }
 
-func (h *Handler) GetBeacons(p *payload.Payload) {
-	beacons := h.Client.GetBeacons()
-	response := strings.Join(beacons, "\n")
-	fmt.Println("GET BEACONS", response)
-	h.Conn.Write(payload.Build(0x00, []byte(response)))
+func (h *Handler) LeaveChannel(p *payload.Payload) {
+	res := payload.Build(0x01, []byte{})
+	message := payload.InitMessage(p.Data)
+	if len(message.Structures) == 2 {
+		device := string(message.Structures[0])
+		key := string(message.Structures[1])
+		h.Router.LeaveChannel(device, key)
+		fmt.Println("LEAVE CHANNEL", device, key)
+		res = payload.Build(0x00, []byte{})
+	} else {
+		fmt.Println("LEAVE CHANNEL", "failed to parse message")
+	}
+	h.Conn.Write(res)
 }
