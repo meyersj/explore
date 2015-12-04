@@ -2,13 +2,12 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     android:paddingBottom="@dimen/activity_vertical_margin"
     android:background="@color/secondary_text"
-    tools:context="com.meyersj.explore.explore2.ChatFragment">
+    tools:context=".chat.ChatFragment">
 
     <LinearLayout
         android:id="@+id/status_layout"
@@ -24,6 +23,7 @@
             android:layout_height="wrap_content"
             android:gravity="left"
             android:text="Location Name"
+            android:textSize="20sp"
             android:textColor="@color/primary_darker"/>
 
         <TextView

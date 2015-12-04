@@ -11,7 +11,7 @@ import com.google.common.util.concurrent.RateLimiter;
 import com.meyersj.explore.utilities.Utils;
 
 
-public class AdvertisementCommunicator extends ThreadedCommunicator {
+public class BLECommunicator extends ThreadedCommunicator {
 
     private RateLimiter rateLimiter;
     private BluetoothLeScanner bleScanner;
@@ -39,7 +39,7 @@ public class AdvertisementCommunicator extends ThreadedCommunicator {
         }
     };
 
-    public AdvertisementCommunicator(Context context, Handler handler) {
+    public BLECommunicator(Context context, Handler handler) {
         super(context, handler);
         this.rateLimiter = RateLimiter.create(3);
         BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();

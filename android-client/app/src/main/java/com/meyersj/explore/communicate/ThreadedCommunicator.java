@@ -89,7 +89,6 @@ public class ThreadedCommunicator {
                                     response = new byte[length];
                                     inStream.readFully(response);
                                     Log.d(TAG, "RESPONSE " + response.toString());
-                                    //return new ProtocolResponse(flags, response);
                                 }
                                 ProtocolMessage broadcastMessage = new ProtocolMessage();
                                 broadcastMessage.handler = ProtocolMessage.CHAT_HANDLER;
@@ -101,13 +100,6 @@ public class ThreadedCommunicator {
                             else {
                                 Thread.sleep(Cons.PROTOCOL_POLL);
                             }
-                            //Message threadMessage = checkBroadcast(socket, message);
-                            //if (threadMessage != null) {
-                            //    handler.sendMessage(threadMessage);
-                           // }
-                            //else {
-                             //
-                            //}
                         }
                     }
                     Log.d(TAG, "CLOSE SOCKET");

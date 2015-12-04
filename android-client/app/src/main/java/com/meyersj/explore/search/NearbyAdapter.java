@@ -1,4 +1,4 @@
-package com.meyersj.explore.nearby;
+package com.meyersj.explore.search;
 
 
 import android.content.Context;
@@ -6,9 +6,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.meyersj.explore.R;
+import com.meyersj.explore.search.NearbyBeacon;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -42,6 +44,8 @@ public class NearbyAdapter extends ArrayAdapter<NearbyBeacon> {
             NearbyBeacon beacon = beacons.get(result.mac);
             beacon.count++;
             beacon.rssi = result.rssi;
+            beacon.name = result.name;
+            beacon.registered = result.registered;
             // if beacon is not being displayed and minimum count is
             // exceeded then add that beacon to display list
             if (!beacon.displayed && beacon.count >= MIN_COUNT_DISPLAY) {
@@ -69,9 +73,18 @@ public class NearbyAdapter extends ArrayAdapter<NearbyBeacon> {
         TextView rssi = (TextView) view.findViewById(R.id.rssi);
         TextView count = (TextView) view.findViewById(R.id.count);
         TextView description = (TextView) view.findViewById(R.id.description);
+        ImageView chatIcon = (ImageView) view.findViewById(R.id.chat_icon);
+
         count.setText("#" + String.valueOf(beacon.count));
         rssi.setText(String.valueOf(beacon.rssi));
         description.setText(beacon.name);
+
+        if (beacon.registered) {
+            chatIcon.setVisibility(View.VISIBLE);
+        }
+        else {
+            chatIcon.setVisibility(View.INVISIBLE);
+        }
         if (active == beacon) {
             view.setBackground(getContext().getDrawable(R.drawable.rounded_active));
         }
@@ -104,37 +117,19 @@ public class NearbyAdapter extends ArrayAdapter<NearbyBeacon> {
         // new selection
         if (this.active == null) {
             this.active = beacon;
-            activateBeacon();
             ret = 1;
         }
         // swap selection
         else if (this.active != beacon) {
             this.active = beacon;
-            activateBeacon();
             ret = 0;
         }
         // undo selection
         else {
             this.active = null;
-            deactivateBeacon();
             ret = -1;
         }
         notifyDataSetChanged();
         return ret;
-    }
-
-    private void activateBeacon() {
-        //data.remove(active);
-        restoreList = new ArrayList<>(data);
-        //restoreList.add(0, active);
-        super.clear();
-        super.add(active);
-    }
-
-    private void deactivateBeacon() {
-        super.clear();
-        for(NearbyBeacon beacon: restoreList) {
-            super.add(beacon);
-        }
     }
 }

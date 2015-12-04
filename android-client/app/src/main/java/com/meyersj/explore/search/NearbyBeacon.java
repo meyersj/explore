@@ -1,4 +1,4 @@
-package com.meyersj.explore.nearby;
+package com.meyersj.explore.search;
 
 import java.nio.ByteBuffer;
 

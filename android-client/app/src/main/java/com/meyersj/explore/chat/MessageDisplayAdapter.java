@@ -1,4 +1,4 @@
-package com.meyersj.explore.explore;
+package com.meyersj.explore.chat;
 
 
 import android.content.Context;
@@ -33,11 +33,12 @@ public class MessageDisplayAdapter extends ArrayAdapter<MessageDisplay> {
         }
         TextView dateText = (TextView) view.findViewById(R.id.date);
         TextView usernameText = (TextView) view.findViewById(R.id.username);
+        TextView beaconText = (TextView) view.findViewById(R.id.beacon);
         TextView messageText = (TextView) view.findViewById(R.id.message);
         dateText.setText(messageDisplay.getTimestamp());
         usernameText.setText(messageDisplay.getUsername());
         messageText.setText(messageDisplay.getMessage());
+        beaconText.setText(messageDisplay.getBeacon());
         return view;
     }
-
 }

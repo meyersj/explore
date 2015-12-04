@@ -12,35 +12,43 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import com.meyersj.explore.R;
-import com.meyersj.explore.explore.ExploreFragment;
-import com.meyersj.explore.map.LocationMapFragment;
+import com.meyersj.explore.communicate.BLECommunicator;
+import com.meyersj.explore.communicate.ResponseHandler;
+import com.meyersj.explore.chat.ChatFragment;
+import com.meyersj.explore.search.SearchFragment;
+import com.meyersj.explore.search.NearbyBeacon;
 import com.meyersj.explore.utilities.Cons;
 
 import java.util.Locale;
 
-public class MainActivity extends LocationListenerActivity {
+public class MainActivity extends AppCompatActivity {
 
     private final String TAG = getClass().getCanonicalName();
-    private final Integer TAB_COUNT = 1;
-    private ExploreFragment exploreFragment;
+    private final Integer TAB_COUNT = 2;
+    private SearchFragment searchFragment;
+    private ChatFragment chatFragment;
+    public NonSwipingViewPager viewPager;
+    public BLECommunicator communicator;
+    public NearbyBeacon selectedBeacon = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        searchFragment = SearchFragment.newInstance(1);
+        chatFragment = ChatFragment.newInstance(2);
 
-        exploreFragment = ExploreFragment.newInstance(1);
-
-        Intent intent = getIntent();
-        if (intent.getBooleanExtra(Cons.NOTIFICATION, false)) {
-            exploreFragment.setRestoreBundle(intent.getExtras());
-        }
+        ResponseHandler handler = new ResponseHandler(searchFragment, chatFragment);
+        communicator = new BLECommunicator(this, handler);
+        communicator.start();
 
         setSupportActionBar((Toolbar) findViewById(R.id.toolbar));
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tab_layout);
-        tabLayout.addTab(tabLayout.newTab().setText(getString(R.string.title_explore)));
+        tabLayout.addTab(tabLayout.newTab().setText(getString(R.string.title_search)));
+        tabLayout.addTab(tabLayout.newTab().setText(getString(R.string.title_chat)));
 
-        final NonSwipingViewPager viewPager = (NonSwipingViewPager) findViewById(R.id.pager);
+
+        viewPager = (NonSwipingViewPager) findViewById(R.id.pager);
         ExplorePagerAdapter adapter = new ExplorePagerAdapter(getSupportFragmentManager());
         viewPager.setAdapter(adapter);
         viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
@@ -51,6 +59,19 @@ public class MainActivity extends LocationListenerActivity {
                 viewPager.setCurrentItem(tab.getPosition());
                 switch(tab.getPosition()) {
                     case 0:
+                        // search
+                        searchFragment.startScan();
+                        chatFragment.leaveChannel();
+                        selectedBeacon = null;
+                        searchFragment.updateVisibility();
+                        break;
+                    case 1:
+                        // chat
+                        searchFragment.stopScan();
+                        if (selectedBeacon != null) {
+                            chatFragment.joinChannel(selectedBeacon);
+                        }
+                        chatFragment.updateVisibility();
                         break;
                 }
             }
@@ -61,6 +82,18 @@ public class MainActivity extends LocationListenerActivity {
             @Override
             public void onTabReselected(TabLayout.Tab tab) {}
         });
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        communicator.start();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        communicator.stop();
     }
 
     @Override
@@ -95,7 +128,9 @@ public class MainActivity extends LocationListenerActivity {
         public Fragment getItem(int position) {
             switch (position) {
                 case 0:
-                    return exploreFragment;
+                    return searchFragment;
+                case 1:
+                    return chatFragment;
                 default:
                     return null;
             }
@@ -111,16 +146,17 @@ public class MainActivity extends LocationListenerActivity {
             Locale l = Locale.getDefault();
             switch (position) {
                 case 0:
-                    return getString(R.string.title_explore).toUpperCase(l);
+                    return getString(R.string.title_search).toUpperCase(l);
                 case 1:
-                    return getString(R.string.title_map).toUpperCase(l);
+                    return getString(R.string.title_chat).toUpperCase(l);
             }
             return null;
         }
+    }
 
-        public void initializeLocationListener() {
-            buildGoogleApiClient();
-            createLocationRequest();
-        }
+    // called by search fragment when registered beacon is selected
+    public void startChat(NearbyBeacon beacon) {
+        selectedBeacon = beacon;
+        viewPager.setCurrentItem(1);
     }
 }

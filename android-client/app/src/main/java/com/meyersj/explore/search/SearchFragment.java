@@ -1,4 +1,4 @@
-package com.meyersj.explore.explore2;
+package com.meyersj.explore.search;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -17,12 +17,11 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.meyersj.explore.R;
-import com.meyersj.explore.activity.MainActivity2;
-import com.meyersj.explore.communicate.AdvertisementCommunicator;
+import com.meyersj.explore.activity.MainActivity;
+import com.meyersj.explore.communicate.BLECommunicator;
 import com.meyersj.explore.communicate.MessageBuilder;
 import com.meyersj.explore.communicate.Protocol;
 import com.meyersj.explore.communicate.ProtocolMessage;
-import com.meyersj.explore.nearby.NearbyBeacon;
 import com.meyersj.explore.utilities.Cons;
 import com.meyersj.explore.utilities.Utils;
 
@@ -36,7 +35,7 @@ public class SearchFragment extends Fragment {
 
     private static final String TAB_NUMBER = "tab_number";
     private final String TAG = getClass().getCanonicalName();
-    private AdvertisementCommunicator communicator;
+    private BLECommunicator communicator;
     private NearbyAdapter nearbyAdapter;
     private NearbyBeacon selectedBeacon;
     private boolean scanning = false;
@@ -65,7 +64,7 @@ public class SearchFragment extends Fragment {
         ButterKnife.bind(this, rootView);
         nearbyAdapter = new NearbyAdapter(getContext(), new ArrayList<NearbyBeacon>());
         nearbyList.setAdapter(nearbyAdapter);
-        communicator =  ((MainActivity2) getActivity()).communicator;
+        communicator =  ((MainActivity) getActivity()).communicator;
         setViewListeners();
         return rootView;
     }
@@ -133,7 +132,7 @@ public class SearchFragment extends Fragment {
                 } else if (selectedBeacon != null) {
                     statusText.setText("");
                     messageText.setText("");
-                    registerBeacon(message);
+                    beaconRegister(message);
                 }
             }
         });
@@ -142,7 +141,7 @@ public class SearchFragment extends Fragment {
     public void startScan() {
         Log.d(TAG, "start scan");
         if (!scanning) {
-            statusText.setText(getString(R.string.status_scan_started));
+            statusText.setText("Scanning for nearby signals");
             scanning = true;
             communicator.startScan();
         }
@@ -157,7 +156,7 @@ public class SearchFragment extends Fragment {
         }
     }
 
-    private void updateVisibility() {
+    public void updateVisibility() {
         // always show beacons regardless of it one is selected or not
         if (nearbyAdapter.isEmpty()) {
             beaconLayout.setVisibility(View.GONE);
@@ -181,27 +180,16 @@ public class SearchFragment extends Fragment {
         if (data != null) {
             switch (data.getByte(Cons.PAYLOAD_FLAGS)) {
                 case Protocol.BEACON_LOOKUP:
-                    clientUpdateResponse(data);
+                    beaconLookupResponse(data);
                     break;
                 case Protocol.BEACON_REGISTER:
-                    registerBeaconResponse(data);
+                    beaconRegisterResponse(data);
             }
             updateVisibility();
         }
     }
 
-    private void registerBeacon(String name) {
-        Log.d(TAG, "Register: " + selectedBeacon.mac);
-        byte[] mac = selectedBeacon.mac.getBytes();
-        byte[] payload = MessageBuilder.beaconRegister(name.getBytes(), mac);
-        ProtocolMessage message = new ProtocolMessage();
-        message.handler = ProtocolMessage.SEARCH_HANDLER;
-        message.payload = payload;
-        message.payloadFlag = Protocol.BEACON_REGISTER;
-        communicator.addMessage(message);
-    }
-
-    public void clientUpdateResponse(Bundle data) {
+    public void beaconLookupResponse(Bundle data) {
         Log.d(TAG, "client update response");
         boolean registered = false;
         String mac = data.getString(Cons.MAC);
@@ -217,7 +205,6 @@ public class SearchFragment extends Fragment {
                 if (response != null) {
                     try {
                         name = new String(response, "UTF-8");
-                        name = ProtocolMessage.parseBeaconName(name);
                     } catch (UnsupportedEncodingException e) {
                         Log.d(TAG, e.toString());
                     }
@@ -229,7 +216,18 @@ public class SearchFragment extends Fragment {
         nearbyAdapter.add(new NearbyBeacon(registered, mac, name, rssi));
     }
 
-    public void registerBeaconResponse(Bundle data) {
+    private void beaconRegister(String name) {
+        Log.d(TAG, "Register: " + selectedBeacon.mac);
+        byte[] mac = selectedBeacon.mac.getBytes();
+        byte[] payload = MessageBuilder.beaconRegister(name.getBytes(), mac);
+        ProtocolMessage message = new ProtocolMessage();
+        message.handler = ProtocolMessage.SEARCH_HANDLER;
+        message.payload = payload;
+        message.payloadFlag = Protocol.BEACON_REGISTER;
+        communicator.addMessage(message);
+    }
+
+    public void beaconRegisterResponse(Bundle data) {
         Log.d(TAG, "register message response");
         byte[] response = data.getByteArray(Cons.RESPONSE);
         byte[] flags = data.getByteArray(Cons.RESPONSE_FLAGS);
@@ -255,6 +253,8 @@ public class SearchFragment extends Fragment {
     }
 
     public void startChat() {
-        ((MainActivity2) getActivity()).startChat(selectedBeacon);
+        ((MainActivity) getActivity()).startChat(selectedBeacon);
+        selectedBeacon = null;
+        nearbyAdapter.setActive(selectedBeacon);
     }
 }

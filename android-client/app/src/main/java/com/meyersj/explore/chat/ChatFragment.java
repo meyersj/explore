@@ -1,4 +1,4 @@
-package com.meyersj.explore.explore2;
+package com.meyersj.explore.chat;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -16,14 +16,12 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.meyersj.explore.R;
-import com.meyersj.explore.activity.MainActivity2;
-import com.meyersj.explore.communicate.AdvertisementCommunicator;
+import com.meyersj.explore.activity.MainActivity;
+import com.meyersj.explore.communicate.BLECommunicator;
 import com.meyersj.explore.communicate.MessageBuilder;
 import com.meyersj.explore.communicate.Protocol;
 import com.meyersj.explore.communicate.ProtocolMessage;
-import com.meyersj.explore.explore.MessageDisplay;
-import com.meyersj.explore.explore.MessageDisplayAdapter;
-import com.meyersj.explore.nearby.NearbyBeacon;
+import com.meyersj.explore.search.NearbyBeacon;
 import com.meyersj.explore.utilities.Cons;
 import com.meyersj.explore.utilities.Utils;
 
@@ -39,13 +37,14 @@ public class ChatFragment extends Fragment {
     private static final String TAB_NUMBER = "tab_number";
     private final String TAG = getClass().getCanonicalName();
     private MessageDisplayAdapter messageDisplayAdapter;
-    private AdvertisementCommunicator communicator;
+    private BLECommunicator communicator;
     private NearbyBeacon selectedBeacon;
     private byte[] activeChannel = null;
 
     @Bind(R.id.location_text) TextView beaconText;
     @Bind(R.id.status_text) TextView statusText;
     @Bind(R.id.display_list) ListView displayList;
+    @Bind(R.id.action_layout) FrameLayout actionLayout;
     @Bind(R.id.message) EditText messageText;
     @Bind(R.id.save_message_icon) ImageView saveMessageButton;
     @Bind(R.id.display_layout) LinearLayout displayLayout;
@@ -65,7 +64,7 @@ public class ChatFragment extends Fragment {
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_chat, container, false);
         ButterKnife.bind(this, rootView);
-        communicator =  ((MainActivity2) getActivity()).communicator;
+        communicator =  ((MainActivity) getActivity()).communicator;
         messageDisplayAdapter = new MessageDisplayAdapter(getContext());
         displayList.setAdapter(messageDisplayAdapter);
         setViewListeners();
@@ -100,17 +99,25 @@ public class ChatFragment extends Fragment {
                 }
                 else {
                     broadcastMessage(message);
+                    messageText.setText("");
                 }
             }
         });
     }
 
-    private void updateVisibility() {
+    public void updateVisibility() {
         if(messageDisplayAdapter.isEmpty()) {
             displayLayout.setVisibility(View.GONE);
         }
         else {
             displayLayout.setVisibility(View.VISIBLE);
+        }
+
+        if (selectedBeacon == null) {
+            actionLayout.setVisibility(View.GONE);
+        }
+        else {
+            actionLayout.setVisibility(View.VISIBLE);
         }
     }
 
@@ -133,6 +140,7 @@ public class ChatFragment extends Fragment {
     public void joinChannel(NearbyBeacon beacon) {
         leaveChannel();
         selectedBeacon = beacon;
+        activeChannel = selectedBeacon.mac.getBytes();
         beaconText.setText(selectedBeacon.name);
         byte[] device = Utils.getDeviceID(getContext()).getBytes();
         byte[] payload = MessageBuilder.joinChannel(device, selectedBeacon.mac.getBytes());
@@ -141,7 +149,6 @@ public class ChatFragment extends Fragment {
         protocolMessage.payload = payload;
         protocolMessage.payloadFlag = Protocol.JOIN_CHANNEL;
         communicator.addMessage(protocolMessage);
-        activeChannel = selectedBeacon.mac.getBytes();
     }
 
     public void leaveChannel() {
@@ -155,7 +162,7 @@ public class ChatFragment extends Fragment {
         communicator.addMessage(protocolMessage);
         selectedBeacon = null;
         activeChannel = null;
-        beaconText.setText("");
+        beaconText.setText("Not currently connected");
     }
 
     private void broadcastMessage(String message) {
@@ -182,9 +189,6 @@ public class ChatFragment extends Fragment {
                     String client = messages[1];
                     String message = messages[2];
                     String display = getString(R.string.status_message_upload_success);
-                    //long epoch = System.currentTimeMillis();
-                    //SimpleDateFormat format = new SimpleDateFormat("h:mm a");
-                    //String timestamp = format.format(new Date(epoch));
                     Log.d(TAG, message);
                     statusText.setText(display);
                 }
@@ -214,7 +218,9 @@ public class ChatFragment extends Fragment {
                         SimpleDateFormat format = new SimpleDateFormat("h:mm a");
                         String timestamp = format.format(new Date(epoch));
                         Log.d(TAG, timestamp);
-                        messageDisplayAdapter.add(new MessageDisplay(client, message, timestamp));
+                        MessageDisplay messageDisplay = new MessageDisplay(
+                                client, message, timestamp, selectedBeacon.name);
+                        messageDisplayAdapter.add(messageDisplay);
                         updateVisibility();
                     }
                 } catch (UnsupportedEncodingException e) {

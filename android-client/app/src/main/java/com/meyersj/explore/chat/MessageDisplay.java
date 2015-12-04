@@ -1,4 +1,4 @@
-package com.meyersj.explore.explore;
+package com.meyersj.explore.chat;
 
 /**
  * Created by jeff on 10/30/15.
@@ -8,6 +8,7 @@ public class MessageDisplay {
     private String username;
     private String message;
     private String timestamp;
+    private String beacon;
 
     public MessageDisplay(String username, String message) {
         this.username = username;
@@ -17,6 +18,11 @@ public class MessageDisplay {
     public MessageDisplay(String username, String message, String timestamp) {
         this(username, message);
         this.timestamp = timestamp;
+    }
+
+    public MessageDisplay(String username, String message, String timestamp, String beacon) {
+        this(username, message, timestamp);
+        this.beacon = beacon;
     }
 
     public String getUsername() {
@@ -30,4 +36,9 @@ public class MessageDisplay {
     public String getTimestamp() {
         return this.timestamp;
     }
+
+    public String getBeacon() {
+        return this.beacon;
+    }
 }
+
