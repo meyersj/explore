@@ -15,28 +15,32 @@ func main() {
 	}
 
 	conf := server.Read_config(config_file)
-	// will keep track which clients are connected to which beacons
-	router := server.InitRouter()
+
 	// dispatcher will receive broadcasts from all clients and pass them
 	// to the router to be forwarded
 	dispatcher := make(chan *server.Broadcast)
+
+	// router will keep track which clients are connected to which beacons
+	router := server.InitRouter()
+
 	// start listening for client connections
 	listener, listener_error := net.Listen("tcp", ":"+conf.Port)
 
 	if listener != nil {
+		db := data.InitDBClient(conf.Postgres)
+		// start background channel to handle broadcasting messages
 		go server.DispatchRouter(router, dispatcher)
-		redis_client := data.InitClient(conf.Redis)
-		fmt.Println("Accepting connections...")
+		defer listener.Close()
+		defer db.Close()
 		// infinite loop to accept connections from clients and
 		// then handle communication concurrently
+		fmt.Println("Accepting connections...")
 		for {
 			conn, _ := listener.Accept()
 			if conn != nil {
-				// start communication thread with client
-				go server.Communicate(conn, redis_client, dispatcher, router)
+				go server.Communicate(conn, db, dispatcher, router)
 			}
 		}
-		listener.Close()
 	} else {
 		fmt.Println("Error:", listener_error)
 	}

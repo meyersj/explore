@@ -35,12 +35,12 @@ func InitRouter() *Router {
 }
 
 func (r *Router) JoinChannel(client *ActiveClient, beacon string) {
+	r.LeaveChannel(client.Id, beacon)
 	r.Clients[client.Id] = client
 	_, bexists := r.Beacons[beacon]
 	if !bexists {
 		r.Beacons[beacon] = []string{client.Id}
 	} else {
-		// TODO check that client is not already in list
 		r.Beacons[beacon] = append(r.Beacons[beacon], client.Id)
 	}
 }

@@ -1,2 +1,2 @@
 Port = "8082"
-Redis = "127.0.0.1:6379"
+Postgres = "postgres://user:password@host/database"
