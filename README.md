@@ -17,10 +17,9 @@ that stays at that location). Other users retrieve those messages when scanning 
 2. Copy `explore/android-client/app/src/main/assets/default-config.properties` to `config.properties`
 4. Set **host** and **port**
 
-go-server requires toml, redis and postgres libraries
+go-server requires toml and postgres libraries
 ```
 go get github.com/BurntSushi/toml
-go get gopkg.in/redis.v3
 go get github.com/lib/pq
 ```
 
