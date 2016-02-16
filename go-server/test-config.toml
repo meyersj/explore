@@ -1,2 +1,2 @@
 Port = "8082"
-Postgres = "postgres://user:password@host/database"
+Postgres = "postgres://user:password@localhost/database"
