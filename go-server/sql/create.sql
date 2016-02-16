@@ -4,3 +4,11 @@ CREATE TABLE beacons (
     name varchar
 );
 
+DROP TABLE IF EXISTS broadcasts;
+CREATE TABLE broadcasts (
+    beacon varchar,
+    client_id varchar,
+    client_name varchar,
+    message varchar
+);
+
