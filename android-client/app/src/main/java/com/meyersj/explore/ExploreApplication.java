@@ -10,8 +10,8 @@ import com.newrelic.agent.android.logging.AgentLog;
 public class ExploreApplication extends Application {
 
     public ExploreApplication() {
-        //NewRelic.withApplicationToken(Utils.getNewRelicToken(getApplicationContext()))
-        //        .withLogLevel(AgentLog.DEBUG)
-        //        .start(getApplicationContext());
+        NewRelic.withApplicationToken(Utils.getNewRelicToken(getApplicationContext()))
+                .withLogLevel(AgentLog.DEBUG)
+                .start(getApplicationContext());
     }
 }
