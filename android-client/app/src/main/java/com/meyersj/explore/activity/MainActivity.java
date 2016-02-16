@@ -30,6 +30,7 @@ public class MainActivity extends AppCompatActivity {
     public NonSwipingViewPager viewPager;
     public BLECommunicator communicator;
     public NearbyBeacon selectedBeacon = null;
+    private int backCounter = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,7 +47,6 @@ public class MainActivity extends AppCompatActivity {
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tab_layout);
         tabLayout.addTab(tabLayout.newTab().setText(getString(R.string.title_search)));
         tabLayout.addTab(tabLayout.newTab().setText(getString(R.string.title_chat)));
-
 
         viewPager = (NonSwipingViewPager) findViewById(R.id.pager);
         ExplorePagerAdapter adapter = new ExplorePagerAdapter(getSupportFragmentManager());
@@ -72,6 +72,7 @@ public class MainActivity extends AppCompatActivity {
                             chatFragment.joinChannel(selectedBeacon);
                         }
                         chatFragment.updateVisibility();
+                        backCounter = 0;
                         break;
                 }
             }
@@ -118,6 +119,17 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    public void onBackPressed() {
+        if (++backCounter >= 2) {
+            finish();
+        }
+        else {
+            viewPager.setCurrentItem(0);
+            backCounter++;
+        }
+    }
+
     public class ExplorePagerAdapter extends FragmentPagerAdapter {
 
         public ExplorePagerAdapter(FragmentManager fm) {
@@ -156,6 +168,7 @@ public class MainActivity extends AppCompatActivity {
 
     // called by search fragment when registered beacon is selected
     public void startChat(NearbyBeacon beacon) {
+        backCounter = 0;
         selectedBeacon = beacon;
         viewPager.setCurrentItem(1);
     }
